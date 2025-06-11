@@ -8,8 +8,8 @@
 # -------------------------------------------------------------------
 
 locals {
-  root_config = read_terragrunt_config(find_in_parent_folders("root.kocil"))
-  root_dir    = dirname(find_in_parent_folders("root.kocil"))
+  root_config = read_terragrunt_config(find_in_parent_folders("root.hcl"))
+  root_dir    = dirname(find_in_parent_folders("root.hcl"))
 
   name_prefix  = "koci"     
 
@@ -29,7 +29,7 @@ locals {
   env = try(local.path_parts[2], "core-services")
 
   
-  doppler_project        = local.root_config.locals.doppler_project
+  doppler_project = local.root_config.inputs.doppler_project
   doppler_service_token  = coalesce(
     get_env("DOPPLER_SERVICE_TOKEN"),
     get_env("DOPPLER_TOKEN"),
@@ -43,7 +43,7 @@ locals {
   _doppler_json_output = local.is_init_phase || local.doppler_service_token == "placeholder-token" ? "{}" : try(run_cmd(
       "bash", "-c",
       # (added STDERR redirection **and** fallback echo so the command exits 0)
-      "DOPPLER_TOKEN='${local.doppler_service_token}' doppler secrets download --no-file --format json --project ${local.doppler_project} --config ${local.env} 2>/dev/null || echo '{}'"
+      "DOPPLER_TOKEN='${local.doppler_service_token}' doppler secrets download --no-file --format json --project ${local.doppler_project} 2>/dev/null || echo '{}'"
   ), "{}")
 
   _secret_map = jsondecode(local._doppler_json_output)
@@ -68,7 +68,7 @@ locals {
     "ocid1.compartment.oc1..aaaaaaaajklnsyhmjt2tem4opqeqxv5n3njn5u5t6v6khiph3if5uso6pfoa"
   )
   tenancy_ocid = coalesce(local._raw_tenancy_ocid, "ocid1.tenancy.oc1..aaaaaaaauasokfuusmntkiyr3xqynfsvazqxr6s6lyj3swfbu7u6pdnra6aq")
-  region = coalesce(local._raw_region, "ca-toronto-1")
+  region = coalesce(local._raw_region, "ca-montreal-1")
   private_key = coalesce(local._raw_private_key, "placeholder-private-key")
   user_ocid = coalesce(local._raw_user_ocid, "ocid1.user.oc1..aaaaaaaa5wuhdts3ys2abun6mlmbvri56ooukocisdzbispy4t2tcymidlcb5q")
   fingerprint = coalesce(local._raw_fingerprint, "6a:da:98:6d:a9:e5:d6:bc:b7:89:74:1d:c8:e7:91:42")

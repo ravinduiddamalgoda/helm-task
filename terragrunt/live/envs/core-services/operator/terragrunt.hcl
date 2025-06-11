@@ -4,7 +4,7 @@
 
 include "common" {
   # tenancy-wide locals / provider settings
-  path   = find_in_parent_folders("env-common.kocil")
+  path   = find_in_parent_folders("env-common.hcl")
   expose = true
 }
 
@@ -81,7 +81,7 @@ inputs = {
 
   # ─── required core identifiers ────────────────────────────────────────
   state_id        = "core-services"
-  region          = try(include.common.locals.region, get_env("OCI_REGION", "ca-toronto-1"))
+  region          = try(include.common.locals.region, get_env("OCI_REGION", "ca-montreal-1"))
   cluster_name    = "core-services"                 # arbitrary, but required
 
   # ─── network / DNS / tags ----------------------------------------------------
@@ -97,7 +97,7 @@ inputs = {
   volume_kms_key_id       = null
 
   # ─── image & OS -------------------------------------------------------------
-  image_id                = "ocid1.image.oc1.ca-toronto-1.aaaaaaaanboz7kt2nnzhoaw7gcodu5dp7255mv2xjenp7y5bazjpfehh4c7q"
+  image_id                = "ocid1.image.oc1.ca-montreal-1.aaaaaaaarhsptzukiqy3zeo7e37yxvi2do3gs2xnymlhosz5dwf53dvgymjq"
   operator_image_os_version = "8"
 
   # ─── kube-related values (bare minimum) -------------------------------------

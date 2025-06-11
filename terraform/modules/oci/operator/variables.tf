@@ -15,7 +15,7 @@ variable "bastion_user" { type = string }
 variable "await_cloudinit" { type = bool }
 variable "assign_dns" { type = bool }
 variable "availability_domain" {
-  description = "Full AD name, e.g. \"Uocm:CA-TORONTO-1-AD-1\". If null or empty the module picks the first AD returned by data.oci_identity_availability_domains.ads."
+  description = "Full AD name, e.g. \"Uocm:ca-montreal-1-AD-1\". If null or empty the module picks the first AD returned by data.oci_identity_availability_domains.ads."
   type        = string
   default     = null
 }

@@ -65,5 +65,5 @@ variable "vcn_cidr" {
 variable "service_cidr_destination" {
   type        = string
   description = "Destination value to use when destination_type == SERVICE_CIDR_BLOCK"
-  default     = "all-ca-toronto-1-services-in-oracle-services-network"
+  default     = "all-ca-montreal-1-services-in-oracle-services-network"
 }

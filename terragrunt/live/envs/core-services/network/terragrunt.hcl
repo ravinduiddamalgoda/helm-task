@@ -1,6 +1,6 @@
 # Keep this include for env-common, as it has expose = true
 include "common" {
-  path   = find_in_parent_folders("env-common.kocil")
+  path   = find_in_parent_folders("env-common.hcl")
   expose = true
 }
 
