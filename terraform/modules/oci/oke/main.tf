@@ -115,10 +115,18 @@ resource "oci_containerengine_node_pool" "node_pool" {
   }
 
   # ─────────── lifecycle ───────────
+  # lifecycle {
+  #   ignore_changes = [
+  #     node_config_details[0].size,
+  #   ]
+  # }
+
   lifecycle {
     ignore_changes = [
       node_config_details[0].size,
     ]
+    create_before_destroy = true
+    prevent_destroy       = true # caution: blocks terraform destroy
   }
 
   timeouts {
@@ -162,6 +170,8 @@ module "extensions" {
   bastion_public_ip       = var.extensions_remote_host_ip
   bastion_ssh_user        = var.extensions_remote_host_user
   bastion_ssh_private_key = var.extensions_remote_host_private_key
+  bastion_host_public_ip = var.bastion_host_public_ip
+  
 
   # ---------- Core ----------
   region                 = var.region

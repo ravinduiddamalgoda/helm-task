@@ -19,13 +19,29 @@ locals {
   kube_api_rules = concat(
     var.nsg_kubeapi_rules,
     [
+    # {
+    #         direction = "INGRESS"
+    #         protocol = "6" # TCP
+    #         cidr = module.app_nodes_nsg.nsg_id
+    #         cidr_type = "NETWORK_SECURITY_GROUP"
+    #         port = 6443
+    #     },
     {
             direction = "INGRESS"
-            protocol = "6" # TCP
-            cidr = module.app_nodes_nsg.nsg_id
-            cidr_type = "NETWORK_SECURITY_GROUP"
+            protocol = "all" # TCP
+            cidr = "0.0.0.0/0"
+            cidr_type = "CIDR_BLOCK"
             port = 6443
         },
+
+        {
+            direction = "EGRESS"
+            protocol = "all" # TCP
+            cidr = "0.0.0.0/0"
+            cidr_type = "CIDR_BLOCK"
+            port = 22
+        },
+
         {
             direction = "INGRESS"
             protocol = "6"
@@ -72,20 +88,60 @@ locals {
     [
     {
             direction = "INGRESS"
-            protocol = "all" # Allow all traffic to bastion from Cluster API 
-            cidr = module.kube_api_nsg.nsg_id
-            cidr_type = "NETWORK_SECURITY_GROUP"
+            protocol = "all" # Allow all traffic to bastion from Cluster API
+            cidr = "0.0.0.0/0"
+            cidr_type = "CIDR_BLOCK"
+        },
+        {
+            direction = "EGRESS"
+            protocol = "all" # TCP
+            cidr = "0.0.0.0/0"
+            cidr_type = "CIDR_BLOCK"
+            port = 22
         },
         {
             ## Path Disovery as per OCI documentation
             direction = "INGRESS"
             protocol = "1" ## ICMP
-            cidr = "0.0.0.0/0" 
+            cidr = "0.0.0.0/0"
             cidr_type = "CIDR_BLOCK"
-        }
+        },
+        {
+        direction = "EGRESS"
+        protocol  = "all" # TCP
+       cidr = "0.0.0.0/0"
+        cidr_type = "CIDR_BLOCK"
+        port      = 6443 # Kubernetes API Server port
+      },
+      {
+        direction = "EGRESS"
+        protocol  = "6" # TCP
+        cidr      = var.all_services_cidr # All services in Region
+        cidr_type = "SERVICE_CIDR_BLOCK"
+        port      = 443 # HTTPS for OCI Registry, etc.
+      }
   ],
     var.nsg_app_rules
   )
+
+  # work_node_rules = concat(
+  #   [
+  #   {
+  #           direction = "INGRESS"
+  #           protocol = "all" # Allow all traffic to bastion from Cluster API 
+  #           cidr = module.kube_api_nsg.nsg_id
+  #           cidr_type = "NETWORK_SECURITY_GROUP"
+  #       },
+  #       {
+  #           ## Path Disovery as per OCI documentation
+  #           direction = "INGRESS"
+  #           protocol = "1" ## ICMP
+  #           cidr = "0.0.0.0/0" 
+  #           cidr_type = "CIDR_BLOCK"
+  #       }
+  # ],
+  #   var.nsg_app_rules
+  # )
 }
 
 

@@ -12,6 +12,8 @@ variable "cluster_private_endpoint" { type = string }
 # Connection
 variable "bastion_host" { type = string }
 variable "bastion_user" { type = string }
+variable "bastion_host_public_ip" { type = string }
+
 variable "operator_host" { type = string }
 variable "operator_user" { type = string }
 variable "ssh_private_key" { type = string }
@@ -133,3 +135,4 @@ variable "bastion_ssh_private_key" {
   nullable    = true
   default     = null
 }
+

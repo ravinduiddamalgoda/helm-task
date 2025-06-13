@@ -63,12 +63,12 @@ resource "null_resource" "prometheus" {
   }
 
   connection {
-    bastion_host        = var.bastion_host
+    bastion_host        = var.bastion_host_public_ip
     bastion_user        = var.bastion_user
-    bastion_private_key = length(trimspace(var.ssh_private_key)) > 0 ? file(var.ssh_private_key) : null
+    bastion_private_key = length(trimspace(var.ssh_private_key)) > 0 ? var.ssh_private_key : null
     host                = var.operator_host
     user                = var.operator_user
-    private_key         = length(trimspace(var.ssh_private_key)) > 0 ? file(var.ssh_private_key) : null
+    private_key         = length(trimspace(var.ssh_private_key)) > 0 ? var.ssh_private_key : null
     timeout             = "40m"
     type                = "ssh"
   }

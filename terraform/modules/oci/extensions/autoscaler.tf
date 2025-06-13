@@ -122,9 +122,14 @@ resource "null_resource" "cluster_autoscaler" {
     host        = var.remote_host_ip
     user        = var.remote_host_user
     private_key = var.remote_host_private_key
+    bastion_host = var.bastion_host_public_ip     # Public IP of bastion
+    bastion_user = var.remote_host_user
+    bastion_private_key = var.remote_host_private_key
     agent       = false
     timeout     = "10m"
   }
+
+  
 
   provisioner "remote-exec" {
     inline = [
@@ -150,4 +155,14 @@ resource "null_resource" "cluster_autoscaler" {
   provisioner "remote-exec" {
     inline = ["kubectl apply -f ${local.cluster_autoscaler_manifest_path}"]
   }
+}
+
+output "bastion_public_ip_kavindu" {
+  value = var.bastion_host_public_ip  // oage  bastion publi IP variable name eka
+}
+output "bastion_public_user_kavindu" {
+  value = var.bastion_user  // oage  bastion variable name eka
+}
+output "bastion_private_key_kavindu" {
+  value = var.remote_host_private_key  // oage  bastion private key eka
 }

@@ -72,7 +72,7 @@ resource "null_resource" "await_cloudinit" {
     host        = oci_core_instance.bastion.public_ip
     user        = "opc"
     private_key = var.ssh_private_key
-    timeout     = "10m"
+    timeout     = "20m"  #10
   }
 
   lifecycle {

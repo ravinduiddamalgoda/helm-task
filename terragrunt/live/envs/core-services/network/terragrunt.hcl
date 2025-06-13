@@ -178,7 +178,7 @@ locals {
   }
 
   
-  admin_cidr       = "203.0.113.10/32" # Example: Replace with actual admin IP/CIDR
+  admin_cidr       = "0.0.0.0/0" # Example: Replace with actual admin IP/CIDR
   common_inputs = try(include.common.locals.common_inputs, {})
 
   # (subnets_list is now defined once – see the "Stable, collision-free

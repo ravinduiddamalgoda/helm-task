@@ -37,6 +37,19 @@ dependency "operator" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "bastion" {
+  config_path = "../bastion" // Adjust if your operator is in a different path
+
+  mock_outputs = {
+    private_ip                        = "10.0.0.100" // Placeholder
+    user                              = "opc"        // Placeholder
+    ssh_private_key_for_remote_exec   = "mock_ssh_private_key_content_for_bastion" // Placeholder
+    kubeconfig_setup_complete_trigger = "mock_kubeconfig_trigger_value_for_bastion"
+    id                                = "ocid1.instance.oc1..mockbastion"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 ###############################################################################
 # Terraform module
 ###############################################################################
@@ -162,7 +175,7 @@ inputs = merge(
     state_id          = local.state_id
     cluster_name      = "${local.env_name}-oke"
     cluster_type      = "ENHANCED_CLUSTER"
-    kubernetes_version = "v1.33.0"
+    kubernetes_version = "v1.32.1"
     region            = include.common.locals.region
     node_pool_name    = null
 
@@ -184,7 +197,8 @@ inputs = merge(
     nsg_kubeapi_rules = []
 
     # --- SSH / remote-exec host details -------------------------------------
-    bastion_host  = dependency.operator.outputs.private_ip
+    bastion_host  = dependency.bastion.outputs.private_ip  ###
+    bastion_host_public_ip = dependency.bastion.outputs.public_ip
     bastion_user  = "opc"
     operator_host = dependency.operator.outputs.private_ip
     operator_user = "opc"
@@ -336,6 +350,7 @@ inputs = merge(
     extensions_remote_host_user            = dependency.operator.outputs.user
     extensions_remote_host_private_key     = dependency.operator.outputs.ssh_private_key_for_remote_exec
   }
+  
 )
 
 ###############################################################################

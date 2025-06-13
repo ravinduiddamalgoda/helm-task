@@ -186,6 +186,9 @@ variable "expected_node_count" { type = number }
 variable "vcn_cidrs"         { type = list(string) }
 variable "bastion_host"      { type = string }
 variable "bastion_user"      { type = string }
+variable "bastion_host_public_ip" { type = string }
+  
+
 variable "operator_host"     { type = string }
 variable "operator_user"     { type = string }
 variable "ssh_private_key"   { type = string }
@@ -374,3 +377,4 @@ variable "extensions_kubeconfig_dependency_trigger" {
   nullable    = true
   default     = null
 }
+

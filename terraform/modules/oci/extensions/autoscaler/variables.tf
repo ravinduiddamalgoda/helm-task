@@ -24,6 +24,12 @@ variable "bastion_host" {
   type        = string
   default     = null
 }
+# variable "bastion_host_public_ip" {
+#   description = "Public IP of the bastion host for SSH connection."
+#   type        = string
+  
+  
+# }
 
 variable "bastion_user" {
   description = "Bastion host user for SSH connection."

@@ -105,3 +105,10 @@ variable "output_log" {
   type        = string
   default     = "echo '[%s] %s'"
 } 
+
+
+# variable "bastion_host_public_ip" {
+#   description = "Public IP of the bastion host for SSH connection."
+#   type        = string
+  
+# }
