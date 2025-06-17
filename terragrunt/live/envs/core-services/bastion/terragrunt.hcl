@@ -82,6 +82,7 @@ inputs = {
 #  ssh_public_key = <<EOF
 #ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEoLDbXep4pEg3nXQk4z29xjkWVnLkPCztbYTd4OPTh5
 #EOF
+  
   ssh_private_key = get_env("BASTION_SSH_KEY", "") 
                # no key needed when disabled
 

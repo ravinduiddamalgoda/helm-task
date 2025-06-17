@@ -13,6 +13,16 @@ locals {
     local.operator_group_name, var.compartment_id,
   )
 
+  cluster_read_statement = format(
+    "Allow dynamic-group %v to READ clusters in compartment id %v",
+    local.operator_group_name, var.compartment_id,
+  )
+
+  cluster_list_statement = format(
+    "Allow dynamic-group %v to LIST clusters in compartment id %v",
+    local.operator_group_name, var.compartment_id,
+  )
+
   # TODO support keys defined at worker group level
   operator_kms_volume_templates = [
     "Allow service blockstorage to USE keys in compartment id %v where target.key.id = '%v'",

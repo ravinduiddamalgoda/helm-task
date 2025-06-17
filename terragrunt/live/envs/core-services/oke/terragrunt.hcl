@@ -37,7 +37,7 @@ dependency "operator" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
-dependency "bastion" {
+dependency "bastion" { ## hardcode
   config_path = "../bastion" // Adjust if your operator is in a different path
 
   mock_outputs = {
@@ -414,7 +414,7 @@ generate "iam_module" {
       create_iam_resources         = true  # master switch
       create_iam_worker_policy     = true  # nodes: join cluster, pull images
       create_iam_autoscaler_policy = true  # autoscaler: scale node-pools
-      create_iam_operator_policy   = false
+      create_iam_operator_policy   = true   #hardcode
       create_iam_kms_policy        = false
 
       # ─── tagging / namespaces (disabled) ─────────────────

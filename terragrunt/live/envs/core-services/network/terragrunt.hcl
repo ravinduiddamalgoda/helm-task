@@ -58,6 +58,7 @@ locals {
 
   raw_subnets = {
     bastion = { newbits = 11, netnum = 512, dns_label = "bastion", gateway_type = "igw",  ha = false } # 10.2.64.0/27
+    #operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27
     data    = { newbits = 8,  netnum = 65,  dns_label = "data",    gateway_type = "sgw",  ha = false } # 10.2.65.0/24
     cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false } # 10.2.66.0/26
     int_lb  = { newbits = 10, netnum = 265, dns_label = "ilb",     gateway_type = "ngw",  ha = false } # 10.2.66.64/26
@@ -500,6 +501,13 @@ locals {
     { direction = "EGRESS", protocol = "17", description = "UDP 443",
       destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
       udp_options = { destination_port_range = { min = 443, max = 443 } } },
+
+
+    # New rules for operator
+    { direction = "EGRESS", protocol = "6", description = "installation",
+      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
+      tcp_options = { destination_port_range = { min = 80, max = 80 } } },
+
 
     # Removed open HTTP/80 egress.  Bastion still has HTTPS/443 and
     # the required Tailscale / STUN ports.

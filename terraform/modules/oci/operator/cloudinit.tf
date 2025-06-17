@@ -114,7 +114,7 @@ data "cloudinit_config" "operator" {
       content = jsonencode({
         runcmd = [
           "curl -LO https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh",
-          "su -c 'bash /install.sh --accept-all-defaults' - ${var.user}",
+          "su -c 'bash ./install.sh --accept-all-defaults' - ${var.user}",
         ]
       })
       filename   = "20-oci_cli_from_repo.yml"
@@ -273,20 +273,20 @@ data "cloudinit_config" "operator" {
   }
 
   # Write user kubeconfig to filesystem
-  part {
-    content_type = "text/cloud-config"
-    content = jsonencode({
-      # https://cloudinit.readthedocs.io/en/latest/reference/modules.html#write-files
-      write_files = [
-        {
-          content = var.kubeconfig
-          path    = "/tmp/kubeconfig" # see 30-home.yml for final move
-        },
-      ]
-    })
-    filename   = "20-kubeconfig.yml"
-    merge_type = local.default_cloud_init_merge_type
-  }
+  # part {
+  #   content_type = "text/cloud-config"
+  #   content = jsonencode({
+  #     # https://cloudinit.readthedocs.io/en/latest/reference/modules.html#write-files
+  #     write_files = [
+  #       {
+  #         content = var.kubeconfig
+  #         path    = "/tmp/kubeconfig" # see 30-home.yml for final move
+  #       },
+  #     ]
+  #   })
+  #   filename   = "20-kubeconfig.yml"
+  #   merge_type = local.default_cloud_init_merge_type
+  # }
 
   # Bug w/ write_files defer: parent directory created as root if not present.
   # https://github.com/canonical/cloud-init/pull/916#issuecomment-1254732400
@@ -299,7 +299,7 @@ data "cloudinit_config" "operator" {
         "cat /tmp/*.bashrc >> /home/${var.user}/.bashrc && rm /tmp/*.bashrc",
         "chmod 600 /home/${var.user}/.bashrc",
         "mkdir -p /home/${var.user}/.kube",
-        "mv /tmp/kubeconfig /home/${var.user}/.kube/config",
+        #"mv /tmp/kubeconfig /home/${var.user}/.kube/config",
         "chmod 700 /home/${var.user}/.kube",
         "chmod 600 /home/${var.user}/.kube/config",
         "chown -R ${var.user}:${var.user} /home/${var.user}",

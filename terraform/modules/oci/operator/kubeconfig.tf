@@ -24,8 +24,9 @@ resource "null_resource" "create_kubeconfig" {
   provisioner "remote-exec" {
     # Script runs as var.user (defined in connection block)
     # OCI_CLI_AUTH=instance_principal should be set by cloud-init's .bashrc for this user
-    inline = [<<EOF
-set -euo pipefail
+    inline = [<<EOT
+    bash -c "$(cat <<'EOF'
+set -eu
 
 echo "Running kubeconfig setup as user: $(whoami) in home: $HOME"
 
@@ -43,6 +44,7 @@ if ! command -v oci >/dev/null 2>&1; then
 fi
 echo "OCI CLI found at: $(command -v oci)"
 echo "Testing OCI CLI auth (instance principal)..."
+export OCI_CLI_AUTH=instance_principal
 if ! oci iam region list --query "data[0].name" --raw-output > /dev/null; then
   echo "OCI CLI instance principal authentication test failed."
   # Attempt to show current auth method for debugging
@@ -88,12 +90,15 @@ oci ce cluster create-kubeconfig \
      --file "$HOME/.kube/config" \
      --region "${var.region}" \
      --token-version 2.0.0 \
-     --kube-endpoint PRIVATE_ENDPOINT
+     --kube-endpoint "PRIVATE_ENDPOINT"
 
 # Set correct permissions (user already owns the file)
 chmod 600 "$HOME/.kube/config"
 echo "Kubeconfig created successfully at $HOME/.kube/config"
+
 EOF
+)"
+EOT
     ]
   }
 } 

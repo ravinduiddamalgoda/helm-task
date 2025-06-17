@@ -31,6 +31,19 @@ dependency "network" {
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan", "output", "apply"]
 }
+## bastion dependency
+dependency "bastion" {
+  config_path = "../bastion" // Adjust if your operator is in a different path
+
+  mock_outputs = {
+    private_ip                        = "10.0.0.100" // Placeholder
+    user                              = "opc"        // Placeholder
+    ssh_private_key_for_remote_exec   = "mock_ssh_private_key_content_for_bastion" // Placeholder
+    kubeconfig_setup_complete_trigger = "mock_kubeconfig_trigger_value_for_bastion"
+    id                                = "ocid1.instance.oc1..mockbastion"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
 
 ###############################################################################
 # Operator Terraform module
@@ -60,7 +73,7 @@ inputs = {
                        )
 
   # Use the bastion subnet from the network module
-  subnet_id          = try(dependency.network.outputs.subnet_ids["bastion"], "ocid1.subnet.oc1..mock_direct_fallback_operator")
+  subnet_id          = try(dependency.network.outputs.subnet_ids["int_lb"], "ocid1.subnet.oc1..mock_direct_fallback_operator")
   availability_domain = null
 
   # full shape map expected by the module
@@ -84,7 +97,7 @@ inputs = {
   # ─── required core identifiers ────────────────────────────────────────
   state_id        = "core-services"
   region          = try(include.common.locals.region, get_env("OCI_REGION", "ca-montreal-1"))
-  cluster_name    = "core-services"                 # arbitrary, but required
+  cluster_name    = "oke"                 # arbitrary, but required      # hardcorded
 
   # ─── network / DNS / tags ----------------------------------------------------
   # When you have no NSGs, use null so the field is not sent to OCI.
@@ -104,31 +117,32 @@ inputs = {
 
   # ─── kube-related values (bare minimum) -------------------------------------
   kubeconfig           = ""
-  kubernetes_version   = "1.29.1"
+  kubernetes_version   = "1.32.1"
 
   # ─── bastion placeholders (none in this setup) ------------------------------
-  bastion_host         = ""
-  bastion_user         = ""
+  bastion_host         = dependency.bastion.outputs.public_ip
+  bastion_user         = "opc"
 
   # ─── cloud-init & misc -------------------------------------------------------
-  await_cloudinit      = false
+  await_cloudinit      = true
   cloud_init           = []           # list(map(string)) as required
   timezone             = "UTC"
   upgrade              = true
 
   # ─── tool install toggles ----------------------------------------------------
-  install_cilium            = false
+  install_cilium            = true
   install_helm              = false
-  install_helm_from_repo    = false
-  install_istioctl          = false
-  install_k9s               = false
-  install_kubectx           = false
-  install_stern             = false
+  install_helm_from_repo    = true
+  install_istioctl          = true
+  install_k9s               = true
+  install_kubectx           = true
+  install_stern             = true
+  install_kubectl_from_repo = true  # hardcode
 
   # keep operator module from trying to build OCI CLI from source repo
-  install_oci_cli_from_repo = false
+  install_oci_cli_from_repo = true
 
   # set to true once your OKE cluster is ready and you want the VM to
   # pull the kubeconfig; leave false to skip the remote-exec step
-  generate_kubeconfig = false
+  generate_kubeconfig = true  
 } 
