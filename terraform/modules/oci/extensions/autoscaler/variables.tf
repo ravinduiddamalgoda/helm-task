@@ -70,5 +70,5 @@ variable "worker_pools_autoscaling" {
 variable "yaml_manifest_path" {
   description = "Path for YAML manifests."
   type        = string
-  default     = "/var/tmp/oke-yaml" # Or a suitable default
+  default     = "/home/opc/yaml" # Or a suitable default
 } 

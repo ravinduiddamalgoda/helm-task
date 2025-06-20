@@ -62,8 +62,8 @@ variable "tailscale_auth_key" {
   sensitive   = true
 }
 
-variable "generate_kubeconfig" {
-  description = "Run the remote-exec step that builds a kubeconfig on the operator VM"
-  type        = bool
-  default     = false
-}
+# variable "generate_kubeconfig" {
+#   description = "Run the remote-exec step that builds a kubeconfig on the operator VM"
+#   type        = bool
+#   default     = false
+# }

@@ -79,11 +79,10 @@ inputs = {
   # ── SSH (leave empty to disable) ───────────────────────────────────────
   ssh_public_key  = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCt7qx7y18eFTkCMqOUkNis4FzAlA1oCChMyg5CtIg4lOfvUyG/o4Yxv4vPAR7y85jXbh7Y4LX4z1QvU30Kp3hwb7FYKgXGCnrnZqG0x6AmlhqfmI/UIzpXJKLqGvzI9IJNFBhK19bKnMIqJlunpZ5cAzfmDT7pq4CfMk6GY1PQRd3jDOEwMTaaRdm0fQm/6kNaxlkT9CsD+icUjivwk7DosSUmhBMAso7XNDtn+KyLtEbKFZC6iIXWuXm7kkiD6PYU6FGvfhHrpaz/ttEDf6trmROospdsqv5aaICIa7j6CWAw077MiHrdnGYqAZCC3EKzKDPc2qiqtdLEkAyvM1jR ssh-key-2025-06-11"
   # ssh_public_key  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEoLDbXep4pEg3nXQk4z29xjkWVnLkPCztbYTd4OPTh5"
-#  ssh_public_key = <<EOF
-#ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEoLDbXep4pEg3nXQk4z29xjkWVnLkPCztbYTd4OPTh5
-#EOF
+
+
+  ssh_private_key = file(get_env("BASTION_SSH_KEY", ""))
   
-  ssh_private_key = get_env("BASTION_SSH_KEY", "") 
                # no key needed when disabled
 
   defined_tags   = {}

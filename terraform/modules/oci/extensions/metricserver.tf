@@ -42,6 +42,10 @@ data "helm_template" "metrics_server" {
   }
 }
 
+output "metric_server_manifest_path_yaml" {  #hardcode ADDED
+  value = local.yaml_manifest_path
+}
+
 resource "null_resource" "metrics_server" {
   count = local.metrics_server_enabled ? 1 : 0
 
@@ -61,9 +65,11 @@ resource "null_resource" "metrics_server" {
   }
 
   provisioner "remote-exec" {
-    inline = [
-<<EOF
-sudo bash -c "set -euo pipefail
+    inline = [<<EOT
+    sudo bash -c "$(cat <<'EOF'
+set -eu
+export OCI_CLI_AUTH=instance_principal
+export PATH=$PATH:/usr/local/bin
 
 # OCI CLI
 if ! command -v oci >/dev/null 2>&1; then
@@ -80,23 +86,33 @@ fi
 # kube-config already present
 export HOME=/home/${var.operator_user}
 export KUBECONFIG="$HOME/.kube/config"
-until kubectl version --short >/dev/null 2>&1; do sleep 10; done"
+until kubectl version --client >/dev/null 2>&1; do sleep 10; done
 EOF
+)"
+EOT
 ,
       "mkdir -p ${local.yaml_manifest_path}",
     ]
   }
 
+  
   provisioner "file" {
     content     = local.metrics_server_manifest
     destination = local.metrics_server_manifest_path
   }
 
-  provisioner "remote-exec" {
+  provisioner "remote-exec" {   ##hardcode
     inline = compact([
+      # Clean up any existing metrics-server deployment to avoid immutable selector errors
+      "kubectl delete deployment metrics-server -n ${var.metrics_server_namespace} --ignore-not-found=true || true",
+      "kubectl delete service metrics-server -n ${var.metrics_server_namespace} --ignore-not-found=true || true",
+      "kubectl delete apiservice v1beta1.metrics.k8s.io --ignore-not-found=true || true",
+      # Wait a moment for cleanup to complete
+      "sleep 5",
       (contains(["kube-system", "default"], var.metrics_server_namespace) ? null
       : format(local.kubectl_create_missing_ns, var.metrics_server_namespace)),
       format(local.kubectl_apply_server_file, local.metrics_server_manifest_path),
     ])
   }
+
 }

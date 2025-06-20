@@ -22,3 +22,18 @@ output "kubernetes_endpoint" {
   description = "Kubernetes API private endpoint"
   value       = module.oke_cluster.private_endpoint
 }
+
+output "kubeconfig_setup_complete_trigger" {
+  description = "ID(s) of the null_resource that creates the kubeconfig. Empty list when generate_kubeconfig=false."
+  value       = null_resource.create_kubeconfig[*].id   # returns [] or ["<id>"]
+} 
+
+output "user" {
+  description = "The SSH user for the operator instance."
+  value       = var.user
+}
+
+# output "node_pool_ids_map" {   #hardcode ADDED
+#   description = "Map of node pool keys to their OCIDs"
+#   value       = { for k, np in oci_containerengine_node_pool.node_pool : k => np.id }
+# }

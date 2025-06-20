@@ -45,6 +45,7 @@ dependency "bastion" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+
 ###############################################################################
 # Operator Terraform module
 ###############################################################################
@@ -73,7 +74,7 @@ inputs = {
                        )
 
   # Use the bastion subnet from the network module
-  subnet_id          = try(dependency.network.outputs.subnet_ids["int_lb"], "ocid1.subnet.oc1..mock_direct_fallback_operator")
+  subnet_id          = try(dependency.network.outputs.subnet_ids["operator"], "ocid1.subnet.oc1..mock_direct_fallback_operator") #hardcode ADDED
   availability_domain = null
 
   # full shape map expected by the module
@@ -89,19 +90,23 @@ inputs = {
   # first try to read the default pub-key; if it is missing,
   # fall back to the OPERATOR_SSH_PUBLIC_KEY env-var (or "")
   ssh_public_key     = local._final_ssh_public_key
-  ssh_private_key    = get_env("BASTION_SSH_KEY", "")
+  ssh_private_key    = file(get_env("BASTION_SSH_KEY", ""))
   
   #    # same key you use from Terragrunt
-                                                         # mark BASTION_SSH_KEY in your env
+                   # mark BASTION_SSH_KEY in your env
 
   # ─── required core identifiers ────────────────────────────────────────
   state_id        = "core-services"
   region          = try(include.common.locals.region, get_env("OCI_REGION", "ca-montreal-1"))
-  cluster_name    = "oke"                 # arbitrary, but required      # hardcorded
+  #cluster_name    = dependency.oke.outputs.cluster_name  # hardcode
+  cluster_name    = "oke"                 # arbitrary, but required      # hardcord
 
   # ─── network / DNS / tags ----------------------------------------------------
   # When you have no NSGs, use null so the field is not sent to OCI.
-  nsg_ids                 = null
+  #hardcode ADDED
+  # Use the operator NSG from the network module
+  nsg_ids                 = try([dependency.network.outputs.nsg_ids["operator"]], null)
+  #nsg_ids                 = null
   assign_dns              = false
   tag_namespace           = "koci"
   defined_tags            = {}
@@ -117,7 +122,8 @@ inputs = {
 
   # ─── kube-related values (bare minimum) -------------------------------------
   kubeconfig           = ""
-  kubernetes_version   = "1.32.1"
+  kubernetes_version   = "v1.32.1"
+  
 
   # ─── bastion placeholders (none in this setup) ------------------------------
   bastion_host         = dependency.bastion.outputs.public_ip
@@ -131,7 +137,7 @@ inputs = {
 
   # ─── tool install toggles ----------------------------------------------------
   install_cilium            = true
-  install_helm              = false
+  install_helm              = true
   install_helm_from_repo    = true
   install_istioctl          = true
   install_k9s               = true
@@ -144,5 +150,5 @@ inputs = {
 
   # set to true once your OKE cluster is ready and you want the VM to
   # pull the kubeconfig; leave false to skip the remote-exec step
-  generate_kubeconfig = true  
+  #generate_kubeconfig = false  # hardcode
 } 

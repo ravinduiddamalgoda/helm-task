@@ -107,6 +107,9 @@ data "helm_template" "cluster_autoscaler" {
     }
   }
 }
+output "Auto_scaler_manifest_path_yaml" {  #hardcode ADDED
+  value = local.yaml_manifest_path
+}
 
 resource "null_resource" "cluster_autoscaler" {
   count = local.cluster_autoscaler_enabled ? 1 : 0
@@ -134,17 +137,15 @@ resource "null_resource" "cluster_autoscaler" {
   provisioner "remote-exec" {
     inline = [
       "set -ex",
+      "export KUBECONFIG=\"$HOME/.kube/config\"",
       "export PATH=$HOME/bin:$PATH",
       "echo 'Deploying Cluster Autoscaler...'",
       "helm repo add autoscaler https://kubernetes.github.io/autoscaler || echo 'Autoscaler repo may already be added'",
-      "helm repo update",
-      "helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \\",
-      "  --namespace kube-system \\",
-      "  --set autoDiscovery.clusterName=${var.cluster_id} \\",
-      "  --set rbac.create=true \\",
-      "  --set cloudProvider=oci \\",
-      "  --wait --timeout 5m"
     ]
+  }
+
+  provisioner "remote-exec" {
+    inline = ["mkdir -p ${local.yaml_manifest_path}"]
   }
 
   provisioner "file" {
@@ -157,12 +158,9 @@ resource "null_resource" "cluster_autoscaler" {
   }
 }
 
-output "bastion_public_ip_kavindu" {
-  value = var.bastion_host_public_ip  // oage  bastion publi IP variable name eka
+output "worker_pools_pools_list2" {
+  value = local.worker_pools_autoscaling
+  description = "List of autoscaling worker pools with id, min_size, and max_size"
+  sensitive = false
 }
-output "bastion_public_user_kavindu" {
-  value = var.bastion_user  // oage  bastion variable name eka
-}
-output "bastion_private_key_kavindu" {
-  value = var.remote_host_private_key  // oage  bastion private key eka
-}
+

@@ -52,6 +52,10 @@ data "helm_template" "prometheus" {
   }
 }
 
+output "prometheus_server_manifest_path_yaml" {  #hardcode ADDED
+  value = local.yaml_manifest_path
+}
+
 resource "null_resource" "prometheus" {
   count = var.prometheus_install ? 1 : 0
 
@@ -74,9 +78,11 @@ resource "null_resource" "prometheus" {
   }
 
   provisioner "remote-exec" {
-    inline = [
-<<EOF
-sudo bash -c "set -euo pipefail
+    inline = [<<EOT
+    sudo bash -c "$(cat <<'EOF'
+set -eu
+export OCI_CLI_AUTH=instance_principal
+export PATH=$PATH:/usr/local/bin
 
 # OCI CLI
 if ! command -v oci >/dev/null 2>&1; then
@@ -93,8 +99,10 @@ fi
 # kube-config
 export HOME=/home/${var.operator_user}
 mkdir -p "$HOME/.kube"
-until kubectl version --short >/dev/null 2>&1; do sleep 10; done"
+until kubectl version --client >/dev/null 2>&1; do sleep 10; done
 EOF
+)"
+EOT
 ,
       "mkdir -p ${local.yaml_manifest_path}",
     ]
@@ -114,14 +122,14 @@ EOF
     content     = local.prometheus_helm_values_yaml
     destination = local.prometheus_helm_values_file
   }
-
   provisioner "remote-exec" {
-    inline = [for c in compact([
-      (contains(["kube-system", "default"], var.prometheus_namespace) ? null
-      : format(local.kubectl_create_missing_ns, var.prometheus_namespace)),
-      format(local.kubectl_apply_server_file, local.prometheus_helm_crds_file),
-      format(local.kubectl_apply_server_file, local.prometheus_helm_manifest_file),
-      ]) : format(local.output_log, c, "prometheus")
-    ]
+    inline = concat(
+      [for c in compact([
+        (contains(["kube-system", "default"], var.prometheus_namespace) ? null
+        : format(local.kubectl_create_missing_ns, var.prometheus_namespace)),
+        format(local.kubectl_apply_server_file, local.prometheus_helm_crds_file),
+        format(local.kubectl_apply_server_file, local.prometheus_helm_manifest_file),
+      ]) : format(local.output_log, c, "prometheus")]
+    )
   }
 }

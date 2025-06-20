@@ -15,3 +15,17 @@ dependencies {
     #"./security"
   ]
 }
+
+
+# include "common" {
+#   path = find_in_parent_folders("env-common.hcl")
+# }
+
+# dependencies {
+#   paths = [
+#     "./network",
+#     "./bastion",
+#     "./operator",
+#     "./oke"
+#   ]
+# }

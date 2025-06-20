@@ -55,6 +55,7 @@ variable "node_pool_config" {
     size          = number
     min_size      = optional(number)
     max_size      = optional(number)
+    
 
     # Was required, now optional – OKE module works it out
     availability_domain = optional(string)
@@ -296,7 +297,7 @@ EOT
 variable "yaml_manifest_path" {
   description = "Default path on the operator node for storing YAML manifests."
   type        = string
-  default     = "/var/tmp/oke-yaml"
+  default     = "/home/opc/yaml"
 }
 
 variable "kubectl_create_missing_ns" {
@@ -378,3 +379,10 @@ variable "extensions_kubeconfig_dependency_trigger" {
   default     = null
 }
 
+variable "generate_kubeconfig" {
+  description = "Run the remote-exec step that builds a kubeconfig on the operator VM"
+  type        = bool
+  default     = false
+}
+
+variable "user" { type = string }

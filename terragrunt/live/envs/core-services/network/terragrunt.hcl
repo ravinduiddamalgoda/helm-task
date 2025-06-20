@@ -58,12 +58,13 @@ locals {
 
   raw_subnets = {
     bastion = { newbits = 11, netnum = 512, dns_label = "bastion", gateway_type = "igw",  ha = false } # 10.2.64.0/27
-    #operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27
+    operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27  #hardcode ADDED
     data    = { newbits = 8,  netnum = 65,  dns_label = "data",    gateway_type = "sgw",  ha = false } # 10.2.65.0/24
     cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false } # 10.2.66.0/26
     int_lb  = { newbits = 10, netnum = 265, dns_label = "ilb",     gateway_type = "ngw",  ha = false } # 10.2.66.64/26
     pub_lb  = { newbits = 10, netnum = 266, dns_label = "plb",     gateway_type = "igw",  ha = false } # 10.2.66.128/26
-    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "sgw",  ha = false } # 10.2.68.0/23
+    # workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "sgw",  ha = false } # 10.2.68.0/23
+    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false } # 10.2.68.0/23 #hardcode ADDED
     pods    = { newbits = 4,  netnum = 8,   dns_label = "pods",    gateway_type = "sgw",  ha = false } # 10.2.128.0/20
   }
 
@@ -72,7 +73,7 @@ locals {
   # Stable, collision-free subnet enumeration
   #########################################################################
   base_order = [
-    "bastion", "data", "cp", "int_lb", "pub_lb", "workers", "pods"
+    "bastion", "operator", "data", "cp", "int_lb", "pub_lb", "workers", "pods" #hardcode ADDED
   ]
 
   expanded_subnets = [
@@ -104,7 +105,7 @@ locals {
 
 
   trusted_nodeport_sources = flatten([
-    for name in ["cp", "int_lb", "bastion"] :
+    for name in ["cp", "int_lb", "bastion", "operator"] :       #hardcode ADDED
     contains(keys(local.subnets), name) ? [local.subnets[name].cidr] : []
   ])
 
@@ -352,6 +353,16 @@ locals {
           destination_port_range = { min = 443, max = 443 }
         }
       },
+      {   #hardcode ADDED
+        direction   = "EGRESS" 
+        protocol    = "6"
+        description = "HTTP outbound 80"
+        destination = "0.0.0.0/0"
+        destination_type = "CIDR_BLOCK"
+        tcp_options = {
+          destination_port_range = { min = 80, max = 80 }
+        }
+      },
       {
         direction   = "EGRESS"
         protocol    = "6"
@@ -529,6 +540,60 @@ locals {
       udp_options = { destination_port_range = { min = 3478, max = 3478 } } },
   ]
 
+  nsg_rules_operator = [  #hardcode ADDED
+    # SSH access from bastion and admin
+    { direction = "INGRESS", protocol = "6", description = "SSH from bastion", 
+      source = local.subnets["bastion"].cidr, source_type = "CIDR_BLOCK",
+      tcp_options = { destination_port_range = { min = 22, max = 22 } } },
+    { direction = "INGRESS", protocol = "6", description = "SSH from admin", 
+      source = local.admin_cidr, source_type = "CIDR_BLOCK",
+      tcp_options = { destination_port_range = { min = 22, max = 22 } } },
+
+    # Intra-VCN communication
+    { direction = "INGRESS", protocol = "6", description = "TCP intra-VCN", 
+      source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
+    { direction = "INGRESS", protocol = "17", description = "UDP intra-VCN", 
+      source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
+
+    { direction = "INGRESS", protocol = "1", description = "ICMP intra-VCN", 
+      source = local.vcn_cidr, source_type = "CIDR_BLOCK",
+      icmp_options = { type = 3, code = 4 } },
+
+    # Egress rules for internet access
+    { direction = "EGRESS", protocol = "6",  description = "HTTPS 443",
+      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
+      tcp_options = { destination_port_range = { min = 443, max = 443 } } },
+
+    { direction = "EGRESS", protocol = "17", description = "UDP 443",
+      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
+      udp_options = { destination_port_range = { min = 443, max = 443 } } },
+
+    { direction = "EGRESS", protocol = "6", description = "HTTP outbound", 
+      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
+      tcp_options = { destination_port_range = { min = 80, max = 80 } } },
+
+    { direction = "EGRESS", protocol = "17", description = "Tailscale 41641",
+      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
+      udp_options = { destination_port_range = { min = 41641, max = 41641 } } },
+    
+    { direction = "EGRESS", protocol = "1",  description = "ICMP path discovery",
+      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
+      icmp_options = { type = 3, code = 4 } },
+
+    { direction = "INGRESS", protocol = "17", description = "VCN UDP 41641", source = local.vcn_cidr, source_type = "CIDR_BLOCK",
+      udp_options = { destination_port_range = { min = 41641, max = 41641 } } },
+
+    { direction = "INGRESS", protocol = "17", description = "VCN UDP 443",   source = local.vcn_cidr, source_type = "CIDR_BLOCK",
+      udp_options = { destination_port_range = { min = 443, max = 443 } } },
+    
+    # STUN for Tailscale
+    { direction = "EGRESS", protocol = "17", description = "STUN 3478/UDP",
+      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
+      udp_options = { destination_port_range = { min = 3478, max = 3478 } } },
+
+    
+  ]
+
   # ── COMPOSE FINAL NSG MAP (every value has a `rules` list) ───────────────
 
   # 1. Canonical rule-sets keyed by *base* subnet name
@@ -540,6 +605,7 @@ locals {
     pub_lb  = local.nsg_rules_pub_lb
     data    = local.nsg_rules_data
     bastion = local.nsg_rules_bastion
+    operator = local.nsg_rules_operator  #hardcode ADDED
     fss     = local.nsg_rules_fss
   }
 

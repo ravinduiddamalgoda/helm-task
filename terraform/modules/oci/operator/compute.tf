@@ -54,7 +54,7 @@ resource "oci_core_instance" "operator" {
 
   # user_data must be base-64-encoded for the LaunchInstance API
   metadata = merge(
-    { user_data = base64encode(data.cloudinit_config.operator.rendered) },
+    { user_data = data.cloudinit_config.operator.rendered },
     var.ssh_public_key != null && var.ssh_public_key != "" ?
       { ssh_authorized_keys = var.ssh_public_key } : {}
   )

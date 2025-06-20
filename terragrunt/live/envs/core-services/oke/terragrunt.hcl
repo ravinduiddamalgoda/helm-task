@@ -58,18 +58,18 @@ terraform {
 
   # When the cluster is ready, re-apply the Operator stack so it can
   # pull the kubeconfig.
-  after_hook "generate_kubeconfig_on_operator" {
-    commands = ["apply"]
-    execute  = [
-      "terragrunt",
-      "apply",
-      "--terragrunt-source-update",
-      "--terragrunt-working-dir", "../operator",
-      "--non-interactive",
-      "-var", "generate_kubeconfig=true"
-    ]
-    run_on_error = false   # skip the hook if OKE apply failed
-  }
+  # after_hook "generate_kubeconfig_on_operator" {
+  #   commands = ["apply"]
+  #   execute  = [
+  #     "terragrunt",
+  #     "apply",
+  #     "--terragrunt-source-update",
+  #     "--terragrunt-working-dir", "${get_terragrunt_dir()}/../operator", #"--terragrunt-working-dir", "../operator", # hardcode
+  #     "--non-interactive",
+  #     "-var", "generate_kubeconfig=true"
+  #   ]
+  #   run_on_error = false   # skip the hook if OKE apply failed
+  # }
 }
 
 ###############################################################################
@@ -96,6 +96,7 @@ locals {
       labels          = { intent = "cluster-autoscaler" }
       allow_autoscaler = true
       autoscale        = false
+      
     }
 
     services = {
@@ -111,6 +112,7 @@ locals {
       allow_autoscaler = false
       autoscale        = true
       ignore_initial_pool_size = true
+      
     }
 
     stateful_mq = {
@@ -127,6 +129,7 @@ locals {
       allow_autoscaler = false
       autoscale        = true
       ignore_initial_pool_size = true
+      
     }
 
     stateful_db = {
@@ -143,6 +146,7 @@ locals {
       allow_autoscaler = false
       autoscale        = true
       ignore_initial_pool_size = true
+      
     }
   }
 
@@ -349,6 +353,11 @@ inputs = merge(
     extensions_remote_host_ip              = dependency.operator.outputs.private_ip
     extensions_remote_host_user            = dependency.operator.outputs.user
     extensions_remote_host_private_key     = dependency.operator.outputs.ssh_private_key_for_remote_exec
+
+    # Kubeconfig generation settings
+    generate_kubeconfig = true  #hardcode ADDED
+    user               = "opc"
+
   }
   
 )

@@ -136,3 +136,4 @@ variable "bastion_ssh_private_key" {
   default     = null
 }
 
+# variable "cluster_id" { type = string }

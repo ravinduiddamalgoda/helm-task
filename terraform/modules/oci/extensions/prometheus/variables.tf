@@ -85,7 +85,7 @@ variable "prometheus_reapply" {
 variable "yaml_manifest_path" {
   description = "Path for YAML manifests."
   type        = string
-  default     = "/var/tmp/oke-yaml" # Or a suitable default
+  default     = "/home/opc/yaml" # Or a suitable default
 }
 
 variable "kubectl_create_missing_ns" {

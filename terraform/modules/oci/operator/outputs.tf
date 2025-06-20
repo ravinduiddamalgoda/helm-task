@@ -22,19 +22,3 @@ output "ssh_private_key_for_remote_exec" {
   sensitive   = true
 }
 
-output "kubeconfig_setup_complete_trigger" {
-  description = "ID(s) of the null_resource that creates the kubeconfig. Empty list when generate_kubeconfig=false."
-  value       = null_resource.create_kubeconfig[*].id   # returns [] or ["<id>"]
-} 
-
-
-output "kavindu_bastion_host_op" {
-  value = var.bastion_host
-}
-output "kavindu_bastion_user_op" {
-  value = var.bastion_user
-}
-output "kavindu_ssh_private_key_op" {
-  value = var.ssh_private_key
-  sensitive = true
-}

@@ -44,6 +44,7 @@ module "oke_cluster" {
 }
 
 resource "oci_containerengine_node_pool" "node_pool" {
+  depends_on = [module.oke_cluster]
   for_each       = var.node_pool_config
   compartment_id = var.compartment_id
   cluster_id     = module.oke_cluster.id
@@ -125,8 +126,8 @@ resource "oci_containerengine_node_pool" "node_pool" {
     ignore_changes = [
       node_config_details[0].size,
     ]
-    create_before_destroy = true
-    prevent_destroy       = true # caution: blocks terraform destroy
+    #create_before_destroy = true
+    #prevent_destroy       = true # caution: blocks terraform destroy
   }
 
   timeouts {
@@ -138,8 +139,117 @@ resource "oci_containerengine_node_pool" "node_pool" {
   defined_tags  = var.use_defined_tags ? merge(var.cluster_defined_tags, try(each.value.defined_tags, {})) : {}
   freeform_tags = merge(var.cluster_freeform_tags, try(each.value.freeform_tags, {}))
 }
+resource "null_resource" "create_kubeconfig" {
+  depends_on = [oci_containerengine_node_pool.node_pool]
+  count = var.generate_kubeconfig && var.ssh_private_key != "" ? 1 : 0
+  # Run exactly once, after the instance is up and cloud-init completed
+  
+
+  triggers = {
+    cluster_name   = var.cluster_name
+    compartment_id = var.compartment_id
+    region         = var.region
+    user           = var.user # Added user to triggers as $HOME depends on it
+  }
+
+  connection {
+    bastion_host        = var.bastion_host_public_ip
+    bastion_user        = var.bastion_user
+    bastion_private_key = var.ssh_private_key
+    host                = var.operator_host   #oci_core_instance.operator.private_ip   #hardcode
+    user                = var.user # Connect and run commands as this user
+    private_key         = var.ssh_private_key
+    timeout             = "40m"
+    type                = "ssh"
+  }
+
+  provisioner "remote-exec" {
+    # Script runs as var.user (defined in connection block)
+    # OCI_CLI_AUTH=instance_principal should be set by cloud-init's .bashrc for this user
+    inline = [<<EOT
+    bash -c "$(cat <<'EOF'
+set -eu
+
+echo "Running kubeconfig setup as user: $(whoami) in home: $HOME"
+
+# Ensure user's bin directory (common for script-based OCI CLI install) is in PATH
+if [ -d "$HOME/bin" ]; then
+  export PATH="$HOME/bin:$PATH"
+  echo "Updated PATH: $PATH"
+fi
+
+# Verify OCI CLI is available and configured for instance principal
+echo "Verifying OCI CLI..."
+if ! command -v oci >/dev/null 2>&1; then
+  echo "OCI CLI command not found in PATH for user $(whoami)."
+  exit 1
+fi
+echo "OCI CLI found at: $(command -v oci)"
+echo "Testing OCI CLI auth (instance principal)..."
+export OCI_CLI_AUTH=instance_principal
+if ! oci iam region list --query "data[0].name" --raw-output > /dev/null; then
+  echo "OCI CLI instance principal authentication test failed."
+  # Attempt to show current auth method for debugging
+  oci session validate --local || echo "oci session validate also failed"
+  exit 1
+fi
+echo "OCI CLI auth test successful."
+
+# Verify kubectl is available
+echo "Verifying kubectl..."
+if ! command -v kubectl >/dev/null 2>&1; then
+  echo "kubectl command not found in PATH for user $(whoami)."
+  exit 1
+fi
+echo "kubectl found at: $(command -v kubectl)"
+
+# Create .kube directory if it doesn't exist
+mkdir -p "$HOME/.kube"
+
+if [ -f "$HOME/.kube/config" ]; then
+  echo "Kubeconfig already exists at $HOME/.kube/config. Skipping creation."
+  exit 0
+fi
+
+echo "Attempting to find cluster OCID for cluster name: '${var.cluster_name}' in compartment '${var.compartment_id}'"
+# Query for ACTIVE or UPDATING clusters to avoid issues with deleted/failed ones
+CLUSTER_ID=$(oci ce cluster list \
+               --compartment-id "${var.compartment_id}" \
+               --name "${var.cluster_name}" \
+               --query 'data[?contains(`ACTIVE UPDATING CREATING`, "lifecycle-state")].id | [0]' --raw-output)
+
+if [ -z "$CLUSTER_ID" ] || [ "$CLUSTER_ID" == "null" ]; then
+  echo "Error: Could not find an ACTIVE, UPDATING, or CREATING cluster with name '${var.cluster_name}' in compartment '${var.compartment_id}'."
+  echo "Available clusters in compartment (debug):"
+  oci ce cluster list --compartment-id "${var.compartment_id}" --all --query 'data[*].{name:name, id:id, state:"lifecycle-state"}' --output table || echo "Failed to list clusters for debugging."
+  exit 1
+fi
+echo "Found cluster OCID: $CLUSTER_ID"
+
+echo "Creating kubeconfig for cluster $CLUSTER_ID using private endpoint..."
+sudo chown opc:opc ~/.kube
+chmod 700 ~/.kube
+oci ce cluster create-kubeconfig \
+     --cluster-id "$CLUSTER_ID" \
+     --file "$HOME/.kube/config" \
+     --region "${var.region}" \
+     --token-version 2.0.0 \
+     --kube-endpoint "PRIVATE_ENDPOINT" \
+     --auth instance_principal
+
+# Set correct permissions (user already owns the file)
+chmod 600 "$HOME/.kube/config"
+echo "Kubeconfig created successfully at $HOME/.kube/config"
+
+EOF
+)"
+EOT
+    ]
+  }
+}
 
 module "cluster_addons" {
+  depends_on = [null_resource.create_kubeconfig]
   source = "../cluster-addons"
 
   cluster_id               = module.oke_cluster.id
@@ -157,6 +267,7 @@ module "cluster_addons" {
 }
 
 module "extensions" {
+  depends_on = [null_resource.create_kubeconfig]
   source = "../extensions"
 
   # Pass through the new variables for remote execution
@@ -176,7 +287,8 @@ module "extensions" {
   # ---------- Core ----------
   region                 = var.region
   state_id               = var.state_id
-  worker_pools           = var.node_pool_config          # re-use pool map
+  #worker_pools           = var.node_pool_config          # re-use pool map
+  worker_pools           = { for k, v in var.node_pool_config : k => merge(v, { id = oci_containerengine_node_pool.node_pool[k].id }) } # hardcode ADDED
   kubernetes_version     = var.kubernetes_version
   expected_node_count    = var.expected_node_count
   cluster_private_endpoint = module.oke_cluster.private_endpoint

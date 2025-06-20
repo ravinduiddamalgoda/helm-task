@@ -21,6 +21,7 @@ data "cloudinit_config" "operator" {
   gzip          = true
   base64_encode = true
 
+  
   # Repository/package installation
   part {
     content_type = "text/cloud-config"
@@ -35,6 +36,7 @@ data "cloudinit_config" "operator" {
           # Conditionally install OCI CLI from yum; skip if installing from repo script
           var.install_oci_cli_from_repo ? null : "python3-oci-cli",
           "golang",
+          
         ],
         var.install_helm ? ["helm"] : [],
         var.install_istioctl ? ["istio-istioctl"] : [],
@@ -106,21 +108,57 @@ data "cloudinit_config" "operator" {
   }
 
 
-  # OCI CLI installation from repo
+ # OCI CLI installation from repo
   dynamic "part" {
     for_each = var.install_oci_cli_from_repo ? [1] : []
     content {
       content_type = "text/cloud-config"
       content = jsonencode({
         runcmd = [
+          "echo 'START python installation ' >> /var/log/cloud-init.log",
+          "yum install -y gcc openssl-devel bzip2-devel libffi-devel wget make zlib-devel",
+
+          # Compile and install Python 3.8
+          "cd /usr/src && wget https://www.python.org/ftp/python/3.8.18/Python-3.8.18.tgz",
+          "cd /usr/src && tar xzf Python-3.8.18.tgz",
+          "cd /usr/src/Python-3.8.18 && ./configure --enable-optimizations && make altinstall",
+
+          # Set Python 3.8 as the default
+          "alternatives --install /usr/bin/python3 python3 /usr/local/bin/python3.8 2",
+          "alternatives --set python3 /usr/local/bin/python3.8",
+          "python3 --version",
+          "echo 'END python installation ' >> /var/log/cloud-init.log",
+        ]
+      })
+      filename   = "20-python.yml"
+      merge_type = local.default_cloud_init_merge_type
+    }
+  }
+
+  dynamic "part" {
+    for_each = var.install_oci_cli_from_repo ? [1] : []
+    content {
+      content_type = "text/cloud-config"
+      content = jsonencode({
+        runcmd = [
+          "echo 'START OCI CLI installation from repo' >> /var/log/cloud-init.log",
           "curl -LO https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh",
+          "cp ./install.sh /home/${var.user}/install.sh",
           "su -c 'bash ./install.sh --accept-all-defaults' - ${var.user}",
+          
+          "echo 'export OCI_CLI_AUTH=instance_principal' >> /home/${var.user}/.bashrc",
+          "echo 'export PATH=$PATH:/home/${var.user}/bin' >> /home/${var.user}/.bashrc",
+          "chown ${var.user}:${var.user} /home/${var.user}/.bashrc",
+
+          "echo 'END OCI CLI installation from repo' >> /var/log/cloud-init.log",
         ]
       })
       filename   = "20-oci_cli_from_repo.yml"
       merge_type = local.default_cloud_init_merge_type
     }
   }
+  
+
 
   # kubectl installation
   dynamic "part" {
@@ -129,10 +167,12 @@ data "cloudinit_config" "operator" {
       content_type = "text/cloud-config"
       content = jsonencode({
         runcmd = [
+          "echo 'START kubectl installation' >> /var/log/cloud-init.log",
           "CLI_ARCH='${local.arch_amd}'",
           "if [ \"$(uname -m)\" = ${local.arch_arm} ]; then CLI_ARCH='arm64'; fi",
           "curl -LO https://dl.k8s.io/release/${var.kubernetes_version}/bin/linux/$CLI_ARCH/kubectl",
-          "install -o root -g root -m 0755 kubectl /usr/bin/kubectl",
+          "sudo install -o root -g root -m 0755 kubectl /usr/bin/kubectl",
+          "echo 'END kubectl installation' >> /var/log/cloud-init.log",
         ]
       })
       filename   = "20-kubectl.yml"
@@ -147,9 +187,11 @@ data "cloudinit_config" "operator" {
       content_type = "text/cloud-config"
       content = jsonencode({
         runcmd = [
+          "echo 'START kubectx/kubens installation' >> /var/log/cloud-init.log",
           "git clone https://github.com/ahmetb/kubectx /opt/kubectx",
           "ln -s /opt/kubectx/kubectx /usr/bin/kubectx",
           "ln -s /opt/kubectx/kubens /usr/bin/kubens",
+          "echo 'END kubectx/kubens installation' >> /var/log/cloud-init.log",
         ]
       })
       filename   = "20-kubectx.yml"
@@ -164,9 +206,11 @@ data "cloudinit_config" "operator" {
       content_type = "text/cloud-config"
       content = jsonencode({
         runcmd = [
+          "echo 'START Helm installation from repo' >> /var/log/cloud-init.log",
           "curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3",
           "chmod 700 get_helm.sh",
           "./get_helm.sh",
+          "echo 'END Helm installation from repo' >> /var/log/cloud-init.log",
         ]
       })
       filename   = "20-helm_from_repo.yml"
@@ -203,8 +247,10 @@ data "cloudinit_config" "operator" {
       content_type = "text/cloud-config"
       content = jsonencode({
         runcmd = [
+          "echo 'START Optional k9s installation' >> /var/log/cloud-init.log",
           "curl -LO https://github.com/derailed/k9s/releases/download/v0.40.5/k9s_Linux_amd64.tar.gz",
           "tar -xvzf k9s_Linux_amd64.tar.gz && mv ./k9s /usr/bin/k9s",
+          "echo 'END Optional k9s installation' >> /var/log/cloud-init.log",
         ]
       })
       filename   = "20-k9s.yml"
@@ -219,11 +265,13 @@ data "cloudinit_config" "operator" {
       content_type = "text/cloud-config"
       content = jsonencode({
         runcmd = [
+          "echo 'START cilium cli installation' >> /var/log/cloud-init.log",
           "CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/master/stable.txt)",
           "CLI_ARCH='${local.arch_amd}'",
           "if [ \"$(uname -m)\" = ${local.arch_arm} ]; then CLI_ARCH='arm64'; fi",
           "curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/$CILIUM_CLI_VERSION/cilium-linux-$CLI_ARCH.tar.gz",
-          "tar xzvfC cilium-linux-$CLI_ARCH.tar.gz /usr/local/bin"
+          "tar xzvfC cilium-linux-$CLI_ARCH.tar.gz /usr/local/bin",
+          "echo 'END cilium cli installation' >> /var/log/cloud-init.log",
         ]
       })
       filename   = "20-cilium.yml"
@@ -238,9 +286,11 @@ data "cloudinit_config" "operator" {
       content_type = "text/cloud-config"
       content = jsonencode({
         runcmd = [
+          "echo 'START stern installation' >> /var/log/cloud-init.log",
           "go install github.com/stern/stern@v1.30",
           "mv $HOME/go/bin/stern /usr/local/bin/",
-          "ln -s /usr/local/bin/stern /usr/bin/stern"
+          "ln -s /usr/local/bin/stern /usr/bin/stern",
+          "echo 'END stern installation' >> /var/log/cloud-init.log",
         ]
       })
       filename   = "20-stern.yml"
@@ -249,7 +299,7 @@ data "cloudinit_config" "operator" {
   }
 
   # Write user bashrc to filesystem
-  part {
+  part {   ##hardcode   export PATH=$PATH:/usr/local/bin
     content_type = "text/cloud-config"
     content = jsonencode({
       # https://cloudinit.readthedocs.io/en/latest/reference/modules.html#write-files
@@ -257,6 +307,7 @@ data "cloudinit_config" "operator" {
         {
           content = <<-EOT
             export OCI_CLI_AUTH=instance_principal
+            export PATH=$PATH:/usr/local/bin   
             export TERM=xterm-256color
             export OCI_PYTHON_SDK_NO_SERVICE_IMPORTS=True
             source <(kubectl completion bash)
@@ -292,17 +343,19 @@ data "cloudinit_config" "operator" {
   # https://github.com/canonical/cloud-init/pull/916#issuecomment-1254732400
   # Or: defer not supported on older versions of cloud-init.
   # Created in tmp first and moved into user's home directory using runcmd.
-  part {
+## 336"mv /tmp/kubeconfig /home/${var.user}/.kube/config",
+  part {     
     content_type = "text/cloud-config"
     content = jsonencode({
       runcmd = [
+        "echo 'START Created in tmp first and moved into user's home directory using runcmd' >> /var/log/cloud-init.log",
         "cat /tmp/*.bashrc >> /home/${var.user}/.bashrc && rm /tmp/*.bashrc",
         "chmod 600 /home/${var.user}/.bashrc",
         "mkdir -p /home/${var.user}/.kube",
-        #"mv /tmp/kubeconfig /home/${var.user}/.kube/config",
         "chmod 700 /home/${var.user}/.kube",
         "chmod 600 /home/${var.user}/.kube/config",
         "chown -R ${var.user}:${var.user} /home/${var.user}",
+        "echo 'END Created in tmp first and moved into user's home directory using runcmd' >> /var/log/cloud-init.log",
       ]
     })
     filename   = "30-home.yml"
