@@ -141,6 +141,13 @@ resource "null_resource" "cluster_autoscaler" {
       "export PATH=$HOME/bin:$PATH",
       "echo 'Deploying Cluster Autoscaler...'",
       "helm repo add autoscaler https://kubernetes.github.io/autoscaler || echo 'Autoscaler repo may already be added'",
+      "helm repo update",
+      "helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \\",
+      "  --namespace kube-system \\",
+      "  --set autoDiscovery.clusterName=${var.cluster_id} \\",
+      "  --set rbac.create=true \\",
+      "  --set cloudProvider=oci \\",
+      "  --wait --timeout 5m"
     ]
   }
 
