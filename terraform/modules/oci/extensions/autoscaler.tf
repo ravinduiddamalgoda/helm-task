@@ -137,8 +137,10 @@ resource "null_resource" "cluster_autoscaler" {
   provisioner "remote-exec" {
     inline = [
       "set -ex",
-      "export KUBECONFIG=\"$HOME/.kube/config\"",
       "export PATH=$HOME/bin:$PATH",
+      "export KUBECONFIG=/home/opc/.kube/config",  #####
+      "chmod +r /home/opc/.kube/config",
+      "export OCI_CLI_AUTH=instance_principal",
       "echo 'Deploying Cluster Autoscaler...'",
       "helm repo add autoscaler https://kubernetes.github.io/autoscaler || echo 'Autoscaler repo may already be added'",
       "helm repo update",
