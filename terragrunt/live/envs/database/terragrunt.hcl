@@ -6,7 +6,7 @@ include "common" {
 
 # ─── dependency: network (subnets, NSGs, VCN CIDR) ──────────────────────
 dependency "network" {
-  config_path = "../network"
+  config_path = "../core-services/network"
 
   # Use mock values until the network layer has been applied
   mock_outputs = {
@@ -116,7 +116,7 @@ locals {
 
   # The service-token linked to this layer has access to the "stg" config,
   # not "database", so force the environment override here.
-  env             = "stg"
+  env             = "dev"  # hardcode ADDED stg -> dev
 
   # ── MySQL credentials: use Doppler value or create on first apply ───────
   _doppler_mysql_username_cmd = format(
@@ -213,10 +213,13 @@ locals {
   mysql_admin_password = random_password.mysql_admin.result
 }
 
+
 output "mysql_admin_password" {
   value     = local.mysql_admin_password
   sensitive = true
 }
+
+
 
 ################################################################################
 #  Fetch first availability-domain in the tenancy
@@ -233,7 +236,7 @@ locals {
 #  Auth-Server DB system
 ################################################################################
 module "auth_server_db" {
-  source = "${get_original_terragrunt_dir()}/../../../../../terraform/modules/oci/database"
+  source = "${get_original_terragrunt_dir()}/../../../../terraform/modules/oci/database"
 
   compartment_id      = var.compartment_id
   subnet_id           = var.subnet_id
@@ -256,7 +259,7 @@ module "auth_server_db" {
 #  Main-API DB system
 ################################################################################
 module "main_api_db" {
-  source = "${get_original_terragrunt_dir()}/../../../../../terraform/modules/oci/database"
+  source = "${get_original_terragrunt_dir()}/../../../../terraform/modules/oci/database"
 
   compartment_id      = var.compartment_id
   subnet_id           = var.subnet_id

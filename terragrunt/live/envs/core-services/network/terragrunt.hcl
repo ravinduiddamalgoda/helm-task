@@ -468,6 +468,43 @@ locals {
   nsg_rules_data = [
     { direction = "INGRESS", protocol = "6", description = "MySQL 3306", source = local.vcn_cidr, source_type = "CIDR_BLOCK",
       tcp_options = { destination_port_range = { min = 3306, max = 3306 } } },
+        # SSH from anywhere  hardcode ADDED
+    {
+      direction   = "INGRESS"
+      protocol    = "6" # TCP
+      description = "SSH from anywhere"
+      source      = "0.0.0.0/0"
+      source_type = "CIDR_BLOCK"
+      tcp_options = { destination_port_range = { min = 22, max = 22 } }
+    },
+
+    # ICMP type 3, code 4 from anywhere (Fragmentation Needed and Don't Fragment was Set)
+    {
+      direction   = "INGRESS"
+      protocol    = "1" # ICMP
+      description = "ICMP traffic for: 3, 4 Destination Unreachable: Fragmentation Needed and Don't Fragment was Set"
+      source      = "0.0.0.0/0"
+      source_type = "CIDR_BLOCK"
+      icmp_options = { type = 3, code = 4 }
+    },
+
+    # ICMP type 3 from VCN
+    {
+      direction   = "INGRESS"
+      protocol    = "1" # ICMP
+      description = "ICMP traffic for: 3 Destination Unreachable"
+      source      = "10.2.0.0/16"
+      source_type = "CIDR_BLOCK"
+      icmp_options = { type = 3 }
+    },
+    {
+      direction   = "EGRESS"
+      protocol    = "all" # All protocols
+      description = "Allow all outbound traffic"
+      destination = "0.0.0.0/0"
+      destination_type = "CIDR_BLOCK"
+    },
+    
     # MySQL X-protocol
     { direction = "INGRESS", protocol = "6", description = "MySQL 33060-61",
       source = local.vcn_cidr, source_type = "CIDR_BLOCK",
