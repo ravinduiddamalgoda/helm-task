@@ -229,7 +229,8 @@ inputs = merge(
     expected_autoscale_worker_pools = local.expected_autoscale_worker_pools
 
     # ── Defaults: Calico + Cluster-autoscaler already ON ------------------
-    cni_type = "oci_vcn_native"
+    # cni_type = "oci_vcn_native"
+    cni_type = include.common.locals.cni_type  # hardcode ADDED
 
     # minimal autoscaler settings
     cluster_autoscaler_namespace     = "kube-system"
@@ -289,7 +290,7 @@ inputs = merge(
     cluster_addons_to_remove = []
 
     # Extensions (provide defaults, likely false/empty)
-    cilium_install           = false
+    cilium_install           = true  # hardcode ADDED if using flannel need to true
     cilium_reapply           = false
     cilium_namespace         = "kube-system"
     cilium_helm_version      = ""
@@ -333,8 +334,18 @@ inputs = merge(
     gatekeeper_helm_values       = {}
     gatekeeper_helm_values_files = []
 
-    create_service_account = false
-    service_accounts       = {}
+    create_service_account = true  #hardcode ADDED
+    service_accounts       = {
+      registry = {
+        sa_name                     = "registry-sa"
+        sa_namespace                = "kube-system"
+        sa_cluster_role             = "image-puller"
+        sa_cluster_role_binding     = "registry-sa-image-puller"
+        # Optionally, for namespace-scoped roles:
+        # sa_role                  = "my-custom-role"
+        # sa_role_binding          = "registry-sa-custom-binding"
+      }
+    }
 
     # leave the rest of the toggles at their defaults (false / empty) – can
     # be overridden in oke_vars/vars-extensions-*.auto.tfvars

@@ -13,7 +13,7 @@ locals {
 
   name_prefix  = "koci"     
 
-  cni_type = "oci_vcn_native" #"calico" or "flannel"          
+  cni_type = "flannel" #"calico" or "flannel" or ""oci_vcn_native""          
 
   environments_to_bootstrap = {
     "core-services" = "ca-montreal-1"
@@ -72,7 +72,7 @@ locals {
   private_key = coalesce(local._raw_private_key, "placeholder-private-key")
   user_ocid = coalesce(local._raw_user_ocid, "ocid1.user.oc1..aaaaaaaa5wuhdts3ys2abun6mlmbvri56ooukocisdzbispy4t2tcymidlcb5q")
   fingerprint = coalesce(local._raw_fingerprint, "6a:da:98:6d:a9:e5:d6:bc:b7:89:74:1d:c8:e7:91:42")
-  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "yzzvc0uk5vox")
+  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "axjre2lwxpox") ##hardcode ADDED
   tfstate_bucket = coalesce(local._raw_tfstate_bucket,
                            "${lower(local.name_prefix)}-${local.env}-${substr(local.region, 0, 2)}-init")
   access_key = coalesce(local._raw_tfstate_access_key, "d69f2395ce332944276e358a85ec06451cb11e2d")
@@ -151,30 +151,36 @@ locals {
 # ---------------------------------------------------------------------
 # Remote State Configuration (OCI Object Storage - S3 Compatible)
 # ---------------------------------------------------------------------
-#remote_state {
+# remote_state {
 #  backend = "s3"
 #  config = {
 #    # --- Bucket and Key ---
-#    bucket = local.tfstate_bucket 
+#    bucket = local.tfstate_bucket#"koci-core-services-ca-init"  #"bucket-oci-infra-tfstate-2025-6-7" #local.tfstate_bucket 
 #    key = "${path_relative_to_include()}/terraform.tfstate"
-#
+
 #    # --- OCI S3 Compatibility Settings ---
 #    region   = local.region       
-#    endpoint = local.tfstate_endpoint 
-#
-#    # --- Credentials ---
+#     #endpoint =local.tfstate_endpoint #"https://placeholder.init.fail" #local.tfstate_endpoint  #"https://axjre2lwxpox.compat.objectstorage.ca-montreal-1.oraclecloud.com" #local.tfstate_endpoint
+#   # endpoints = {
+#   #     s3 = "https://axjre2lwxpox.compat.objectstorage.ca-montreal-1.oraclecloud.com"
+#   #   }
+#   endpoints = {
+#       s3 = local.tfstate_endpoint
+#     }
+#      # --- Credentials ---
 #    # These are automatically picked up from the locals defined earlier
 #    access_key = local.access_key 
 #    secret_key = local.secret_key 
-#
+
 #    # --- S3 Backend Settings for OCI ---
 #    skip_region_validation      = true # Necessary for OCI S3 compatibility
 #    skip_credentials_validation = true # Recommended for robustness, esp. with placeholders
 #    skip_metadata_api_check     = true # Avoids unnecessary checks for non-AWS S3
-#    force_path_style            = true # OCI Object Storage typically requires path-style access
+#    #force_path_style            = true # OCI Object Storage typically requires path-style access
+#    use_path_style              = true
 #  }
 #  generate = {
 #    path      = "backend.tf"
 #    if_exists = "overwrite_terragrunt"
 #  }
-#}
+# }

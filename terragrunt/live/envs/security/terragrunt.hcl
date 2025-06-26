@@ -12,7 +12,7 @@ include "common" {
 # Dependency: we need VCN id, CIDR, env_name from Network
 ###############################################################################
 dependency "network" {
-  config_path = "../network"
+  config_path = "../core-services/network"
 
   # Add mock_outputs so plan/validate work before network is applied
   mock_outputs = {
@@ -48,8 +48,12 @@ locals {
   # --- UPDATED: Point directly to the generic NSG module source ---
   # The NSG module lives under terraform/modules/oci/network/nsg
   nsg_module_source = abspath(
-    "${get_terragrunt_dir()}/../../../../../terraform/modules/oci/network/nsg"
+    "${get_terragrunt_dir()}/../../../../terraform/modules/oci/network/nsg"
   )
+
+  security_module_guard_source = abspath("${get_terragrunt_dir()}/../../../../terraform/modules/oci/security/guard")
+  waf_policy_source = abspath("${get_terragrunt_dir()}/../../../../terraform/modules/oci/security/waf")
+
   # --- END UPDATED ---
 
   # --- REMOVED: Rule Sets are moved to the generate block below ---
@@ -254,7 +258,22 @@ generate "guard" {
       env_name         = local.env_name
       compartment_id   = include.common.locals.compartment_ocid
       vcn_id           = dependency.network.outputs.vcn_id
-      module_base_path = local.nsg_module_source
+      tenancy_ocid     = include.common.locals.tenancy_ocid
+      module_base_path = local.security_module_guard_source
+    }
+  )
+}
+
+###############################################################################
+# Generate the WAF Policy Terraform file (waf.tf)
+###############################################################################
+generate "waf" {
+  path      = "waf.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = templatefile("${get_terragrunt_dir()}/templates/waf.tftpl", {
+      env_name         = local.env_name
+      compartment_id   = include.common.locals.compartment_ocid
+      module_base_path = local.waf_policy_source
     }
   )
 }
@@ -264,7 +283,8 @@ generate "guard" {
 ###############################################################################
 terraform {
   # Source is the current directory containing the generated .tf files
-  source = "../../../../../terraform/modules/oci/security" # Adjust if needed
+  #source = "." # Adjust if needed
+  source = "../../../../terraform/modules/oci/security"
 
   # Define outputs for the NSG IDs so other modules (like database) can depend on them
   extra_arguments "output_nsgs" {
@@ -308,6 +328,82 @@ generate "outputs" {
       description = "NSG OCID for bastion hosts"
       value       = module.bastion_nsg.nsg_id # Ensure module name matches template
     }
+
+    # Security module outputs (KMS vault and keys) - direct resource references   #hardcode ADDED
+    # output "vault_id" {
+    #   description = "OCID of the KMS vault"
+    #   value       = module.vault.vault_id
+    # }
+
+    # output "tfstate_key_id" {
+    #   description = "OCID of the Terraform state encryption key"
+    #   value       = tfstate_key_ocid
+    # }
+
+    # output "data_key_id" {
+    #   description = "OCID of the data encryption key"
+    #   value       = data_key_ocid
+    # }
+
+    # output "db_admin_secret_id" {
+    #   description = "OCID of the database admin password secret"
+    #   value       = db_admin_secret_ocid
+    # }
+
+    # Cloud Guard Security Zone outputs   #hardcode ADDED
+    output "security_zone_id" {
+      description = "OCID of the Cloud Guard Security Zone"
+      value       = module.cloud_guard_security_zone.security_zone_id
+    }
+
+    output "security_zone_display_name" {
+      description = "Display name of the Cloud Guard Security Zone"
+      value       = module.cloud_guard_security_zone.security_zone_display_name
+    }
+
+    output "cloud_guard_configuration_id" {
+      description = "OCID of the Cloud Guard configuration"
+      value       = module.cloud_guard_security_zone.cloud_guard_configuration_id
+    }
+
+    output "security_zone_recipe_id" {
+      description = "OCID of the Security Zone recipe being used"
+      value       = module.cloud_guard_security_zone.security_zone_recipe_id
+    }
+
+    output "cloud_guard_enabled" {
+      description = "Whether Cloud Guard and Security Zone are enabled"
+      value       = module.cloud_guard_security_zone.enabled
+    }
+
+    # WAF Policy outputs
+    output "waf_policy_id" {
+      description = "OCID of the WAF policy for protecting public-facing endpoints"
+      value       = module.waf_policy.waf_policy_id
+    }
+
+    output "waf_policy_display_name" {
+      description = "Display name of the WAF policy"
+      value       = module.waf_policy.waf_policy_display_name
+    }
   EOT
+}
+
+# Inputs - Pass variables to the security module
+###############################################################################
+inputs = {
+  # Security module variables (KMS vault and secrets)
+  compartment_id = include.common.locals.compartment_ocid
+  env_name       = local.env_name
+  vcn_id         = dependency.network.outputs.vcn_id
+  vcn_cidr       = dependency.network.outputs.vcn_cidr_block
+  tags           = local.common_tags
+
+  # Security module defaults (can be overridden)
+  vault_display_name        = "koci-shared-vault"
+  vault_type               = "DEFAULT"
+  tfstate_key_display_name = "koci-tfstate-key"
+  data_key_display_name    = "koci-data-key"
+  db_admin_secret_name     = "koci_DB_ADMIN_PASSWORD"
 }
 

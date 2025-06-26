@@ -7,3 +7,8 @@ output "generated_private_key_pem" {
 output "private_ip" {
   value = oci_core_instance.bastion.private_ip
 }
+
+output "user" {
+  description = "The SSH user for the operator instance."
+  value       = var.user
+}

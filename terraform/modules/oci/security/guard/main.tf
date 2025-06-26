@@ -48,4 +48,8 @@ data "oci_cloud_guard_security_recipes" "security_zone_recipes" {
   # If you really need to filter, first inspect the raw output
   # (`terraform console`) to find the correct attribute names/values.
 }
+# data "oci_cloud_guard_security_recipe" "oracle_recipe" {
+#   compartment_id = var.tenancy_ocid
+#   display_name    = "Oracle Managed Security Zone Recipe"
+# }
 

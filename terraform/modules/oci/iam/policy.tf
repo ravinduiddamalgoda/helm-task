@@ -9,6 +9,8 @@ locals {
     local.autoscaler_policy_statements,
   ])))
 
+  
+
   has_policy_statements = var.create_iam_resources && anytrue([
     var.create_iam_autoscaler_policy,
     var.create_iam_kms_policy,

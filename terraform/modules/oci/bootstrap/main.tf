@@ -267,6 +267,11 @@ resource "oci_identity_policy" "tf" {
     "ALLOW GROUP ${each.value.name_lower}-tf-group TO manage volume-family IN COMPARTMENT id ${local.env_compartment_ids[each.key]}",
     "ALLOW GROUP ${each.value.name_lower}-tf-group TO manage object-family IN COMPARTMENT id ${local.env_compartment_ids[each.key]}",
 
+    # --- Cloud Guard & Security Zones ---
+    "ALLOW GROUP ${each.value.name_lower}-tf-group TO manage cloud-guard-family IN TENANCY",
+    "ALLOW GROUP ${each.value.name_lower}-tf-group TO read tenancies IN TENANCY",
+    "ALLOW GROUP ${each.value.name_lower}-tf-group TO manage security-zones IN COMPARTMENT id ${local.env_compartment_ids[each.key]}",
+
     "ALLOW GROUP ${each.value.name_lower}-tf-group TO read all-resources IN TENANCY",
     "ALLOW GROUP ${each.value.name_lower}-tf-group TO use tag-namespaces IN TENANCY WHERE target.tag-namespace.name = '${var.tag_namespace_name}'",
     "ALLOW GROUP ${each.value.name_lower}-tf-group TO manage dynamic-groups IN TENANCY",

@@ -22,7 +22,7 @@ resource "null_resource" "service_account_crb" {
     service_account_cluster_role_binding = each.value.sa_cluster_role_binding
 
     # Parameters ignored as triggers in the life_cycle block. Required to establish connections.
-    bastion_host    = var.bastion_host
+    bastion_host    = var.bastion_host_public_ip
     bastion_user    = var.bastion_user
     ssh_private_key = var.ssh_private_key
     operator_host   = var.operator_host

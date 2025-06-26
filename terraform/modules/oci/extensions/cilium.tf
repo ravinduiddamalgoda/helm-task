@@ -67,7 +67,7 @@ locals {
   }
 
  # TODO Support Flannel w/ generic-veth & tunnel disabled
-  cilium_tunnel = "vxlan" # var.cni_type == "flannel" ? "disabled" : "vxlan"
+  cilium_tunnel =  var.cni_type == "flannel" ? "disabled" : "vxlan" #or  "vxlan"  #hardcode ADDED
 
   cilium_flannel_cni = {
     install      = true

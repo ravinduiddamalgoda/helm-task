@@ -1,0 +1,20 @@
+# WAF Policy Configuration for Public-Facing Endpoints
+# This template creates a comprehensive WAF policy to protect against common web attacks
+
+module "waf_policy" {
+  source         = "${module_base_path}"
+  
+  # Required variables
+  compartment_id = "${compartment_id}"
+  env_name       = "${env_name}"
+  
+  # WAF Protection Rules with configurable capability keys and versions
+  waf_rules = []  # define the rules
+
+  # Tags
+  freeform_tags = {
+    ManagedBy   = "koci-Terraform"
+    Environment = "${env_name}"
+    Purpose     = "WAF-Protection"
+  }
+} 

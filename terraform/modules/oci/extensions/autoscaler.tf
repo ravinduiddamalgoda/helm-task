@@ -141,14 +141,17 @@ resource "null_resource" "cluster_autoscaler" {
       "export KUBECONFIG=/home/opc/.kube/config",  #####
       "chmod +r /home/opc/.kube/config",
       "export OCI_CLI_AUTH=instance_principal",
+      # Delete the existing release if it exists
+      "if helm list -n kube-system | grep -q cluster-autoscaler; then helm uninstall cluster-autoscaler -n kube-system; fi",
       "echo 'Deploying Cluster Autoscaler...'",
       "helm repo add autoscaler https://kubernetes.github.io/autoscaler || echo 'Autoscaler repo may already be added'",
       "helm repo update",
       "helm upgrade --install cluster-autoscaler autoscaler/cluster-autoscaler \\",
       "  --namespace kube-system \\",
-      "  --set autoDiscovery.clusterName=${var.cluster_id} \\",
+      "  --set autoDiscovery.clusterName=oke-oke \\",
       "  --set rbac.create=true \\",
       "  --set cloudProvider=oci \\",
+      "  --set extraEnv.OCI_USE_INSTANCE_PRINCIPAL=true \\",
       "  --wait --timeout 5m"
     ]
   }
