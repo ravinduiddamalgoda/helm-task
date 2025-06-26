@@ -421,7 +421,16 @@ locals {
       {
         direction   = "INGRESS"
         protocol    = "6" # TCP
-        description = "SSH from anywhere"
+        description = "MYSQL"
+        source      = "10.2.0.0/16"
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 3306, max = 3306 } }
+      },
+
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "SSH"
         source      = "0.0.0.0/0"
         source_type = "CIDR_BLOCK"
         tcp_options = { destination_port_range = { min = 22, max = 22 } }

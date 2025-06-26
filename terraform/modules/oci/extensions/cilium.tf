@@ -67,7 +67,7 @@ locals {
   }
 
  # TODO Support Flannel w/ generic-veth & tunnel disabled
-  cilium_tunnel =  var.cni_type == "flannel" ? "disabled" : "vxlan" #or  "vxlan"  #hardcode ADDED
+  cilium_tunnel = "vxlan" #var.cni_type == "flannel" ? "disabled" : "vxlan" #or  "vxlan"  #hardcode ADDED
 
   cilium_flannel_cni = {
     install      = true
@@ -215,7 +215,7 @@ resource "null_resource" "cilium" {
   }
 
   connection {
-    bastion_host        = var.bastion_host
+    bastion_host        = var.bastion_host_public_ip  #hardcode ADDED
     bastion_user        = var.bastion_user
     bastion_private_key = var.ssh_private_key
     host                = var.remote_host_ip
@@ -253,7 +253,11 @@ resource "null_resource" "cilium" {
     inline = [<<-EOT
       # Make sure $HOME/bin is on PATH if OCI-CLI or Helm were installed there
       export PATH="$HOME/bin:$PATH"
-      set -euo pipefail
+      set -eu
+      export PATH="$HOME/bin:$PATH"
+      export OCI_CLI_AUTH=instance_principal
+      export PATH=$PATH:/usr/local/bin
+
       echo "Deploying / upgrading Cilium via Helm…"
       helm repo add cilium https://helm.cilium.io || true
       helm repo update

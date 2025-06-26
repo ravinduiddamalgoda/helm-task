@@ -13,7 +13,7 @@ locals {
 
   name_prefix  = "koci"     
 
-  cni_type = "flannel" #"calico" or "flannel" or ""oci_vcn_native""          
+  cni_type = "oci_vcn_native" #"calico" or "flannel" or ""oci_vcn_native""          
 
   environments_to_bootstrap = {
     "core-services" = "ca-montreal-1"

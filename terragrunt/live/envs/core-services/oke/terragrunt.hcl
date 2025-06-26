@@ -229,8 +229,8 @@ inputs = merge(
     expected_autoscale_worker_pools = local.expected_autoscale_worker_pools
 
     # ── Defaults: Calico + Cluster-autoscaler already ON ------------------
-    # cni_type = "oci_vcn_native"
-    cni_type = include.common.locals.cni_type  # hardcode ADDED
+    cni_type = "oci_vcn_native"
+    #cni_type = include.common.locals.cni_type  # hardcode ADDED
 
     # minimal autoscaler settings
     cluster_autoscaler_namespace     = "kube-system"
@@ -290,7 +290,7 @@ inputs = merge(
     cluster_addons_to_remove = []
 
     # Extensions (provide defaults, likely false/empty)
-    cilium_install           = true  # hardcode ADDED if using flannel need to true
+    cilium_install           = false  # hardcode ADDED if using flannel need to true
     cilium_reapply           = false
     cilium_namespace         = "kube-system"
     cilium_helm_version      = ""
