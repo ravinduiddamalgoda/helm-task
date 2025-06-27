@@ -1,7 +1,7 @@
 # Global settings shared across all sub-charts
 global:
   # Deployment mode: "local" or "cluster"
-  deploymentMode: "local"
+  deploymentMode: "cluster"
   
   # Environment name (overridden in environment-specific values files)
   environment: "dev"
@@ -11,11 +11,11 @@ global:
   
   # OCI-specific configuration (used in cluster mode)
   oci:
-    enabled: false
-    region: ""
-    compartmentId: ""
+    enabled: true
+    region: "ca-montreal-1"
+    compartmentId: "ocid1.compartment.oc1..aaaaaaaahhmpw44tzkrzlu7pku45donh7ijxikxrztk7ic4coruydju4i6sq"
     availabilityDomains:
-      - ""
+      - "wsmd:CA-MONTREAL-1-AD-1"
     faultDomains:
       - ""
     # Default instance shape for compute
@@ -44,7 +44,7 @@ global:
     mysql:
       # For local mode
       selfHosted:
-        enabled: true
+        enabled: false
         persistence:
           size: 2Gi
         auth:
@@ -72,7 +72,7 @@ global:
     mongodb:
       # For both modes (always self-hosted)
       selfHosted:
-        enabled: true
+        enabled: false
         persistence:
           size: 2Gi
         auth:
@@ -113,7 +113,7 @@ global:
   messaging:
     rabbitmq:
       selfHosted:
-        enabled: true
+        enabled: false
         persistence:
           size: 1Gi
         # OCI-specific settings for RabbitMQ
@@ -175,7 +175,7 @@ notificationService:
   networkPolicy:
     enabled: false
   persistence:
-    enabled: true
+    enabled: false
     size: 1Gi
   # OCI-specific settings
   oci:
@@ -189,7 +189,7 @@ notificationService:
 
 # Service configurations (defaults)
 mainApi:
-  enabled: true
+  enabled: false
   image:
     repository: k8s-test/main-api # Replace with your actual registry/image
     tag: "latest" # Use specific tags in prod!
@@ -198,7 +198,7 @@ mainApi:
   # These will be merged with main-api/values.yaml
 
 authServer:
-  enabled: true
+  enabled: false
   image:
     repository: k8s-test/auth-server # Replace
     tag: "latest"
@@ -206,7 +206,7 @@ authServer:
   # Define other auth-server specific defaults here
 
 notificationService:
-  enabled: true
+  enabled: false
   image:
     repository: k8s-test/notification-service # Replace
     tag: "latest"
@@ -231,7 +231,7 @@ dopplerOperator:
 
 # Add this section to configure the MongoDB backup job
 mongodb-backup:
-  enabled: true  # This will be overridden by global.databases.mongodb.backup.enabled
+  enabled: false  # This will be overridden by global.databases.mongodb.backup.enabled
   nameOverride: "mongodb-backup"
   fullnameOverride: "mongodb-backup"
   
@@ -295,7 +295,7 @@ ingress:
 
 # Default persistence configuration
 persistence:
-  enabled: true
+  enabled: false
   accessMode: ReadWriteOnce
   size: 1Gi
   ephemeral: false
@@ -304,16 +304,16 @@ persistence:
 networkPolicy:
   enabled: false
   ingress:
-    enabled: true
+    enabled: false
     from: []
   egress:
-    enabled: true
+    enabled: false
     rules: []
 
 # Database configurations
 mongodb:
   internal:
-    enabled: true
+    enabled: false
   external:
     enabled: false
     host: ""
@@ -323,7 +323,7 @@ mongodb:
 
 mysql:
   internal:
-    enabled: true
+    enabled: false
     auth:
       rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
       userSecretKey: MYSQL_USER
@@ -342,9 +342,9 @@ mysql:
 # Cache configuration
 redis:
   internal:
-    enabled: true
+    enabled: false
     auth:
-      enabled: true
+      enabled: false
       passwordSecretKey: REDIS_PASSWORD
     persistence:
       enabled: false
@@ -356,11 +356,11 @@ redis:
 
 # Messaging configuration
 rabbitmq:
-  enabled: true
+  enabled: false
   cluster:
     replicas: 1
     persistence:
-      enabled: true
+      enabled: false
       storage: 1Gi
     auth:
       usernameSecretKey: RABBITMQ_USERNAME
@@ -370,7 +370,7 @@ rabbitmq:
       managementPort: 15672
   connection:
     internal:
-      enabled: true
+      enabled: false
     external:
       enabled: false
       host: ""

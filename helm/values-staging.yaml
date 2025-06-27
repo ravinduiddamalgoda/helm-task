@@ -9,17 +9,17 @@ global:
   # Enable OCI-specific configuration
   oci:
     enabled: true
-    region: "us-ashburn-1"
-    compartmentId: "ocid1.compartment.oc1..example"
+    region: "ca-montreal-1"
+    compartmentId: "ocid1.compartment.oc1..aaaaaaaahhmpw44tzkrzlu7pku45donh7ijxikxrztk7ic4coruydju4i6sq"
     availabilityDomains:
-      - "ASHB:US-ASHBURN-AD-1"
+      - "wsmd:CA-MONTREAL-1-AD-1"
     faultDomains:
       - "FAULT-DOMAIN-1"
   
   # Doppler configuration
   doppler:
-    enabled: true
-    project: "koci"
+    enabled: false
+    project: "oci-infra"
     tokenSecret: "doppler-token-secret"
   
   # Database configuration
@@ -29,7 +29,7 @@ global:
       selfHosted:
         enabled: false
       managed:
-        enabled: true
+        enabled: false
         # Host and port will be set by deploy.sh from Terraform outputs
         host: ""
         port: 3306
@@ -45,7 +45,7 @@ global:
     # MongoDB configuration (deployed in OKE)
     mongodb:
       selfHosted:
-        enabled: true
+        enabled: false
         replicaCount: 3
         persistence:
           storageClass: "oci-block-storage-mongodb"
@@ -62,7 +62,7 @@ global:
 mainApi:
   replicaCount: 2
   autoscaling:
-    enabled: true
+    enabled: false
     minReplicas: 2
     maxReplicas: 5
     targetCPUUtilizationPercentage: 70
@@ -71,7 +71,7 @@ mainApi:
   oci:
     instanceType: "regular"
     loadBalancer:
-      enabled: true
+      enabled: false
       shape: "flexible"
       shapeFlex:
         minMbps: 10
@@ -81,7 +81,7 @@ mainApi:
   
   # Doppler configuration
   doppler:
-    enabled: true
+    enabled: false
     projectName: "main-api"
     tokenSecretName: "main-api-doppler-token-secret"
 

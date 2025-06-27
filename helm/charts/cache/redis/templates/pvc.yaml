@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "notification-service-redis.fullname" . }}-pvc
+  name: {{ include "redis.fullname" . }}-pvc #{{ include "notification-service-redis.fullname" . }}
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode }}

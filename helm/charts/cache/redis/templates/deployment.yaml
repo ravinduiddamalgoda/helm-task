@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "notification-service-redis.fullname" . }}-deployment
+  name: {{ include "redis.fullname" . }}-deployment  #{{ include "notification-service-redis.fullname" . }}
   labels:
-    app: {{ include "notification-service-redis.name" . }}
+    app: {{ include "redis.labels" . }} #{{ include "redis.labels" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "notification-service-redis.name" . }}
+      app: {{ include "redis.labels" . }}
   template:
     metadata:
       labels:
-        app: {{ include "notification-service-redis.name" . }}
+        app: {{ include "redis.labels" . }}
     spec:
       securityContext:
         {{- if .Values.securityContext.enabled }}
