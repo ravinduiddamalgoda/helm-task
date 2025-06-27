@@ -1,0 +1,48 @@
+# Default values for MongoDB backup job
+backup:
+  image:
+    repository: bitnami/mongodb
+    tag: ""  # Defaults to Chart.AppVersion
+    pullPolicy: IfNotPresent
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 256Mi
+
+# These values are used for testing/development only
+# In production, they are overridden by global values
+global:
+  deploymentMode: "local"
+  environment: "dev"
+  storageClass: "standard"
+  
+  oci:
+    enabled: false
+  
+  databases:
+    mongodb:
+      selfHosted:
+        enabled: true
+        auth:
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+        persistence:
+          size: 1Gi
+      backup:
+        enabled: false
+        schedule: "0 2 * * *"
+        storageClass: ""
+        retention: 7
+        objectStorage:
+          enabled: false
+          bucketName: ""
+          region: ""
+          credentialsSecretName: ""
+
+# Doppler configuration for secrets
+doppler:
+  managedSecretName: "mongodb-secrets" 

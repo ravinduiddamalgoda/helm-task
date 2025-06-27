@@ -1,0 +1,81 @@
+# Default values specific to the mongodb sub-chart.
+# These are overridden by the 'mongodb:' section in the umbrella chart's values.
+
+# Note: 'internal.enabled' is controlled by the umbrella chart condition.
+
+# Example defaults (adjust based on the actual MongoDB chart you might be using or creating)
+image:
+  repository: mongo
+  tag: "6.0"
+  pullPolicy: IfNotPresent
+
+# MongoDB configuration for cluster mode (production)
+architecture: replicaset
+replicaCount: 3  # Primary + 2 secondaries for high availability
+
+auth:
+  enabled: true
+  rootUser: "${MONGO_INITDB_ROOT_USERNAME}"
+  rootPassword: "${MONGO_INITDB_ROOT_PASSWORD}"
+  replicaSetKey: "${MONGO_REPLICA_SET_KEY}"
+
+# Enable replica set
+replicaSet:
+  enabled: true
+  name: rs0
+  key: "${MONGO_REPLICA_SET_KEY}"
+  pdb:
+    enabled: true
+    minAvailable: 1
+
+# Resource configuration
+resources:
+  limits:
+    cpu: 2
+    memory: 4Gi
+  requests:
+    cpu: 1
+    memory: 2Gi
+
+# Storage configuration
+persistence:
+  enabled: true
+  storageClass: ""  # Use the default from global values
+  size: 10Gi
+  
+# Pod Disruption Budget
+pdb:
+  create: true
+  minAvailable: 1
+
+# Pod Anti-affinity for HA
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - mongodb
+        topologyKey: kubernetes.io/hostname
+
+# OCI-specific configuration
+oci:
+  enabled: true
+  volumePerformance: "balanced"
+  # Spread replicas across fault domains
+  faultDomainSpread: true
+
+service:
+  type: ClusterIP
+  port: 27017 # Default port
+
+# limits:
+#   cpu: 1000m
+#   memory: 1Gi
+# requests:
+#   cpu: 500m
+#   memory: 512Mi 

@@ -1,0 +1,103 @@
+# Environment: Staging
+# This file contains staging-specific overrides
+
+global:
+  deploymentMode: "cluster"
+  environment: staging
+  storageClass: "oci-block-volume"
+  
+  # Enable OCI-specific configuration
+  oci:
+    enabled: true
+    region: "us-ashburn-1"
+    compartmentId: "ocid1.compartment.oc1..example"
+    availabilityDomains:
+      - "ASHB:US-ASHBURN-AD-1"
+    faultDomains:
+      - "FAULT-DOMAIN-1"
+  
+  # Doppler configuration
+  doppler:
+    enabled: true
+    project: "koci"
+    tokenSecret: "doppler-token-secret"
+  
+  # Database configuration
+  databases:
+    # MySQL configuration (OCI HeatWave)
+    mysql:
+      selfHosted:
+        enabled: false
+      managed:
+        enabled: true
+        # Host and port will be set by deploy.sh from Terraform outputs
+        host: ""
+        port: 3306
+        credentialsSecretName: ""
+        # OCI HeatWave specific
+        oci:
+          dbSystemId: ""
+          shape: "MySQL.HeatWave.VM.Standard.E3"
+          backupRetentionDays: 7
+          sslMode: "REQUIRED"
+          sslCaSecretKey: "OCI_MYSQL_CA_CERT"
+    
+    # MongoDB configuration (deployed in OKE)
+    mongodb:
+      selfHosted:
+        enabled: true
+        replicaCount: 3
+        persistence:
+          storageClass: "oci-block-storage-mongodb"
+          size: 50Gi
+        auth:
+          rootUsernameSecretKey: MONGODB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
+          userSecretKey: MONGODB_USERNAME
+          passwordSecretKey: MONGODB_PASSWORD
+      managed:
+        enabled: false
+
+# Service-specific configurations
+mainApi:
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  
+  # OCI-specific settings
+  oci:
+    instanceType: "regular"
+    loadBalancer:
+      enabled: true
+      shape: "flexible"
+      shapeFlex:
+        minMbps: 10
+        maxMbps: 100
+      subnet: "ocid1.subnet.oc1..example"
+      securityListIds: "ocid1.securitylist.oc1..example"
+  
+  # Doppler configuration
+  doppler:
+    enabled: true
+    projectName: "main-api"
+    tokenSecretName: "main-api-doppler-token-secret"
+
+# Resource profiles for staging
+resources:
+  small:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 400m
+      memory: 512Mi
+  medium:
+    requests:
+      cpu: 400m
+      memory: 512Mi
+    limits:
+      cpu: 800m
+      memory: 1Gi 

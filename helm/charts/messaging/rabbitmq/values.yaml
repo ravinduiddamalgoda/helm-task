@@ -1,0 +1,127 @@
+# Default values for RabbitMQ
+# This is a YAML-formatted file.
+
+image:
+  repository: rabbitmq
+  tag: 3.9.13-management
+  pullPolicy: IfNotPresent
+
+# Number of RabbitMQ replicas
+replicaCount: 1
+
+# RabbitMQ configuration
+config:
+  # Enable management plugin
+  enableManagement: true
+  # Enable metrics plugin
+  enableMetrics: false
+  # Memory high watermark
+  memoryHighWatermark: 0.4
+  # Disk free limit
+  diskFreeLimit: "50MB"
+
+# Service configuration
+service:
+  type: ClusterIP
+  amqpPort: 5672
+  managementPort: 15672
+
+# Persistence configuration
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  storageClass: ""
+
+# Resources configuration
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 400m
+    memory: 512Mi
+
+# Pod security context
+securityContext:
+  enabled: true
+  fsGroup: 999
+  runAsUser: 999
+
+# Container security context
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 999
+
+# Liveness probe
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  timeoutSeconds: 10
+  successThreshold: 1
+  failureThreshold: 3
+
+# Readiness probe
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Clustering
+clustering:
+  enabled: false
+  replicaCount: 3
+
+# Default values specific to the rabbitmq sub-chart.
+# These are overridden by the 'rabbitmq:' section in the umbrella chart's values.
+
+# Note: 'enabled' is controlled by the umbrella chart condition.
+
+# Example defaults (assuming use of RabbitMQ Cluster Operator CRD)
+cluster:
+  name: "koci-rabbitmq-cluster" # Default cluster name
+  replicas: 1
+  image:
+    repository: rabbitmq
+    tag: "3.11-management"
+  persistence:
+    storage: 10Gi
+    # storageClassName: uses global.storageClass by default or specify here
+  # Define the *names* of the secret keys this chart expects for auth
+  auth:
+    usernameSecretKey: RABBITMQ_USERNAME
+    passwordSecretKey: RABBITMQ_PASSWORD
+    # erlangCookieSecretKey: RABBITMQ_ERLANG_COOKIE
+    # existingSecret: "" # Umbrella chart can set this if needed
+  service:
+    port: 5672
+    managementPort: 15672
+
+# Optional: Doppler config for RabbitMQ itself (e.g., for default user/pass)
+# doppler:
+#   enabled: false
+#   projectName: "rabbitmq"
+#   tokenSecretName: "rabbitmq-doppler-token-secret"
+#   managedSecretName: "rabbitmq-doppler-secrets"
+
+# Add other RabbitMQ cluster configurations as needed (plugins, policies, resources, etc.)
+resources: {} 
