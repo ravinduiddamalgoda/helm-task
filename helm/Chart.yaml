@@ -28,10 +28,10 @@ dependencies:
     condition: notificationService.enabled
 
   # Databases
-  - name: mysql
-    repository: file://charts/databases/mysql
-    version: "*"
-    condition: global.databases.mysql.selfHosted.enabled
+  # - name: mysql   
+  #   repository: file://charts/databases/mysql
+  #   version: "*"
+  #   condition: global.databases.mysql.selfHosted.enabled
 
   - name: mongodb
     repository: file://charts/databases/mongodb
