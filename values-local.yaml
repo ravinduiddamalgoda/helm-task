@@ -1,0 +1,36 @@
+global:
+  deploymentMode: "local"
+  environment: "dev"
+  storageClass: "standard"
+  dopplerConfigName: "dev_local"
+
+# All databases are self-hosted in local mode
+# No changes needed from defaults
+
+# Minimal resource requirements for local development
+mainApi:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+authServer:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+notificationService:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi 

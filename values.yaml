@@ -1,0 +1,440 @@
+# Global settings shared across all sub-charts
+global:
+  # Deployment mode: "local" or "cluster"
+  deploymentMode: "local"
+  
+  # Environment name (overridden in environment-specific values files)
+  environment: "dev"
+  
+  # Default storage class (overridden in environment-specific values files)
+  storageClass: "standard"
+  
+  # OCI-specific configuration (used in cluster mode)
+  oci:
+    enabled: false
+    region: ""
+    compartmentId: ""
+    availabilityDomains:
+      - ""
+    faultDomains:
+      - ""
+    # Default instance shape for compute
+    instanceShape: "VM.Standard.E3.Flex"
+    # Default flexible shape configuration
+    flexShape:
+      ocpus: 1
+      memoryInGBs: 16
+  
+  # Doppler configuration
+  doppler:
+    enabled: false
+    # Default token secret name (can be overridden per service)
+    tokenSecret: "doppler-token-secret"
+    # Default project name (can be overridden per service)
+    project: "koci"
+    # Default naming pattern for managed secrets
+    secretNamePattern: "%s-doppler-secrets-%s" # args: service name, environment
+  
+  # Image pull secrets (if needed)
+  imagePullSecrets: []
+  
+  # Database configuration defaults
+  databases:
+    # MySQL configuration
+    mysql:
+      # For local mode
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 2Gi
+        auth:
+          rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+          userSecretKey: MYSQL_USER
+          passwordSecretKey: MYSQL_PASSWORD
+      
+      # For cluster mode (OCI Heatwave)
+      managed:
+        enabled: false
+        host: ""
+        port: 3306
+        credentialsSecretName: ""
+        usernameKey: "username"
+        passwordKey: "password"
+        # OCI Heatwave specific
+        oci:
+          dbSystemId: ""
+          shape: "MySQL.VM.Standard.E3.1.8GB"
+          backupRetentionDays: 7
+          sslMode: "REQUIRED"
+          sslCaSecretKey: "OCI_MYSQL_CA_CERT"  # Key in Doppler for the CA certificate
+    
+    # MongoDB configuration
+    mongodb:
+      # For both modes (always self-hosted)
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 2Gi
+        auth:
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+        # OCI-specific settings for MongoDB
+        oci:
+          faultDomain: ""
+      backup:
+        enabled: false
+        schedule: "0 2 * * *"
+        storageClass: ""
+        retention: 7
+        # OCI Object Storage for backups
+        objectStorage:
+          enabled: false
+          bucketName: ""
+          region: ""
+          credentialsSecretName: ""
+  
+  # Cache configuration
+  cache:
+    redis:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 1Gi
+        # OCI-specific settings for Redis
+        oci:
+          faultDomain: ""
+      managed:
+        enabled: false
+        host: ""
+        port: 6379
+        credentialsSecretName: ""
+  
+  # Messaging configuration
+  messaging:
+    rabbitmq:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 1Gi
+        # OCI-specific settings for RabbitMQ
+        oci:
+          faultDomain: ""
+      managed:
+        enabled: false
+        host: ""
+        port: 5672
+        credentialsSecretName: ""
+        usernameKey: "username"
+        passwordKey: "password"
+
+# Default service configurations
+mainApi:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  # OCI-specific settings
+  oci:
+    instanceType: "regular"
+    loadBalancer:
+      enabled: false
+      shape: "flexible"
+      shapeFlex:
+        minMbps: 10
+        maxMbps: 100
+      subnet: ""
+      securityListIds: ""
+  doppler:
+    enabled: false
+    projectName: "main-api"
+    tokenSecretName: "main-api-doppler-token-secret"
+    managedSecretName: "" # If empty, will use the pattern from global.doppler.secretNamePattern
+    annotations: {}
+
+authServer:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  # OCI-specific settings
+  oci:
+    instanceType: "regular"
+  doppler:
+    enabled: false
+    projectName: "auth-server"
+    tokenSecretName: "auth-server-doppler-token-secret"
+    managedSecretName: ""
+    annotations: {}
+
+notificationService:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  persistence:
+    enabled: true
+    size: 1Gi
+  # OCI-specific settings
+  oci:
+    instanceType: "regular"
+  doppler:
+    enabled: false
+    projectName: "notification-service"
+    tokenSecretName: "notification-service-doppler-token-secret"
+    managedSecretName: ""
+    annotations: {}
+
+# Service configurations (defaults)
+mainApi:
+  enabled: true
+  image:
+    repository: k8s-test/main-api # Replace with your actual registry/image
+    tag: "latest" # Use specific tags in prod!
+    pullPolicy: IfNotPresent
+  # Define other main-api specific defaults here (service ports, config, probes etc.)
+  # These will be merged with main-api/values.yaml
+
+authServer:
+  enabled: true
+  image:
+    repository: k8s-test/auth-server # Replace
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  # Define other auth-server specific defaults here
+
+notificationService:
+  enabled: true
+  image:
+    repository: k8s-test/notification-service # Replace
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  # Define other notification-service specific defaults here
+
+# Database configurations (defaults for internal deployments)
+# These sections control the *internal* database sub-charts.
+# External DBs are configured directly within the service sections (e.g., mainApi.mysql.external.*)
+
+# Messaging configuration (defaults)
+
+# Cache configuration (defaults)
+
+# Secrets Operator configuration
+dopplerOperator:
+  install: false # Default to NOT installing operator via this chart
+  # Define defaults for the doppler-operator sub-chart if install=true
+  # Example:
+  # serviceAccount:
+  #   create: true
+
+# Add this section to configure the MongoDB backup job
+mongodb-backup:
+  enabled: true  # This will be overridden by global.databases.mongodb.backup.enabled
+  nameOverride: "mongodb-backup"
+  fullnameOverride: "mongodb-backup"
+  
+  backup:
+    image:
+      repository: bitnami/mongodb
+      tag: "5.0.8"
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+# Default values for koci chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Default resource profiles
+resources:
+  small:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  medium:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 400m
+      memory: 512Mi
+  large:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# Default service configuration
+service:
+  type: ClusterIP
+  port: 80
+
+# Default ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+# Default persistence configuration
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  ephemeral: false
+
+# Default network policy configuration
+networkPolicy:
+  enabled: false
+  ingress:
+    enabled: true
+    from: []
+  egress:
+    enabled: true
+    rules: []
+
+# Database configurations
+mongodb:
+  internal:
+    enabled: true
+  external:
+    enabled: false
+    host: ""
+    port: 27017
+  database: "koci"
+  existingSecret: ""
+
+mysql:
+  internal:
+    enabled: true
+    auth:
+      rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+      userSecretKey: MYSQL_USER
+      passwordSecretKey: MYSQL_PASSWORD
+  external:
+    enabled: false
+    host: ""
+    port: 3306
+  database: "koci"
+  existingSecret: ""
+  ssl:
+    enabled: false
+    mode: "VERIFY_CA"
+    caKey: "OCI_MYSQL_CA_CERT"
+
+# Cache configuration
+redis:
+  internal:
+    enabled: true
+    auth:
+      enabled: true
+      passwordSecretKey: REDIS_PASSWORD
+    persistence:
+      enabled: false
+  external:
+    enabled: false
+    host: ""
+    port: 6379
+  existingSecret: ""
+
+# Messaging configuration
+rabbitmq:
+  enabled: true
+  cluster:
+    replicas: 1
+    persistence:
+      enabled: true
+      storage: 1Gi
+    auth:
+      usernameSecretKey: RABBITMQ_USERNAME
+      passwordSecretKey: RABBITMQ_PASSWORD
+    service:
+      port: 5672
+      managementPort: 15672
+  connection:
+    internal:
+      enabled: true
+    external:
+      enabled: false
+      host: ""
+      port: 5672
+  vhost: "/"
+  existingSecret: ""
+
+# Main API service configuration
+mainApi:
+  replicaCount: 1
+  image:
+    repository: koci/main-api
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    profile: "small"
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+  doppler:
+    enabled: false
+    projectName: "main-api"
+    tokenSecretName: "main-api-doppler-token-secret"
+
+# Auth server configuration
+authServer:
+  replicaCount: 1
+  image:
+    repository: koci/auth-server
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    profile: "small"
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+  doppler:
+    enabled: false
+    projectName: "auth-server"
+    tokenSecretName: "auth-server-doppler-token-secret"
+
+# Notification service configuration
+notificationService:
+  replicaCount: 1
+  image:
+    repository: koci/notification-service
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  resources:
+    profile: "small"
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+  doppler:
+    enabled: false
+    projectName: "notification-service"
+    tokenSecretName: "notification-service-doppler-token-secret"
+
+# Doppler operator configuration
+dopplerOperator:
+  install: false 

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "auth-server.fullname" . }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: {{ include "auth-server.name" . }} # Matches all pods with an app label set to auth-server
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: http
+      name: http

@@ -1,0 +1,64 @@
+apiVersion: v2
+name: koci # Corrected chart name
+description: Umbrella chart for deploying the koci application suite and dependencies
+type: application
+version: 0.1.0
+appVersion: "1.0.0" # Version of your application suite
+
+dependencies:
+  # Common templates
+  - name: common
+    repository: file://charts/common
+    version: "*"
+
+  # Services
+  - name: main-api
+    repository: file://charts/services/main-api
+    version: "*"
+    condition: mainApi.enabled
+
+  - name: auth-server
+    repository: file://charts/services/auth-server
+    version: "*"
+    condition: authServer.enabled
+
+  - name: notification-service
+    repository: file://charts/services/notification-service
+    version: "*"
+    condition: notificationService.enabled
+
+  # Databases
+  - name: mysql
+    repository: file://charts/databases/mysql
+    version: "*"
+    condition: global.databases.mysql.selfHosted.enabled
+
+  - name: mongodb
+    repository: file://charts/databases/mongodb
+    version: "*"
+    condition: global.databases.mongodb.selfHosted.enabled
+
+  # Jobs
+  - name: mongodb-backup
+    repository: file://charts/jobs/mongodb
+    version: "*"
+    condition: global.databases.mongodb.backup.enabled
+
+  # Cache
+  - name: redis
+    repository: file://charts/cache/redis
+    version: "*"
+    condition: global.cache.redis.selfHosted.enabled
+
+  # Messaging
+  - name: rabbitmq
+    repository: file://charts/messaging/rabbitmq
+    version: "*"
+    condition: global.messaging.rabbitmq.selfHosted.enabled
+
+  # Secrets management
+  - name: doppler-kubernetes-operator
+    repository: https://helm.doppler.com
+    version: "^1.0.0"
+    condition: dopplerOperator.install
+    alias: doppler-operator 

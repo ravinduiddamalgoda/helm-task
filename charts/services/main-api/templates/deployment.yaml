@@ -1,0 +1,196 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "main-api.fullname" . }}
+  namespace: {{ .Values.global.namespace | default .Release.Namespace }} # Use global namespace
+  labels:
+    {{- include "main-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "main-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- toYaml .Values.podAnnotations | nindent 8 }}
+      labels:
+        {{- include "main-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }} # Use global imagePullSecrets
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "main-api.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http # Named port for service/probes
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          env:
+            # Non-secret config from this chart's values
+            {{- range $key, $value := .Values.config }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            # Global environment setting
+            - name: APP_ENV
+              value: {{ .Values.global.environment | quote }}
+
+            # --- Database Connection Env Vars ---
+            {{- if .Values.mysql.internal.enabled }}
+            # Internal MySQL
+            - name: DB_TYPE
+              value: "mysql_internal"
+            - name: DB_HOST # Use helper to get internal service name
+              value: {{ include "main-api.internalMysqlServiceName" . }}
+            - name: DB_PORT # Get port from the mysql section of the *umbrella* values
+              value: {{ required "Internal MySQL port (global.mysql.primary.service.port) is required" .Values.global.mysql.primary.service.port | quote }}
+            - name: DB_DATABASE
+              value: {{ required "Internal MySQL databaseName is required" .Values.mysql.internal.databaseName | quote }}
+            # User/Password for internal DB assumed to be in the Doppler managed secret for *this* service
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "Doppler managedSecretName is required for internal DB" .Values.doppler.managedSecretName }}
+                  # Key name comes from the *umbrella* values under global.mysql.auth
+                  key: {{ required "Internal MySQL user key (global.mysql.auth.userSecretKey) is required" .Values.global.mysql.auth.userSecretKey }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "Doppler managedSecretName is required for internal DB" .Values.doppler.managedSecretName }}
+                  key: {{ required "Internal MySQL password key (global.mysql.auth.passwordSecretKey) is required" .Values.global.mysql.auth.passwordSecretKey }}
+            {{- else if .Values.mysql.external.enabled }}
+            # External MySQL
+            - name: DB_TYPE
+              value: "mysql_external"
+            - name: DB_HOST # Adjust env var names as needed by your app
+              value: {{ .Values.mysql.external.host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.mysql.external.port | quote }}
+            - name: DB_DATABASE
+              value: {{ .Values.mysql.external.database | quote }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "External MySQL credentialsSecretName is required" .Values.mysql.external.credentialsSecretName }}
+                  key: {{ .Values.mysql.external.usernameKey }}
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "External MySQL credentialsSecretName is required" .Values.mysql.external.credentialsSecretName }}
+                  key: {{ .Values.mysql.external.passwordKey }}
+            {{- end }}
+
+            # --- MongoDB Connection Env Vars ---
+            {{- if .Values.mongodb.internal.enabled }}
+            # Internal MongoDB
+            - name: MONGO_TYPE
+              value: "mongo_internal"
+            # Option 1: Construct URI (Requires knowing user/pass structure from Doppler)
+            # Assumes user/pass keys are defined in global.mongodb.auth in umbrella values
+            - name: MONGO_URI
+              value: "mongodb://$(MONGO_USER):$(MONGO_PASSWORD)@{{ include "main-api.internalMongodbServiceName" . }}:{{ required "Internal MongoDB port (global.mongodb.service.port) is required" .Values.global.mongodb.service.port }}/?authSource=admin"
+            # Env vars needed for the URI construction above
+            - name: MONGO_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "Doppler managedSecretName is required for internal DB" .Values.doppler.managedSecretName }}
+                  key: {{ required "Internal MongoDB user key (global.mongodb.auth.rootUserSecretKey) is required" .Values.global.mongodb.auth.rootUserSecretKey }}
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "Doppler managedSecretName is required for internal DB" .Values.doppler.managedSecretName }}
+                  key: {{ required "Internal MongoDB password key (global.mongodb.auth.rootPasswordSecretKey) is required" .Values.global.mongodb.auth.rootPasswordSecretKey }}
+            {{- else if .Values.mongodb.external.enabled }}
+            # External MongoDB (using connection string from secret)
+            - name: MONGO_TYPE
+              value: "mongo_external"
+            - name: MONGO_URI # Or whatever env var your app uses
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "External MongoDB connectionStringSecretName is required" .Values.mongodb.external.connectionStringSecretName }}
+                  key: {{ .Values.mongodb.external.connectionStringSecretKey }}
+            {{- end }}
+
+            # --- RabbitMQ Connection Env Vars (EXAMPLE) ---
+            {{- if eq (include "common.global.rabbitmq.internal.enabled" .) "true" }}
+            # Internal RabbitMQ
+            - name: RABBITMQ_HOST # App expects RABBITMQ_HOST
+              # Construct internal service name (needs helper or convention)
+              # Assuming convention: {{ .Release.Name }}-rabbitmq
+              value: "{{ .Release.Name }}-rabbitmq"
+            - name: RABBITMQ_PORT
+              value: {{ include "common.global.rabbitmq.service.port" . | quote }}
+            # User/Pass sourced from *this service's* Doppler secret
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "Doppler managedSecretName is required for internal MQ" .Values.doppler.managedSecretName }}
+                  # Key name comes from global.rabbitmq.connection.internal
+                  key: {{ .Values.global.rabbitmq.connection.internal.usernameSecretKey | default "RABBITMQ_USERNAME" }}
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "Doppler managedSecretName is required for internal MQ" .Values.doppler.managedSecretName }}
+                  key: {{ .Values.global.rabbitmq.connection.internal.passwordSecretKey | default "RABBITMQ_PASSWORD" }}
+            {{- else if eq (include "common.global.rabbitmq.external.enabled" .) "true" }}
+            # External RabbitMQ
+            - name: RABBITMQ_HOST
+              value: {{ .Values.global.rabbitmq.connection.external.host | default "rabbitmq-external" | quote }}
+            - name: RABBITMQ_PORT
+              value: {{ .Values.global.rabbitmq.connection.external.port | default "5672" | quote }}
+            {{- if .Values.global.rabbitmq.connection.external.credentialsSecretName }}
+            # Using User/Pass Secret
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.rabbitmq.connection.external.credentialsSecretName }}
+                  key: {{ .Values.global.rabbitmq.connection.external.usernameKey | default "username" }}
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.rabbitmq.connection.external.credentialsSecretName }}
+                  key: {{ .Values.global.rabbitmq.connection.external.passwordKey | default "password" }}
+            {{- else if .Values.global.rabbitmq.connection.external.connectionUriSecretName }}
+            # Using Connection URI Secret
+            - name: RABBITMQ_URI # App expects RABBITMQ_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.rabbitmq.connection.external.connectionUriSecretName }}
+                  key: {{ .Values.global.rabbitmq.connection.external.connectionUriSecretKey | default "uri" }}
+            {{- end }}
+            {{- end }} # End RabbitMQ Connection
+
+          # Mount secrets managed by Doppler Operator (if doppler enabled for this service)
+          {{- if .Values.doppler.enabled }}
+          envFrom:
+            - secretRef:
+                # Use the managed secret name defined in this chart's values
+                name: {{ required "Doppler managedSecretName is required when doppler is enabled" .Values.doppler.managedSecretName }}
+          {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

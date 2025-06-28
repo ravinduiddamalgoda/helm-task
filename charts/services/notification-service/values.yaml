@@ -1,0 +1,126 @@
+# Default values specific to the notification-service sub-chart.
+# These are overridden by the 'notificationService:' section in the umbrella chart's values.
+
+replicaCount: 1
+
+image:
+  repository: k8s-test/notification-service # Default repo, MUST be overridden
+  pullPolicy: IfNotPresent
+  # tag: is provided by the umbrella chart
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+# Default to secure pod and container security contexts
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+
+service:
+  type: ClusterIP
+  port: 2502 # Default external port for notification-service
+  targetPort: 8080 # Named port on the container
+
+# Default non-secret config (can be overridden by umbrella notificationService.config)
+config:
+  LOG_LEVEL: "info"
+  DEFAULT_EMAIL_SENDER: "noreply@example.com" # Example default config
+
+# Doppler configuration specific to this service
+doppler:
+  enabled: false # Default to disabled, enable via umbrella chart
+  projectName: "notification-service" # Default project name
+  tokenSecretName: "notification-service-doppler-token-secret" # Default token secret name
+  managedSecretName: "notification-service-secrets" # Default managed secret name (env suffix added by umbrella)
+  # configName: uses global.dopplerConfigName by default
+
+# --- Dependency Connection Details ---
+# Define structure, umbrella chart enables one section or the other.
+
+redis:
+  internal:
+    enabled: false # Default to disabled
+    # Assumes standard secret key (REDIS_PASSWORD) exists in this service's Doppler secret
+    passwordSecretKey: REDIS_PASSWORD
+  external:
+    enabled: false # Default to disabled
+    host: ""
+    port: 6379
+    # Secret containing external Redis password (name provided by umbrella)
+    passwordSecretName: ""
+    passwordSecretKey: "password" # Default key name in the external secret
+
+# Default probes (can be overridden)
+livenessProbe:
+  httpGet:
+    path: /healthz # Example health check path for notification-service
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz # Example readiness path
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Add startup probe for services with slow startup
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  failureThreshold: 30
+  periodSeconds: 10
+
+# Default resource requests/limits (can be overridden)
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Network policy
+networkPolicy:
+  enabled: false
+
+# Other defaults
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Persistence configuration
+persistence:
+  enabled: false # Default to disabled, enable via umbrella chart
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  # storageClass: uses global.storageClass by default 

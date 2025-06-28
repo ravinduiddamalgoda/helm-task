@@ -1,0 +1,3 @@
+{{- $dependencies := dict "mysql" false "mongodb" false "redis" true "rabbitmq" true -}}
+{{- $context := dict "root" . "dependencies" $dependencies -}}
+{{- include "common.deployment" $context -}} 

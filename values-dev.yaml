@@ -1,0 +1,160 @@
+# Environment: Development
+# This file contains development-specific overrides
+
+global:
+  environment: dev
+  
+  # Resource defaults for development environment
+  resources:
+    small:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    medium:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+
+# Database configuration
+mongodb:
+  internal:
+    enabled: true
+  external:
+    enabled: false
+  resources: 
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+
+# Enable internal databases/caches for dev
+# These sections configure the *database sub-charts themselves* when internal.enabled=true
+mysql:
+  internal:
+    enabled: true
+    # Auth keys the MySQL *sub-chart* expects (must match mysql/values.yaml)
+    # Assumes these keys (MYSQL_ROOT_PASSWORD, MYSQL_USER, MYSQL_PASSWORD)
+    # exist in the *consuming service's* Doppler secret.
+    auth:
+      rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+      userSecretKey: MYSQL_USER
+      passwordSecretKey: MYSQL_PASSWORD
+      # existingSecret: "" # Optional: If DB chart needs to mount the service's Doppler secret
+    persistence:
+      size: 2Gi # Smaller size for dev
+    primary: # Ensure the DB sub-chart creates a connectable service (adjust key based on chart, e.g., service.port)
+      service:
+        port: 3306
+
+redis:
+  internal:
+    enabled: true
+    # Auth key the Redis *sub-chart* expects (must match redis/values.yaml)
+    # Assumes this key (REDIS_PASSWORD) exists in the *consuming service's* Doppler secret.
+    auth:
+      enabled: true # If redis chart manages setting the password
+      passwordSecretKey: REDIS_PASSWORD
+      # existingSecret: "" # Optional: If Redis chart needs to mount the service's Doppler secret
+    persistence:
+      enabled: false # No persistence needed for dev cache usually
+    service: # Ensure the cache sub-chart creates a connectable service
+      port: 6379
+
+# Configure RabbitMQ sub-chart for internal deployment
+rabbitmq:
+  enabled: true # Ensure the sub-chart dependency is enabled
+  # Configure the RabbitMQ cluster sub-chart itself
+  cluster:
+    replicas: 1
+    persistence:
+      storage: 2Gi # Smaller size for dev
+    # Define the auth keys the RabbitMQ *sub-chart* expects
+    auth:
+      usernameSecretKey: RABBITMQ_USERNAME
+      passwordSecretKey: RABBITMQ_PASSWORD
+    service:
+      port: 5672
+      managementPort: 15672
+  # Configure how services connect (use internal mode)
+  connection:
+    internal:
+      enabled: true # Enable internal connection logic for services
+    external:
+      enabled: false # Disable external connection logic
+
+# Override service settings for dev
+mainApi:
+  replicaCount: 1
+  image:
+    tag: "dev-latest" # Or specific dev tag
+  # Configure mainApi to use INTERNAL DBs/Redis for dev
+  mysql:
+    internal:
+      enabled: true # Enable internal connection logic in main-api deployment
+      databaseName: "main_api_dev" # Specific DB for this service
+      # Service will get user/pass from its own Doppler secret using standard keys
+    external:
+      enabled: false # Disable external connection logic
+  mongodb:
+    internal:
+      enabled: true # Enable internal connection logic
+      # databaseName: # Optional: if MongoDB subchart supports creating specific DBs/users
+    external:
+      enabled: false # Disable external connection logic
+  doppler: # Doppler config *for* main-api itself
+    enabled: true
+    projectName: "main-api"
+    tokenSecretName: "main-api-doppler-token-secret"
+    managedSecretName: "main-api-doppler-secrets-dev" # Env-specific managed secret
+
+authServer:
+  replicaCount: 1
+  image:
+    tag: "dev-latest"
+  mysql:
+    internal:
+      enabled: true # Enable internal connection logic
+      databaseName: "auth_server_dev" # Specific DB for this service
+    external:
+      enabled: false # Disable external connection logic
+  doppler:
+    enabled: true
+    projectName: "auth-service"
+    tokenSecretName: "auth-server-service-token"
+    managedSecretName: "auth-server-secrets-dev"
+
+notificationService:
+  replicaCount: 1
+  image:
+    tag: "dev-latest"
+  redis:
+    internal:
+      enabled: true # Enable internal connection logic
+    external:
+      enabled: false # Disable external connection logic
+  doppler:
+    enabled: true
+    projectName: "notification-service"
+    tokenSecretName: "notification-service-doppler-token-secret"
+    managedSecretName: "notification-service-doppler-secrets-dev"
+
+# Enable persistence for dev if needed
+persistence:
+  enabled: true
+  size: 1Gi # Smaller size for dev
+
+# If managing Doppler Operator install via Helm
+dopplerOperator:
+  install: true
+  # Optional: Override operator sub-chart values here if needed
+  # serviceAccount:
+  #   create: true
+  # image:
+  #   tag: "specific-operator-version" 
