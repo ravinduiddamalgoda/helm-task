@@ -78,15 +78,14 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/* Original database helpers from your file */}}
 {{- define "common.ociBlockVolumeAnnotations" -}}
 {{- if and (eq .Values.global.deploymentMode "cluster") (and .Values.global .Values.global.oci .Values.global.oci.enabled) }}
-annotations:
-  {{- if and .Values.oci .Values.oci.volumeSource }}
-  volume.beta.kubernetes.io/oci-volume-source: {{ .Values.oci.volumeSource | quote }}
-  {{- end }}
-  {{- if and .Values.oci .Values.oci.volumeBackupId }}
-  volume.beta.kubernetes.io/oci-volume-backup-id: {{ .Values.oci.volumeBackupId | quote }}
-  {{- end }}
-  {{- if and .Values.oci .Values.oci.volumePerformance }}
-  volume.beta.kubernetes.io/oci-volume-performance: {{ .Values.oci.volumePerformance | quote }}
-  {{- end }}
+{{- if and .Values.oci .Values.oci.volumeSource }}
+volume.beta.kubernetes.io/oci-volume-source: {{ .Values.oci.volumeSource | quote }}
+{{- end }}
+{{- if and .Values.oci .Values.oci.volumeBackupId }}
+volume.beta.kubernetes.io/oci-volume-backup-id: {{ .Values.oci.volumeBackupId | quote }}
+{{- end }}
+{{- if and .Values.oci .Values.oci.volumePerformance }}
+volume.beta.kubernetes.io/oci-volume-performance: {{ .Values.oci.volumePerformance | quote }}
+{{- end }}
 {{- end }}
 {{- end -}}

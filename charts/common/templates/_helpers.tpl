@@ -457,15 +457,12 @@ RabbitMQ environment variables implementations
 {{/* Original database helpers from your file */}}
 {{- define "common.ociBlockVolumeAnnotations" -}}
 {{- if and (eq .Values.global.deploymentMode "cluster") .Values.global.oci.enabled }}
-annotations:
-  
-  volume.beta.kubernetes.io/oci-volume-source: {{ .Values.oci.volumeSource | default "" | quote }}
-  {{- if .Values.oci.volumeBackupId }}
-  volume.beta.kubernetes.io/oci-volume-backup-id: {{ .Values.oci.volumeBackupId | quote }}
-  {{- end }}
-
-  {{- if .Values.oci.volumePerformance }}
-  volume.beta.kubernetes.io/oci-volume-performance: {{ .Values.oci.volumePerformance | quote }}
-  {{- end }}
+volume.beta.kubernetes.io/oci-volume-source: {{ .Values.oci.volumeSource | default "" | quote }}
+{{- if .Values.oci.volumeBackupId }}
+volume.beta.kubernetes.io/oci-volume-backup-id: {{ .Values.oci.volumeBackupId | quote }}
+{{- end }}
+{{- if .Values.oci.volumePerformance }}
+volume.beta.kubernetes.io/oci-volume-performance: {{ .Values.oci.volumePerformance | quote }}
+{{- end }}
 {{- end }}
 {{- end -}}

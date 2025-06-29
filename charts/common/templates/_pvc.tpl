@@ -9,14 +9,7 @@ metadata:
     {{- include (printf "%s.labels" .Chart.Name) . | nindent 4 }}
   {{- if and (eq .Values.global.deploymentMode "cluster") .Values.global.oci.enabled }}
   annotations:
-    # OCI Block Volume annotations
-    volume.beta.kubernetes.io/oci-volume-source: {{ .Values.oci.volumeSource | default "" | quote }}
-    {{- if .Values.oci.volumeBackupId }}
-    volume.beta.kubernetes.io/oci-volume-backup-id: {{ .Values.oci.volumeBackupId | quote }}
-    {{- end }}
-    {{- if .Values.oci.volumePerformance }}
-    volume.beta.kubernetes.io/oci-volume-performance: {{ .Values.oci.volumePerformance | quote }}
-    {{- end }}
+    {{- include "common.ociBlockVolumeAnnotations" . | nindent 4 }}
   {{- end }}
 spec:
   accessModes:
@@ -32,4 +25,4 @@ spec:
     requests:
       storage: {{ .Values.persistence.size }}
 {{- end }}
-{{- end -}} 
+{{- end -}}
