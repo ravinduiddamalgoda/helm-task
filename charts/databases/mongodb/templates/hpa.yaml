@@ -1,4 +1,4 @@
-{{- if and (eq .Values.global.deploymentMode "cluster") .Values.autoscaling.enabled }}
+{{- if and (eq .Values.global.deploymentMode "cluster") (and .Values.autoscaling .Values.autoscaling.enabled) }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -30,4 +30,4 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
-{{- end }} 
+{{- end }}

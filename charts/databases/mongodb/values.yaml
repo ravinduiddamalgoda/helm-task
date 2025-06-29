@@ -79,3 +79,15 @@ service:
 # requests:
 #   cpu: 500m
 #   memory: 512Mi 
+
+# Autoscaling configuration (for cluster mode only)
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Other missing configurations that might be needed
+nameOverride: ""
+fullnameOverride: ""
