@@ -91,3 +91,13 @@ autoscaling:
 # Other missing configurations that might be needed
 nameOverride: ""
 fullnameOverride: ""
+
+# Add at the end of the file
+existingSecret: ""
+
+# Doppler configuration
+doppler:
+  enabled: false
+  projectName: "mongodb"
+  tokenSecretName: "mongodb-doppler-token-secret"
+  managedSecretName: "mongodb-doppler-secrets"
