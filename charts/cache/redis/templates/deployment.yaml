@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "notification-service-redis.fullname" . }}-deployment
+  name: {{ include "redis.fullname" . }}
   labels:
-    app: {{ include "notification-service-redis.name" . }}
+    {{- include "redis.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "notification-service-redis.name" . }}
+      {{- include "redis.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: {{ include "notification-service-redis.name" . }}
+        {{- include "redis.selectorLabels" . | nindent 8 }}
     spec:
       securityContext:
         {{- if .Values.securityContext.enabled }}
@@ -57,5 +57,9 @@ spec:
             {{- end }}
       volumes:
         - name: redis-storage
+          {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ include "notification-service-redis.fullname" . }}-pvc
+            claimName: {{ include "redis.fullname" . }}-pvc
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
