@@ -1,5 +1,6 @@
 # Environment: Staging
-# This file contains staging-specific overrides
+# Infrastructure-only deployment for staging environment
+# MongoDB, Redis, RabbitMQ, and Doppler with production-like settings
 
 global:
   deploymentMode: "cluster"
@@ -16,7 +17,7 @@ global:
     faultDomains:
       - "FAULT-DOMAIN-1"
   
-  # Doppler configuration
+  # Doppler configuration for staging
   doppler:
     enabled: true
     project: "koci"
@@ -24,66 +25,260 @@ global:
   
   # Database configuration
   databases:
-    # MySQL configuration (OCI HeatWave)
+    # MySQL - DISABLED
     mysql:
       selfHosted:
         enabled: false
       managed:
-        enabled: true
-        # Host and port will be set by deploy.sh from Terraform outputs
-        host: ""
-        port: 3306
-        credentialsSecretName: ""
-        # OCI HeatWave specific
-        oci:
-          dbSystemId: ""
-          shape: "MySQL.HeatWave.VM.Standard.E3"
-          backupRetentionDays: 7
-          sslMode: "REQUIRED"
-          sslCaSecretKey: "OCI_MYSQL_CA_CERT"
+        enabled: false
     
-    # MongoDB configuration (deployed in OKE)
+    # MongoDB - ENABLED with high availability
     mongodb:
       selfHosted:
         enabled: true
-        replicaCount: 3
+        replicaCount: 3  # 3-node replica set for HA
         persistence:
           storageClass: "oci-block-storage-mongodb"
-          size: 50Gi
+          size: 50Gi  # Production-sized storage
         auth:
-          rootUsernameSecretKey: MONGODB_ROOT_USERNAME
+          rootUserSecretKey: MONGODB_ROOT_USERNAME
           rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
-          userSecretKey: MONGODB_USERNAME
-          passwordSecretKey: MONGODB_PASSWORD
-      managed:
-        enabled: false
+      backup:
+        enabled: true
+        schedule: "0 2 * * *"  # Daily backup at 2 AM
+        retention: 14  # 2 weeks retention for staging
+        storageClass: "oci-block-volume"
+        objectStorage:
+          enabled: true
+          bucketName: "koci-mongodb-backups-staging"
+          region: "us-ashburn-1"
+          credentialsSecretName: "oci-backup-credentials"
+  
+  # Cache configuration
+  cache:
+    redis:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 10Gi
+          storageClass: "oci-block-volume"
+  
+  # Messaging configuration
+  messaging:
+    rabbitmq:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 10Gi
+          storageClass: "oci-block-volume"
 
-# Service-specific configurations
+# Disable all application services
 mainApi:
-  replicaCount: 2
-  autoscaling:
+  enabled: false
+
+authServer:
+  enabled: false
+
+notificationService:
+  enabled: false
+
+# MongoDB configuration for staging
+mongodb:
+  internal:
     enabled: true
-    minReplicas: 2
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 70
-  
-  # OCI-specific settings
-  oci:
-    instanceType: "regular"
-    loadBalancer:
+  external:
+    enabled: false
+  # High availability configuration
+  architecture: replicaset
+  replicaCount: 3  # Primary + 2 secondaries
+  auth:
+    enabled: true
+    rootUser: "admin"
+  replicaSet:
+    enabled: true
+    name: "rs0"
+    pdb:
       enabled: true
-      shape: "flexible"
-      shapeFlex:
-        minMbps: 10
-        maxMbps: 100
-      subnet: "ocid1.subnet.oc1..example"
-      securityListIds: "ocid1.securitylist.oc1..example"
-  
-  # Doppler configuration
-  doppler:
+      minAvailable: 2  # Ensure at least 2 nodes available
+  resources:
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+  persistence:
     enabled: true
-    projectName: "main-api"
-    tokenSecretName: "main-api-doppler-token-secret"
+    storageClass: "oci-block-storage-mongodb"
+    size: 50Gi
+  # Pod Anti-affinity for HA
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - mongodb
+          topologyKey: kubernetes.io/hostname
+  # OCI-specific configuration
+  oci:
+    enabled: true
+    volumePerformance: "balanced"
+    faultDomainSpread: true
+
+# Redis configuration for staging
+redis:
+  internal:
+    enabled: true
+  external:
+    enabled: false
+  replicaCount: 1  # Single instance with persistence
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    storageClass: "oci-block-volume"
+  auth:
+    enabled: true
+    passwordSecretKey: REDIS_PASSWORD
+  config:
+    maxMemoryPolicy: "allkeys-lru"
+    maxMemory: "1536mb"  # Leave some headroom
+  # OCI configuration
+  oci:
+    enabled: true
+    volumePerformance: "balanced"
+
+# RabbitMQ configuration for staging
+rabbitmq:
+  enabled: true
+  # Clustering for high availability
+  clustering:
+    enabled: true
+    replicaCount: 3
+  cluster:
+    replicas: 3
+    persistence:
+      enabled: true
+      storage: 10Gi
+      storageClass: "oci-block-volume"
+    auth:
+      usernameSecretKey: RABBITMQ_USERNAME
+      passwordSecretKey: RABBITMQ_PASSWORD
+    service:
+      port: 5672
+      managementPort: 15672
+  connection:
+    internal:
+      enabled: true
+    external:
+      enabled: false
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+  config:
+    enableManagement: true
+    enableMetrics: true
+    memoryHighWatermark: 0.4
+    diskFreeLimit: "1GB"
+  # Pod disruption budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+  # Anti-affinity for HA
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - rabbitmq
+          topologyKey: kubernetes.io/hostname
+  # OCI configuration
+  oci:
+    enabled: true
+    volumePerformance: "high"
+
+# Doppler Operator configuration for staging
+dopplerOperator:
+  install: true
+  image:
+    repository: dopplerhq/doppler-kubernetes-operator
+    tag: "v1.5.7"
+    pullPolicy: IfNotPresent
+  serviceAccount:
+    create: true
+    name: "doppler-operator-sa"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # High availability
+  replicaCount: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - doppler-operator
+          topologyKey: kubernetes.io/hostname
+
+# MongoDB backup job configuration for staging
+mongodb-backup:
+  enabled: true
+  backup:
+    image:
+      repository: bitnami/mongodb
+      tag: "6.0"
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  # Enhanced backup configuration for staging
+  global:
+    databases:
+      mongodb:
+        backup:
+          enabled: true
+          schedule: "0 2 * * *"  # 2 AM daily
+          retention: 14  # 2 weeks retention
+          storageClass: "oci-block-volume"
+          objectStorage:
+            enabled: true
+            bucketName: "koci-mongodb-backups-staging"
+            region: "us-ashburn-1"
+            credentialsSecretName: "oci-backup-credentials"
 
 # Resource profiles for staging
 resources:
@@ -100,4 +295,38 @@ resources:
       memory: 512Mi
     limits:
       cpu: 800m
-      memory: 1Gi 
+      memory: 1Gi
+  large:
+    requests:
+      cpu: 800m
+      memory: 1Gi
+    limits:
+      cpu: 1600m
+      memory: 2Gi
+
+# Staging-specific settings
+persistence:
+  enabled: true
+  storageClass: "oci-block-volume"
+
+# Enable network policies for security
+networkPolicy:
+  enabled: true
+
+# Node selectors for OCI
+nodeSelector:
+  kubernetes.io/arch: amd64
+
+# Tolerations for OCI specific nodes
+tolerations: []
+
+# Default affinity rules for better distribution
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/part-of: koci
+        topologyKey: kubernetes.io/hostname
