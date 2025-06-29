@@ -125,3 +125,19 @@ cluster:
 
 # Add other RabbitMQ cluster configurations as needed (plugins, policies, resources, etc.)
 resources: {} 
+
+# Doppler configuration (add this section)
+doppler:
+  enabled: false
+  projectName: "rabbitmq"
+  tokenSecretName: "rabbitmq-doppler-token-secret"
+  managedSecretName: "rabbitmq-doppler-secrets"
+
+# Authentication (add this section if not exists)
+auth:
+  username: "admin"
+  password: ""  # Will be auto-generated if empty
+  existingSecret: ""
+
+# Existing secret configuration
+existingSecret: ""
