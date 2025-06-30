@@ -31,7 +31,7 @@ global:
     # Default token secret name (can be overridden per service)
     tokenSecret: "doppler-token-secret"
     # Default project name (can be overridden per service)
-    project: "koci"
+    project: "dp.st.dev.Xz5pjsm4jtJAxd5EbAEOBMJWL15v49XwUBXASEFJjVk"
     # Default naming pattern for managed secrets
     secretNamePattern: "%s-doppler-secrets-%s" # args: service name, environment
   
