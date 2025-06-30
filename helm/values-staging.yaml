@@ -202,11 +202,11 @@ rabbitmq:
             values:
             - stateful-mq
     # Tolerations for messaging workloads
-    tolerations:
-      - key: "workload-type"
-        operator: "Equal"
-        value: "stateful-mq"
-        effect: "NoSchedule"                          # ---ADDED
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "stateful-mq"
+      effect: "NoSchedule"                          # ---ADDED
 
 # Doppler Operator configuration
 dopplerOperator:
