@@ -23,7 +23,7 @@ global:
     mongodb:
       selfHosted:
         enabled: true
-        replicaCount: 3
+        replicaCount: 1
         persistence:
           storageClass: "oci-bv"  # ✅ FIXED
           size: 50Gi
@@ -101,8 +101,9 @@ redis:
 # RabbitMQ configuration (already working)
 rabbitmq:
   enabled: true
-  cluster:
-    replicas: 3
+  replicaCount: 2
+  clustering:
+    enabled: true
     persistence:
       enabled: true
       storage: 10Gi
