@@ -88,23 +88,23 @@ mongodb:
     workload-type: stateful-db
   # NEW: Node affinity for database workloads
   # FIXED: Node affinity for database workloads
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: workload-type
-            operator: In
-            values:
-            - stateful-db
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: node.kubernetes.io/instance-type
-            operator: In
-            values:
-            - VM.Standard.E4.Flex
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: workload-type
+  #           operator: In
+  #           values:
+  #           - stateful-db
+  #     preferredDuringSchedulingIgnoredDuringExecution:
+  #     - weight: 100
+  #       preference:
+  #         matchExpressions:
+  #         - key: node.kubernetes.io/instance-type
+  #           operator: In
+  #           values:
+  #           - VM.Standard.E4.Flex
   # Tolerations for database workloads
   tolerations:
     - key: "workload-type"
@@ -134,23 +134,23 @@ redis:
   nodeSelector:
     workload-type: stateful-db
   # FIXED: Node affinity for database workloads
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: workload-type
-            operator: In
-            values:
-            - stateful-db
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        preference:
-          matchExpressions:
-          - key: node.kubernetes.io/instance-type
-            operator: In
-            values:
-            - VM.Standard.E4.Flex
+  # affinity:
+  #   nodeAffinity:
+  #     requiredDuringSchedulingIgnoredDuringExecution:
+  #       nodeSelectorTerms:
+  #       - matchExpressions:
+  #         - key: workload-type
+  #           operator: In
+  #           values:
+  #           - stateful-db
+  #     preferredDuringSchedulingIgnoredDuringExecution:
+  #     - weight: 100
+  #       preference:
+  #         matchExpressions:
+  #         - key: node.kubernetes.io/instance-type
+  #           operator: In
+  #           values:
+  #           - VM.Standard.E4.Flex
   # Tolerations for database workloads
   tolerations:
     - key: "workload-type"
@@ -192,15 +192,15 @@ rabbitmq:
   nodeSelector:
     workload-type: stateful-mq
     # FIXED: Node affinity for messaging workloads
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: workload-type
-              operator: In
-              values:
-              - stateful-mq
+    # affinity:
+    #   nodeAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       nodeSelectorTerms:
+    #       - matchExpressions:
+    #         - key: workload-type
+    #           operator: In
+    #           values:
+    #           - stateful-mq
     # Tolerations for messaging workloads
     tolerations:
       - key: "workload-type"
