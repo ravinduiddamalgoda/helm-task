@@ -16,7 +16,8 @@ spec:
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}  
-      {{- if .Values.tolerations }} # ADDED --
+      # NEW: Added tolerations support  # ADDED --- 
+      {{- if .Values.tolerations }}
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
       {{- end }}  # --- ADDED

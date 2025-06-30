@@ -14,14 +14,16 @@ spec:
       labels:
         {{- include "redis.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if .Values.affinity }} # ADDED ---
+      # NEW: Added affinity support                          #ADDED  ---
+      {{- if .Values.affinity }}
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}
+      # NEW: Added tolerations support
       {{- if .Values.tolerations }}
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
-      {{- end }} # ---ADDED 
+      {{- end }}                                            # ---ADDED 
       securityContext:
         {{- if .Values.securityContext.enabled }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
