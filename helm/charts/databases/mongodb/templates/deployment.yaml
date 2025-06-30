@@ -12,9 +12,9 @@ spec:
       labels:
         app: main-api-mongodb
     spec:
-      {{- if .Values.nodeSelector }}
+      {{- with .Values.nodeSelector }}
       nodeSelector:
-{{ toYaml .Values.nodeSelector | indent 8 }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- if .Values.affinity }}
       affinity:
