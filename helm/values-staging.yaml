@@ -85,28 +85,30 @@ mongodb:
     size: 20Gi           ##ADDED ---
     storageClass: "oci-bv"
   # NEW: Node affinity for database workloads
+  # FIXED: Node affinity for database workloads
   affinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: workload-type
-          operator: In
-          values:
-          - stateful-db
-    preferredDuringSchedulingIgnoredDuringExecution:
-    - weight: 100
-      preference:
-        matchExpressions:
-        - key: node.kubernetes.io/instance-type
-          operator: In
-          values:
-          - VM.Standard.E4.Flex
-  # NEW: Tolerations for database workloads
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-db
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: node.kubernetes.io/instance-type
+            operator: In
+            values:
+            - VM.Standard.E4.Flex
+  # Tolerations for database workloads
   tolerations:
     - key: "workload-type"
       operator: "Equal"
       value: "stateful-db"
-      effect: "NoSchedule"                     ##  ---ADDED
+      effect: "NoSchedule"                    ##  ---ADDED
 
 # Redis configuration
 redis:
@@ -127,29 +129,30 @@ redis:
     #storageClass: "oci-bv"  # ✅ FIXED   ##ADDED ---
     size: 10Gi
     storageClass: "oci-bv"
-  # NEW: Node affinity for database workloads
+  # FIXED: Node affinity for database workloads
   affinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: workload-type
-          operator: In
-          values:
-          - stateful-db
-    preferredDuringSchedulingIgnoredDuringExecution:
-    - weight: 100
-      preference:
-        matchExpressions:
-        - key: node.kubernetes.io/instance-type
-          operator: In
-          values:
-          - VM.Standard.E4.Flex
-  # NEW: Tolerations for database workloads
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-db
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: node.kubernetes.io/instance-type
+            operator: In
+            values:
+            - VM.Standard.E4.Flex
+  # Tolerations for database workloads
   tolerations:
     - key: "workload-type"
       operator: "Equal"
       value: "stateful-db"
-      effect: "NoSchedule"
+      effect: "NoSchedule"                 ##  ---ADDED
 
 # RabbitMQ configuration (already working)
 rabbitmq:
@@ -182,16 +185,17 @@ rabbitmq:
     config:
       enableManagement: true
       memoryHighWatermark: 0.6
-    # NEW: Node affinity for messaging workloads    #ADDED  ---
+    # FIXED: Node affinity for messaging workloads
     affinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-        - matchExpressions:
-          - key: workload-type
-            operator: In
-            values:
-            - stateful-mq
-    # NEW: Tolerations for messaging workloads
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: workload-type
+              operator: In
+              values:
+              - stateful-mq
+    # Tolerations for messaging workloads
     tolerations:
       - key: "workload-type"
         operator: "Equal"
