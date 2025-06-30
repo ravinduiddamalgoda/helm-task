@@ -1,36 +1,195 @@
+# Environment: Local Development
+# Minimal configuration for running only infrastructure components locally
+# MongoDB, Redis, RabbitMQ, and Doppler
+
 global:
   deploymentMode: "local"
   environment: "dev"
   storageClass: "standard"
-  dopplerConfigName: "dev_local"
+  
+  # Doppler configuration for local development
+  doppler:
+    enabled: true
+    project: "koci"
+    tokenSecret: "doppler-token-secret"
+  
+  # Database configuration
+  databases:
+    # MySQL - DISABLED
+    mysql:
+      selfHosted:
+        enabled: false
+      managed:
+        enabled: false
+    
+    # MongoDB - ENABLED (minimal config for local)
+    mongodb:
+      selfHosted:
+        enabled: true
+        replicaCount: 1
+        persistence:
+          size: 2Gi  # Small size for local development
+        auth:
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+      backup:
+        enabled: true  # Enable backup even locally for testing
+        schedule: "0 4 * * *"  # 4 AM daily
+        retention: 2  # Only 2 days retention locally
+        storageClass: "standard"
+  
+  # Cache configuration
+  cache:
+    redis:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 512Mi  # Minimal size for local
+  
+  # Messaging configuration
+  messaging:
+    rabbitmq:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 512Mi  # Minimal size for local
 
-# All databases are self-hosted in local mode
-# No changes needed from defaults
-
-# Minimal resource requirements for local development
+# Disable all application services
 mainApi:
-  resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  enabled: false
 
 authServer:
+  enabled: false
+
+notificationService:
+  enabled: false
+
+# MongoDB - minimal local configuration
+mongodb:
+  internal:
+    enabled: true
+  external:
+    enabled: false
+  replicaCount: 1
   resources:
-    limits:
-      cpu: 200m
+    requests:
+      cpu: 100m
       memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  persistence:
+    enabled: true
+    size: 2Gi
+    storageClass: "standard"
+
+# Redis - minimal local configuration
+redis:
+  internal:
+    enabled: true
+  external:
+    enabled: false
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  persistence:
+    enabled: true
+    size: 512Mi
+    storageClass: "standard"
+
+# RabbitMQ - minimal local configuration
+rabbitmq:
+  enabled: true
+  replicaCount: 1
+  cluster:
+    replicas: 1
+    persistence:
+      enabled: true
+      storage: 512Mi
+      storageClass: "standard"
+    auth:
+      usernameSecretKey: RABBITMQ_USERNAME
+      passwordSecretKey: RABBITMQ_PASSWORD
+    service:
+      port: 5672
+      managementPort: 15672
+  connection:
+    internal:
+      enabled: true
+    external:
+      enabled: false
+  resources:
     requests:
       cpu: 100m
       memory: 128Mi
-
-notificationService:
-  resources:
     limits:
       cpu: 200m
       memory: 256Mi
+  config:
+    enableManagement: true  # Useful for local debugging
+    memoryHighWatermark: 0.4
+
+# Doppler Operator - minimal configuration
+dopplerOperator:
+  install: true
+  serviceAccount:
+    create: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# MongoDB backup job
+mongodb-backup:
+  enabled: true
+  backup:
+    image:
+      repository: bitnami/mongodb
+      tag: "6.0"
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+# Minimal resource requirements for local development
+resources:
+  small:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  medium:
     requests:
       cpu: 100m
-      memory: 128Mi 
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Local development settings
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: "standard"
+
+# Disable network policies for local development
+networkPolicy:
+  enabled: false
+
+# No node selectors, tolerations, or affinity for local
+nodeSelector: {}
+tolerations: []
+affinity: {}
