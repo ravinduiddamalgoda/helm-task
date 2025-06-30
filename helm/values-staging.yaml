@@ -6,12 +6,12 @@ global:
   
   oci:
     enabled: true
-    region: "us-ashburn-1"
+    region: "ca-montreal-1"
   
   doppler:
     enabled: true
-    project: "koci"
-    tokenSecret: "doppler-token-secret"
+    project: "oci-infra"
+    tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
   
   databases:
     mysql:
