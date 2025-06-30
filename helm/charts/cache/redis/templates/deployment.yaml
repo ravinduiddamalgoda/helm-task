@@ -15,10 +15,6 @@ spec:
         {{- include "redis.selectorLabels" . | nindent 8 }}
     spec:
       # NEW: Added affinity support                          #ADDED  ---
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- if .Values.affinity }}
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
