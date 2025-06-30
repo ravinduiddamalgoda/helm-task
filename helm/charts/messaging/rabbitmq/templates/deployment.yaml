@@ -92,9 +92,9 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-      {{- with .Values.nodeSelector }}
+      {{- if .Values.nodeSelector }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
+{{ toYaml .Values.nodeSelector | indent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
       affinity:
