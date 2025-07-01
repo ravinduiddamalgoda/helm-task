@@ -20,6 +20,7 @@ global:
     enabled: true
     project: "oci-infra"
     tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
+    configName: "dev"
   
   databases:
     mysql:
@@ -36,8 +37,8 @@ global:
           storageClass: "oci-bv"  # ✅ FIXED
           size: 50Gi
         auth:
-          rootUserSecretKey: MONGODB_ROOT_USERNAME
-          rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
       backup:
         enabled: true
         schedule: "0 2 * * *"
@@ -78,7 +79,7 @@ mainApi:
     enabled: true
   doppler:
     enabled: true
-    projectName: "main-api"
+    projectName: "oci-infra"
     tokenSecretName: "main-api-doppler-token-secret"
     managedSecretName: "main-api-doppler-secrets-staging"
   config:
@@ -125,7 +126,7 @@ authServer:
     enabled: true
   doppler:
     enabled: true
-    projectName: "auth-server"
+    projectName: "oci-infra"
     tokenSecretName: "auth-server-doppler-token-secret"
     managedSecretName: "auth-server-doppler-secrets-staging"
   config:
@@ -173,7 +174,7 @@ notificationService:
     storageClass: "oci-bv"
   doppler:
     enabled: true
-    projectName: "notification-service"
+    projectName: "oci-infra"
     tokenSecretName: "notification-service-doppler-token-secret"
     managedSecretName: "notification-service-doppler-secrets-staging"
   config:

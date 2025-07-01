@@ -38,6 +38,7 @@ global:
     tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
     # Default project name (can be overridden per service)
     project: "oci-infra"
+    configName: "dev"
     # Default naming pattern for managed secrets
     secretNamePattern: "%s-doppler-secrets-%s" # args: service name, environment
   
@@ -141,7 +142,7 @@ mainApi:
     enabled: true
     projectName: "main-api"
     tokenSecretName: "main-api-doppler-token-secret"
-    managedSecretName: ""
+    managedSecretName: "main-api-doppler-manage-secret-name"
     annotations: {}
   config:
     LOG_LEVEL: "debug"
@@ -378,12 +379,3 @@ networkPolicy:
   egress:
     enabled: true
     rules: []
-
-# livenessProbe:
-#   httpGet:
-#     path: /healthz # Example health check path for notification-service
-#     port: http
-#   initialDelaySeconds: 15
-#   periodSeconds: 20
-#   timeoutSeconds: 5
-#   failureThreshold: 3

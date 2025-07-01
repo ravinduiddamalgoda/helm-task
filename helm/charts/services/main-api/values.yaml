@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   repository: yul.ocir.io/axjre2lwxpox/main-api # Default repo, MUST be overridden in umbrella values
-  tag: "alpine"
+  tag: "latest"
   pullPolicy: IfNotPresent
   # tag: is provided by the umbrella chart
 
