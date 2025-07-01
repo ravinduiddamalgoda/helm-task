@@ -63,94 +63,94 @@ global:
 # all application services
 
 mainApi:
-  enabled: false  # ✅ ENABLED: Enable main-api service
-  # replicaCount: 2
-  # image:
-  #   repository: yul.ocir.io/axjre2lwxpox/main-api
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
-  # autoscaling:
-  #   enabled: true
-  #   minReplicas: 2
-  #   maxReplicas: 5
-  #   targetCPUUtilizationPercentage: 70
-  # networkPolicy:
-  #   enabled: true
-  # doppler:
-  #   enabled: true
-  #   projectName: "main-api"
-  #   tokenSecretName: "main-api-doppler-token-secret"
-  #   managedSecretName: "main-api-doppler-secrets-staging"
-  # config:
-  #   LOG_LEVEL: "info"
-  #   APP_ENV: "staging"
-  # resources:
-  #   requests:
-  #     cpu: 200m
-  #     memory: 256Mi
-  #   limits:
-  #     cpu: 500m
-  #     memory: 512Mi
-  # # Database connections
-  # mysql:
-  #   internal:
-  #     enabled: false  # Use external MySQL in staging
-  #   external:
-  #     enabled: true
-  #     host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
-  #     port: 3306
-  #     database: "koci_main"
-  #     credentialsSecretName: "staging-mysql-credentials"
-  #     usernameKey: "username"
-  #     passwordKey: "password"
-  # mongodb:
-  #   internal:
-  #     enabled: true  # Use internal MongoDB
-  #   external:
-  #     enabled: false
+  enabled: true  # ✅ ENABLED: Enable main-api service
+  replicaCount: 2
+  image:
+    repository: yul.ocir.io/axjre2lwxpox/main-api
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  doppler:
+    enabled: true
+    projectName: "main-api"
+    tokenSecretName: "main-api-doppler-token-secret"
+    managedSecretName: "main-api-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # Database connections
+  mysql:
+    internal:
+      enabled: false  # Use external MySQL in staging
+    external:
+      enabled: true
+      host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
+      port: 3306
+      database: "koci_main"
+      credentialsSecretName: "staging-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
+  mongodb:
+    internal:
+      enabled: true  # Use internal MongoDB
+    external:
+      enabled: false
 
 authServer:
-  enabled: false  # ✅ ENABLED: Enable auth-server service
-  # replicaCount: 2
-  # image:
-  #   repository: "yul.ocir.io/axjre2lwxpox/auth-server"
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
-  # autoscaling:
-  #   enabled: true
-  #   minReplicas: 2
-  #   maxReplicas: 5
-  #   targetCPUUtilizationPercentage: 70
-  # networkPolicy:
-  #   enabled: true
-  # doppler:
-  #   enabled: true
-  #   projectName: "auth-server"
-  #   tokenSecretName: "auth-server-doppler-token-secret"
-  #   managedSecretName: "auth-server-doppler-secrets-staging"
-  # config:
-  #   LOG_LEVEL: "info"
-  #   JWT_ISSUER: "koci-auth-server-staging"
-  #   APP_ENV: "staging"
-  # resources:
-  #   requests:
-  #     cpu: 150m
-  #     memory: 256Mi
-  #   limits:
-  #     cpu: 300m
-  #     memory: 512Mi
-  # # Database connections
-  # mysql:
-  #   internal:
-  #     enabled: false  # Use external MySQL in staging
-  #   external:
-  #     enabled: true
-  #     host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
-  #     port: 3306
-  #     database: "koci_auth"
-  #     credentialsSecretName: "staging-mysql-credentials"
-  #     usernameKey: "username"
-  #     passwordKey: "password"
+  enabled: true  # ✅ ENABLED: Enable auth-server service
+  replicaCount: 2
+  image:
+    repository: "yul.ocir.io/axjre2lwxpox/auth-server"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  doppler:
+    enabled: true
+    projectName: "auth-server"
+    tokenSecretName: "auth-server-doppler-token-secret"
+    managedSecretName: "auth-server-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    JWT_ISSUER: "koci-auth-server-staging"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 150m
+      memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  # Database connections
+  mysql:
+    internal:
+      enabled: false  # Use external MySQL in staging
+    external:
+      enabled: true
+      host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
+      port: 3306
+      database: "koci_auth"
+      credentialsSecretName: "staging-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
 
 
 notificationService:
