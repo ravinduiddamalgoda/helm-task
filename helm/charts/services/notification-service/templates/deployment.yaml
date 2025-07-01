@@ -1,7 +1,3 @@
-# {{- $dependencies := dict "mysql" false "mongodb" false "redis" true "rabbitmq" true -}}
-# {{- $context := dict "root" . "dependencies" $dependencies -}}
-# {{- include "common.deployment" $context -}} 
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,29 +24,27 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
           ports:
-{{- with .Values.ports }}
-{{ toYaml . | nindent 12 }}
-{{- else }}
+            {{- with .Values.ports }}
+            {{- toYaml . | nindent 12 }}
+            {{- else }}
             - name: http
               containerPort: 8080
               protocol: TCP
-{{- end }}
+            {{- end }}
           env:
-{{- range $key, $value := .Values.config }}
+            {{- range $key, $value := .Values.config }}
             - name: {{ $key }}
               value: {{ $value | quote }}
-{{- end }}
-{{- with .Values.livenessProbe }}
+            {{- end }}
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-{{ toYaml . | nindent 12 }}
-{{- end }}
-{{- with .Values.readinessProbe }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
           readinessProbe:
-{{ toYaml . | nindent 12 }}
-{{- end }}
-{{- with .Values.resources }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
           resources:
-{{ toYaml . | nindent 12 }}
-{{- end }}
-
-          
+            {{- toYaml . | nindent 12 }}
+          {{- end }} 

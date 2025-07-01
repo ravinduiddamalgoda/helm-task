@@ -154,50 +154,50 @@ authServer:
 
 
 notificationService:
-  enabled: true  # ✅ ENABLED: Enable notification-service
-  replicaCount: 2
-  image:
-    repository: "yul.ocir.io/axjre2lwxpox/notification-service"
-    tag: "latest"
-    pullPolicy: IfNotPresent
-  autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 70
-  networkPolicy:
-    enabled: true
-  persistence:
-    enabled: true
-    size: 5Gi
-    storageClass: "oci-bv"
-  doppler:
-    enabled: true
-    projectName: "notification-service"
-    tokenSecretName: "notification-service-doppler-token-secret"
-    managedSecretName: "notification-service-doppler-secrets-staging"
-  config:
-    LOG_LEVEL: "info"
-    DEFAULT_EMAIL_SENDER: "noreply@staging.koci.com"
-    APP_ENV: "staging"
-  resources:
-    requests:
-      cpu: 200m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
-  # Dependencies
-  redis:
-    internal:
-      enabled: true  # Use internal Redis
-    external:
-      enabled: false
-  rabbitmq:
-    internal:
-      enabled: true  # Use internal RabbitMQ
-    external:
-      enabled: false
+  enabled: false  # ✅ ENABLED: Enable notification-service
+  # replicaCount: 2
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/notification-service"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
+  # autoscaling:
+  #   enabled: true
+  #   minReplicas: 2
+  #   maxReplicas: 5
+  #   targetCPUUtilizationPercentage: 70
+  # networkPolicy:
+  #   enabled: true
+  # persistence:
+  #   enabled: true
+  #   size: 5Gi
+  #   storageClass: "oci-bv"
+  # doppler:
+  #   enabled: true
+  #   projectName: "notification-service"
+  #   tokenSecretName: "notification-service-doppler-token-secret"
+  #   managedSecretName: "notification-service-doppler-secrets-staging"
+  # config:
+  #   LOG_LEVEL: "info"
+  #   DEFAULT_EMAIL_SENDER: "noreply@staging.koci.com"
+  #   APP_ENV: "staging"
+  # resources:
+  #   requests:
+  #     cpu: 200m
+  #     memory: 256Mi
+  #   limits:
+  #     cpu: 500m
+  #     memory: 512Mi
+  # # Dependencies
+  # redis:
+  #   internal:
+  #     enabled: true  # Use internal Redis
+  #   external:
+  #     enabled: false
+  # rabbitmq:
+  #   internal:
+  #     enabled: true  # Use internal RabbitMQ
+  #   external:
+  #     enabled: false
 
 
 
