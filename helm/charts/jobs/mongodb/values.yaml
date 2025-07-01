@@ -98,7 +98,7 @@ global:
 # Doppler configuration for secrets management
 doppler:
   # Name of the managed secret created by Doppler operator
-  managedSecretName: "mongodb-secrets"
+  managedSecretName: "koci-mongodb-secrets"
   # Whether Doppler is enabled (usually inherited from global)
   enabled: false
   # Project and config for Doppler
