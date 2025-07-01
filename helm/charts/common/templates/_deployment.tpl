@@ -75,6 +75,7 @@ spec:
             {{- end }}
             {{- end }}
             {{- end }}
+            {{- end }}
           {{- with $root.Values.envFrom }}
           envFrom:
             {{- toYaml . | nindent 12 }}
