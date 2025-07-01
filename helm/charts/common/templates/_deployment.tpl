@@ -28,7 +28,8 @@ spec:
       labels:
         {{- include "common.selectorLabels" $root | nindent 8 }}
     spec:
-      {{- with $root.Values.imagePullSecrets }}
+      #{{- with $root.Values.imagePullSecrets }}
+      {{- with $root.Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
