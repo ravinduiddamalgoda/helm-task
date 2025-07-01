@@ -3,10 +3,18 @@ global:
   deploymentMode: "cluster"
   environment: staging
   storageClass: "oci-bv"  # ✅ FIXED: Use working storage class
+
+  imagePullSecrets:
+    - name: ocir-secret
   
   oci:
     enabled: true
     region: "ca-montreal-1"
+    registry:
+      server: "yul.ocir.io"
+      username: "axjre2lwxpox/k.samaranayake7@gmail.com"
+      password: "M>.(8z79tM696kNNgln{"
+      email: "k.samaranayake7@gmail.com"
   
   doppler:
     enabled: true
