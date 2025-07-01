@@ -187,8 +187,12 @@ authServer:
       passwordKey: "password"
 
 notificationService:
-  enabled: false  # Disable notification-service
+  enabled: true  # Disable notification-service
   replicaCount: 1
+  image:
+    repository: "yul.ocir.io/axjre2lwxpox/notification-service"  # ⚠️ UPDATE: Replace with your actual OCI registry
+    tag: "latest"
+    pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
@@ -197,11 +201,33 @@ notificationService:
     enabled: true
     size: 1Gi
   doppler:
-    enabled: false
+    enabled: true
     projectName: "notification-service"
     tokenSecretName: "notification-service-doppler-token-secret"
     managedSecretName: ""
     annotations: {}
+  config:
+    LOG_LEVEL: "debug"
+    DEFAULT_EMAIL_SENDER: "noreply@dev.koci.com"
+    APP_ENV: "dev"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Dependencies for development
+  redis:
+    internal:
+      enabled: true  # Use internal Redis
+    external:
+      enabled: false
+  rabbitmq:
+    internal:
+      enabled: true  # Use internal RabbitMQ
+    external:
+      enabled: false
 
 # Database configurations (defaults for internal deployments)
 mongodb:

@@ -23,10 +23,10 @@ dependencies:
     version: "*"
     condition: authServer.enabled
 
-  # - name: notification-service
-  #   repository: file://charts/services/notification-service
-  #   version: "*"
-  #   condition: notificationService.enabled
+  - name: notification-service
+    repository: file://charts/services/notification-service
+    version: "*"
+    condition: notificationService.enabled
 
   # Databases
   # MySQL - DISABLED (commented out)

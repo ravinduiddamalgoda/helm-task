@@ -4,7 +4,7 @@
 replicaCount: 1
 
 image:
-  repository: k8s-test/notification-service # Default repo, MUST be overridden
+  repository: yul.ocir.io/axjre2lwxpox/notification-service # Default repo, MUST be overridden
   pullPolicy: IfNotPresent
   # tag: is provided by the umbrella chart
 
