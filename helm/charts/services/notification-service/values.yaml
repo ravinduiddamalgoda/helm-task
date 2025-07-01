@@ -5,7 +5,9 @@ replicaCount: 1
 
 image:
   repository: yul.ocir.io/axjre2lwxpox/notification-service # Default repo, MUST be overridden
+  tag: "latest"
   pullPolicy: IfNotPresent
+
   # tag: is provided by the umbrella chart
 
 nameOverride: ""
