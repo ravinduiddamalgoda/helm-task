@@ -47,8 +47,19 @@ tolerations: []
 affinity: {}
 
 # Database configuration
-mysql:
-  enabled: true
+mysql:  
+  #enabled: true
+  internal:
+    enabled: false  # Default to disabled
+    databaseName: "auth_server" # Default internal DB name if enabled
+  external:
+    enabled: false  # Default to disabled
+    host: ""
+    port: 3306
+    database: ""
+    credentialsSecretName: "" # Secret containing user/pass
+    usernameKey: "username"
+    passwordKey: "password"
 
 # Doppler configuration
 doppler:

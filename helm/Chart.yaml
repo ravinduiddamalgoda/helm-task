@@ -13,15 +13,15 @@ dependencies:
 
   # Application Services - ALL DISABLED
   # Note: These are commented out to prevent accidental deployment
-  # - name: main-api
-  #   repository: file://charts/services/main-api
-  #   version: "*"
-  #   condition: mainApi.enabled
+  - name: main-api
+    repository: file://charts/services/main-api
+    version: "*"
+    condition: mainApi.enabled
 
-  # - name: auth-server
-  #   repository: file://charts/services/auth-server
-  #   version: "*"
-  #   condition: authServer.enabled
+  - name: auth-server
+    repository: file://charts/services/auth-server
+    version: "*"
+    condition: authServer.enabled
 
   # - name: notification-service
   #   repository: file://charts/services/notification-service
