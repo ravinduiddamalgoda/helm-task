@@ -75,23 +75,25 @@ config:
   JWT_ISSUER: "koci-auth-server" # Example default issuer
 
 # Default probes (can be overridden)
-livenessProbe:
-  httpGet:
-    path: /healthz # Example health check path for auth-server
-    port: http
-  initialDelaySeconds: 15
-  periodSeconds: 20
-  timeoutSeconds: 5
-  failureThreshold: 3
+# livenessProbe:
+#   httpGet:
+#     path: /healthz # Example health check path for auth-server
+#     port: http
+#   initialDelaySeconds: 15
+#   periodSeconds: 20
+#   timeoutSeconds: 5
+#   failureThreshold: 3
 
-readinessProbe:
-  httpGet:
-    path: /readyz # Example readiness path
-    port: http
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+# readinessProbe:
+#   httpGet:
+#     path: /readyz # Example readiness path
+#     port: http
+#   initialDelaySeconds: 5
+#   periodSeconds: 10
+#   timeoutSeconds: 5
+#   failureThreshold: 3
+livenessProbe: null
+readinessProbe: null
 
 # Default resource requests/limits (can be overridden)
 resources: {}

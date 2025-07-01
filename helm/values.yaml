@@ -379,11 +379,11 @@ networkPolicy:
     enabled: true
     rules: []
 
-livenessProbe:
-  httpGet:
-    path: /healthz # Example health check path for notification-service
-    port: http
-  initialDelaySeconds: 15
-  periodSeconds: 20
-  timeoutSeconds: 5
-  failureThreshold: 3
+# livenessProbe:
+#   httpGet:
+#     path: /healthz # Example health check path for notification-service
+#     port: http
+#   initialDelaySeconds: 15
+#   periodSeconds: 20
+#   timeoutSeconds: 5
+#   failureThreshold: 3

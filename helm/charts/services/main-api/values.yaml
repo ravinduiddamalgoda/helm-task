@@ -77,23 +77,26 @@ mongodb:
     connectionStringSecretKey: "uri"
 
 # Default probes (can be overridden)
-livenessProbe:
-  httpGet:
-    path: /health_check
-    port: http # Use the container port name
-  initialDelaySeconds: 15
-  periodSeconds: 20
-  timeoutSeconds: 5
-  failureThreshold: 3
+# livenessProbe:
+#   httpGet:
+#     path: /health_check
+#     port: http # Use the container port name
+#   initialDelaySeconds: 15
+#   periodSeconds: 20
+#   timeoutSeconds: 5
+#   failureThreshold: 3
 
-readinessProbe:
-  httpGet:
-    path: /health_check
-    port: http
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
+# readinessProbe:
+#   httpGet:
+#     path: /health_check
+#     port: http
+#   initialDelaySeconds: 5
+#   periodSeconds: 10
+#   timeoutSeconds: 5
+#   failureThreshold: 3
+
+livenessProbe: null
+readinessProbe: null
 
 # Default resource requests/limits (can be overridden)
 resources: {}
