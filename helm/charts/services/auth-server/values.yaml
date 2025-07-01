@@ -4,7 +4,7 @@
 replicaCount: 1
 
 image:
-  repository: yul.ocir.io/axjre2lwxpox/auth-server
+  repository: busybox #yul.ocir.io/axjre2lwxpox/auth-server
   tag: "latest"
   pullPolicy: IfNotPresent
 
@@ -93,7 +93,7 @@ readinessProbe:
   timeoutSeconds: 5
   failureThreshold: 3
 
-  
+
 # livenessProbe: null
 # readinessProbe: null
 
