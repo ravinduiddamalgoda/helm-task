@@ -39,7 +39,7 @@ global:
           projectName: "oci-infra"
           tokenSecretName: "doppler-token-secret"
           managedSecretName: "koci-mongodb-secrets"
-          dopplerConfigName: "dev" 
+          configName: "dev"
         persistence:
           storageClass: "oci-bv"  # ✅ FIXED
           size: 50Gi
