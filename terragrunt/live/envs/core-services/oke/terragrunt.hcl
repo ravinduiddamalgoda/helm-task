@@ -55,21 +55,6 @@ dependency "bastion" { ## hardcode
 ###############################################################################
 terraform {
   source = "../../../../../terraform/modules/oci//oke"
-
-  # When the cluster is ready, re-apply the Operator stack so it can
-  # pull the kubeconfig.
-  # after_hook "generate_kubeconfig_on_operator" {
-  #   commands = ["apply"]
-  #   execute  = [
-  #     "terragrunt",
-  #     "apply",
-  #     "--terragrunt-source-update",
-  #     "--terragrunt-working-dir", "${get_terragrunt_dir()}/../operator", #"--terragrunt-working-dir", "../operator", # hardcode
-  #     "--non-interactive",
-  #     "-var", "generate_kubeconfig=true"
-  #   ]
-  #   run_on_error = false   # skip the hook if OKE apply failed
-  # }
 }
 
 ###############################################################################
@@ -341,9 +326,7 @@ inputs = merge(
         sa_namespace                = "kube-system"
         sa_cluster_role             = "image-puller"
         sa_cluster_role_binding     = "registry-sa-image-puller"
-        # Optionally, for namespace-scoped roles:
-        # sa_role                  = "my-custom-role"
-        # sa_role_binding          = "registry-sa-custom-binding"
+        
       }
     }
 

@@ -55,17 +55,15 @@ locals {
   lb_shape = "100Mbps"  # or "10Mbps", "100Mbps", "400Mbps", "8000Mbps"
   lb_is_private = false  # Set to true for private load balancer
   
-  # Backend configuration - you'll need to update these with actual backend IPs
-  # These could come from OKE worker nodes, application servers, etc.
 
-  #backend_ips = try(dependency.oke.outputs.worker_node_private_ips, ["10.2.68.10", "10.2.68.11"])  # Example backend IPs from workers subnet - update as needed
+  backend_ips = try(dependency.oke.outputs.worker_node_private_ips, ["10.2.68.10", "10.2.68.11"]) 
   
   common_tags = include.common.locals.common_tags
 }
 
 ###############################################################################
 # Terraform configuration
-###############################################################################
+
 terraform {
   source = "../../../../terraform/modules/oci/loadbalancer"
 }
@@ -91,12 +89,12 @@ inputs = {
   backend_set_name = "app-backendset"
   
   # NSG configuration
-#   nsg_ids = local.lb_is_private ? [dependency.network.outputs.nsg_ids.int_lb] : [dependency.network.outputs.nsg_ids.pub_lb]
-  nsg_ids = [dependency.security.outputs.lb_nsg_id]
-  # SSL/TLS configuration (optional)
+  nsg_ids = local.lb_is_private ? [dependency.network.outputs.nsg_ids.int_lb] : [dependency.network.outputs.nsg_ids.pub_lb]
+  
+  
   certificate_id = ""  # Set this if you have an SSL certificate
   certificate_name = "default-cert"
   
-  # WAF configuration (optional)
-  waf_policy_id = dependency.security.outputs.waf_policy_id # Set this if you have a WAF policy
+  # WAF configuration 
+  waf_policy_id = dependency.security.outputs.waf_policy_id 
 } 

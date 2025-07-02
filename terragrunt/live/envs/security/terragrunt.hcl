@@ -279,11 +279,9 @@ generate "waf" {
 }
 
 ###############################################################################
-# Tell Terragrunt this stack contains Terraform (generated files)
+# Terraform 
 ###############################################################################
 terraform {
-  # Source is the current directory containing the generated .tf files
-  #source = "." # Adjust if needed
   source = "../../../../terraform/modules/oci/security"
 
   # Define outputs for the NSG IDs so other modules (like database) can depend on them
@@ -298,12 +296,9 @@ terraform {
 ###############################################################################
 # ───────────────────────────  NEW: generated outputs  ────────────────────────
 ###############################################################################
-# Write the Terraform outputs into outputs.tf so Terraform (not Terragrunt)
-# can export them and other stacks can consume them through the dependency
-# mechanism.
-###############################################################################
+
 generate "outputs" {
-  path      = "outputs.tf"          # created in the working folder
+  path      = "outputs.tf"          
   if_exists = "overwrite"
 
   contents = <<-EOT
@@ -329,27 +324,7 @@ generate "outputs" {
       value       = module.bastion_nsg.nsg_id # Ensure module name matches template
     }
 
-    # Security module outputs (KMS vault and keys) - direct resource references   #hardcode ADDED
-    # output "vault_id" {
-    #   description = "OCID of the KMS vault"
-    #   value       = module.vault.vault_id
-    # }
-
-    # output "tfstate_key_id" {
-    #   description = "OCID of the Terraform state encryption key"
-    #   value       = tfstate_key_ocid
-    # }
-
-    # output "data_key_id" {
-    #   description = "OCID of the data encryption key"
-    #   value       = data_key_ocid
-    # }
-
-    # output "db_admin_secret_id" {
-    #   description = "OCID of the database admin password secret"
-    #   value       = db_admin_secret_ocid
-    # }
-
+    
     # Cloud Guard Security Zone outputs   #hardcode ADDED
     output "security_zone_id" {
       description = "OCID of the Cloud Guard Security Zone"

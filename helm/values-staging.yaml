@@ -67,11 +67,11 @@ global:
 
 mainApi:
   enabled: true  # ✅ ENABLED: Enable main-api service
-  replicaCount: 2
-  image:
-    repository: yul.ocir.io/axjre2lwxpox/main-api
-    tag: "latest"
-    pullPolicy: IfNotPresent
+  replicaCount: 1
+  # image:
+  #   repository: yul.ocir.io/axjre2lwxpox/main-api
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -115,10 +115,10 @@ mainApi:
 authServer:
   enabled: true  # ✅ ENABLED: Enable auth-server service
   replicaCount: 2
-  image:
-    repository: "yul.ocir.io/axjre2lwxpox/auth-server"
-    tag: "latest"
-    pullPolicy: IfNotPresent
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/auth-server"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -159,10 +159,10 @@ authServer:
 notificationService:
   enabled: true  # ✅ ENABLED: Enable notification-service
   replicaCount: 2
-  image:
-    repository: "yul.ocir.io/axjre2lwxpox/notification-service"
-    tag: "latest"
-    pullPolicy: IfNotPresent
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/notification-service"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: true
     minReplicas: 2

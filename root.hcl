@@ -139,9 +139,8 @@ KEY
     aws_secret_key_env     = trimspace(get_env("TF_STATE_SECRET_KEY", "")),
   } : k => (v == "" ? null : v) }
   # End of empty_to_null map definition
-  ######### /helper #############################################################
-} # End of the main locals block
-
+  #####################################################################
+} 
 # ---------------------------------------------------------------------------
 # Inject OCI provider - Uses safe locals (placeholders during init)
 # ---------------------------------------------------------------------------
@@ -181,8 +180,7 @@ EOF
 inputs = {
   tenancy_ocid    = local.tenancy_ocid
   region          = local.region
-  doppler_project = local.doppler_project # Static
-  # Pass common tags safely
+  doppler_project = local.doppler_project 
   common_tags     = local.tags
 }
 

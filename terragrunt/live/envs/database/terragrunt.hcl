@@ -15,10 +15,7 @@ dependency "network" {
       bastion = "ocid1.subnet.oc1..mock_bastion"
       data    = "ocid1.subnet.oc1..mock_data"
     }
-    #subnet_availability_domains  = {
-    #  bastion = "phx-ad-1"
-    #  data    = "phx-ad-1"
-    #}
+
     nsg_ids        = { bastion = "ocid1.networksecuritygroup.oc1..mock" }
     vcn_cidr_block = "10.2.0.0/16"
   }
@@ -115,7 +112,6 @@ locals {
   doppler_project = include.common.locals.doppler_project
 
   # The service-token linked to this layer has access to the "stg" config,
-  # not "database", so force the environment override here.
   env             = "dev"  # hardcode ADDED stg -> dev
 
   # ── MySQL credentials: use Doppler value or create on first apply ───────
@@ -139,7 +135,7 @@ locals {
 
   # Common tags from includes
   common_tags = merge(
-      include.common.locals.common_tags, # Get base tags from env-common
+      include.common.locals.common_tags,
       {
           # Add/override specific tags for this module if needed
           Service = "database"

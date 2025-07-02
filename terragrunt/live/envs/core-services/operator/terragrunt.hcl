@@ -91,9 +91,7 @@ inputs = {
   # fall back to the OPERATOR_SSH_PUBLIC_KEY env-var (or "")
   ssh_public_key     = local._final_ssh_public_key
   ssh_private_key    = file(get_env("BASTION_SSH_KEY", ""))
-  
-  #    # same key you use from Terragrunt
-                   # mark BASTION_SSH_KEY in your env
+
 
   # ─── required core identifiers ────────────────────────────────────────
   state_id        = "core-services"

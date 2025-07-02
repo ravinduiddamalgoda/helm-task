@@ -29,32 +29,6 @@ locals {
   # ─── VCN settings ───────────────────────────────────────────────────────
   vcn_cidr = "10.2.0.0/16"
 
-#  raw_subnets = {
-#    # ── single-AD tiers ──────────────────────────────────────────
-#    bastion = { newbits = 8,  dns_label = "bastion", gateway_type = "igw",  ha = false } # /24  → 256   (251 usable)
-#    data    = { newbits = 8,  dns_label = "data",    gateway_type = "sgw",  ha = false } # /24  → 256   (251 usable)
-#
-#    # ── multi-AD tiers ───────────────────────────────────────────
-#    cp      = { newbits = 10, dns_label = "cp",      gateway_type = "ngw",  ha = true  } # /26 × ADs → 64   (59 usable)
-#    int_lb  = { newbits = 11, dns_label = "ilb",     gateway_type = "ngw",  ha = true  } # /27 × ADs → 32   (27 usable)
-#    pub_lb  = { newbits = 11, dns_label = "plb",     gateway_type = "igw",  ha = true  } # /27 × ADs → 32   (27 usable)
-#    workers = { newbits = 7,  dns_label = "workers", gateway_type = "sgw",  ha = true  } # /23 × ADs → 512  (507 usable)
-#    pods    = { newbits = 4,  dns_label = "pods",    gateway_type = "sgw",  ha = true  } # /20 × ADs → 4096 (4091 usable)
-#  }
-
-
-  #########################################################################
-  # Subnet sizing  –  OCI single-AD best practice
-  #########################################################################
-  #raw_subnets = {
-  #  bastion = { newbits = 8,  netnum = 64,  dns_label = "bastion", gateway_type = "igw",  ha = false } # 10.2.64.0/24
-  #  data    = { newbits = 8,  netnum = 65,  dns_label = "data",    gateway_type = "sgw",  ha = false } # 10.2.65.0/24
-  #  cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false } # 10.2.66.0/26
-  #  int_lb  = { newbits = 11, netnum = 530, dns_label = "ilb",     gateway_type = "ngw",  ha = false } # 10.2.66.64/27
-  #  pub_lb  = { newbits = 11, netnum = 531, dns_label = "plb",     gateway_type = "igw",  ha = false } # 10.2.66.96/27
-  #  workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "sgw",  ha = false } # 10.2.68.0/23
-  #  pods    = { newbits = 4,  netnum = 8,   dns_label = "pods",    gateway_type = "sgw",  ha = false } # 10.2.128.0/20
-  #}
 
   raw_subnets = {
     bastion = { newbits = 11, netnum = 512, dns_label = "bastion", gateway_type = "igw",  ha = false } # 10.2.64.0/27
@@ -63,7 +37,6 @@ locals {
     cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false } # 10.2.66.0/26
     int_lb  = { newbits = 10, netnum = 265, dns_label = "ilb",     gateway_type = "ngw",  ha = false } # 10.2.66.64/26
     pub_lb  = { newbits = 10, netnum = 266, dns_label = "plb",     gateway_type = "igw",  ha = false } # 10.2.66.128/26
-    # workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "sgw",  ha = false } # 10.2.68.0/23
     workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false } # 10.2.68.0/23 #hardcode ADDED
     pods    = { newbits = 4,  netnum = 8,   dns_label = "pods",    gateway_type = "sgw",  ha = false } # 10.2.128.0/20
   }
@@ -83,7 +56,6 @@ locals {
         name      = name
         base_name = name
         ad        = null
-        # use explicit netnum if present; otherwise fall back to index()
         netnum    = lookup(local.raw_subnets[name], "netnum", index(local.base_order, name))
       }
     )
@@ -137,13 +109,8 @@ locals {
   )
 
   # -----------------------------------------------------------
-  # Extra "singleton" NSGs that are *not* tied to a subnet
-  # - removed the unused `operator`
   # -----------------------------------------------------------
   extra_nsg_keys = ["fss", "pods", "workers"]
-
-  # NOTE: the final `nsgs` map is built later in this locals block
-  #       after the detailed rule-sets are defined.
 
   # toggles / ACL helpers
   bastion_allowed_cidrs        = ["0.0.0.0/0"]
@@ -182,9 +149,6 @@ locals {
   
   admin_cidr       = "0.0.0.0/0" # Example: Replace with actual admin IP/CIDR
   common_inputs = try(include.common.locals.common_inputs, {})
-
-  # (subnets_list is now defined once – see the "Stable, collision-free
-  # subnet enumeration" section above)
 
   # ── NSG RULE SETS ────────────────────────────────────────────────────────
 
@@ -266,25 +230,6 @@ locals {
     }
   }
 ]
-
-#    nsg_rules_cp = [
-#      { direction = "INGRESS", protocol = "6",  description = "K8s API",
-#        source = local.vcn_cidr, source_type = "CIDR_BLOCK",
-#        tcp_options = { destination_port_range = { min = 6443,  max = 6443 } } },
-#
-#      { direction = "EGRESS",  protocol = "6",  description = "Kubelet",
-#        destination = local.vcn_cidr, destination_type = "CIDR_BLOCK",
-#        tcp_options = { destination_port_range = { min = 12250, max = 12250 } } },
-#
-#      # ── NEW : NodePort traffic (best-practice) ────────────────────────────
-#      { direction = "EGRESS",  protocol = "6",  description = "NodePort TCP egress to workers",
-#        destination = local.vcn_cidr, destination_type = "CIDR_BLOCK",
-#        tcp_options = { destination_port_range = { min = 30000, max = 32767 } } },
-#
-#      { direction = "EGRESS",  protocol = "17", description = "NodePort UDP egress to workers",
-#        destination = local.vcn_cidr, destination_type = "CIDR_BLOCK",
-#        udp_options = { destination_port_range = { min = 30000, max = 32767 } } },
-#    ]
 
   nsg_rules_workers = concat(
     flatten([
@@ -466,33 +411,7 @@ locals {
   )
 
 
-#  nsg_rules_workers = [
-#    { direction = "INGRESS", protocol = "6",  description = "NodePort TCP", source = local.vcn_cidr, source_type = "CIDR_BLOCK",
-#      tcp_options = { destination_port_range = { min = 30000, max = 32767 } } },
-#    { direction = "INGRESS", protocol = "17", description = "NodePort UDP", source = local.vcn_cidr, source_type = "CIDR_BLOCK",
-#      udp_options = { destination_port_range = { min = 30000, max = 32767 } } },
-#    { direction = "INGRESS", protocol = "17", description = "VXLAN / Flannel 4789", source = local.vcn_cidr, source_type = "CIDR_BLOCK",
-#      udp_options = { destination_port_range = { min = 4789, max = 4789 } } },
-#    { direction = "INGRESS", protocol = "17", description = "Flannel 6081",  source = local.vcn_cidr, source_type = "CIDR_BLOCK",
-#      udp_options = { destination_port_range = { min = 6081, max = 6081 } } },
-#    { direction = "INGRESS", protocol = "1",  description = "ICMP intra-VCN", source = local.vcn_cidr, source_type = "CIDR_BLOCK",
-#      icmp_options = { type = 3, code = 4 } },
-#    { direction = "INGRESS", protocol = "6",  description = "TCP intra-VCN", source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
-#    { direction = "INGRESS", protocol = "17", description = "UDP intra-VCN", source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
-#    # --- egress required for registry pulls & DNS ---------------------------
-#    { direction = "EGRESS", protocol = "6",  description = "HTTPS outbound 443",
-#      destination = "0.0.0.0/0", destination_type = "CIDR_BLOCK",
-#      tcp_options = { destination_port_range = { min = 443, max = 443 } } },
-#    { direction = "EGRESS", protocol = "6",  description = "DNS TCP 53",
-#      destination = "169.254.169.254/32", destination_type = "CIDR_BLOCK",
-#      tcp_options = { destination_port_range = { min = 53,  max = 53 } } },
-#    { direction = "EGRESS", protocol = "17", description = "DNS UDP 53",
-#      destination = "169.254.169.254/32", destination_type = "CIDR_BLOCK",
-#      udp_options = { destination_port_range = { min = 53,  max = 53 } } },
-#  ]
-
   # `pods` and `workers` share the exact same rule-set.  Point pods
-  # directly at workers to avoid maintaining two identical lists.
   nsg_rules_pods = local.nsg_rules_workers
 
   nsg_rules_int_lb  = [
@@ -533,6 +452,16 @@ locals {
       source_type = "CIDR_BLOCK"
       icmp_options = { type = 3, code = 4 }
     },
+
+    ##hardcode ADDED
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "MYSQL"
+        source      = "10.2.0.0/16"
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 3306, max = 3306 } }
+      },
 
     # ICMP type 3 from VCN
     {
@@ -603,7 +532,7 @@ locals {
       tcp_options = { destination_port_range = { min = 80, max = 80 } } },
 
 
-    # Removed open HTTP/80 egress.  Bastion still has HTTPS/443 and
+   
     # the required Tailscale / STUN ports.
 
     { direction = "EGRESS", protocol = "1",  description = "ICMP path discovery",
@@ -696,8 +625,6 @@ locals {
   nsgs = {
     for key in distinct(concat(keys(local.subnets), local.extra_nsg_keys)) :
     key => {
-      # Strip "_ad1", "_ad2", ... to look up the canonical rule-set;
-      # fallback to empty list when no policy is defined.
       rules = try(
         local.base_nsg_rule_map[replace(key, "_ad[0-9]+$", "")],
         []

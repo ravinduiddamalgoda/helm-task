@@ -14,7 +14,7 @@ architecture: replicaset
 replicaCount: 3  # Primary + 2 secondaries for high availability
 
 auth:
-  enabled: true
+  enabled: false
   rootUser: "admin"
   rootPassword: ""
   replicaSetKey: "${MONGO_REPLICA_SET_KEY}"

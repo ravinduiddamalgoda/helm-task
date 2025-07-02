@@ -130,10 +130,10 @@ global:
 mainApi:
   enabled: true  # ✅ ENABLED: Enable main-api service for development
   replicaCount: 1
-  image:
-    repository: "yul.ocir.io/axjre2lwxpox/main-api"
-    tag: "latest"
-    pullPolicy: IfNotPresent
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/main-api"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
@@ -158,10 +158,10 @@ mainApi:
 authServer:
   enabled: true  # ✅ ENABLED: Enable auth-server service for development
   replicaCount: 1
-  image:
-    repository: "yul.ocir.io/axjre2lwxpox/auth-server"
-    tag: "latest"
-    pullPolicy: IfNotPresent
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/auth-server"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
@@ -199,10 +199,10 @@ authServer:
 notificationService:
   enabled: true  # Disable notification-service
   replicaCount: 1
-  image:
-    repository: "yul.ocir.io/axjre2lwxpox/notification-service"  # ⚠️ UPDATE: Replace with your actual OCI registry
-    tag: "latest"
-    pullPolicy: IfNotPresent
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/notification-service"  # ⚠️ UPDATE: Replace with your actual OCI registry
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:

@@ -34,7 +34,7 @@ locals {
   # ---- defaults for required module variables -------------------
   # Change these if your tenancy uses different values
   timezone            = "UTC"
-  tag_namespace       = "koci"                       # default tag namespace
+  tag_namespace       = "koci"                       
 }
 
 inputs = {
@@ -50,8 +50,8 @@ inputs = {
   state_id              = "core-services"
 
   # Name overrides
-  instance_display_name = "${include.common.locals.env}-bastion"   # → core-services-bastion
-  hostname_label        = "core-services-bastion"                  # must satisfy DNS rules
+  instance_display_name = "${include.common.locals.env}-bastion"   
+  hostname_label        = "core-services-bastion"                  
 
   # place the VM in the bastion subnet / NSG created by the network layer
   subnet_id = dependency.network.outputs.subnet_ids["bastion"]
@@ -77,22 +77,18 @@ inputs = {
   }
 
   # ── SSH (leave empty to disable) ───────────────────────────────────────
-  ssh_public_key  = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCt7qx7y18eFTkCMqOUkNis4FzAlA1oCChMyg5CtIg4lOfvUyG/o4Yxv4vPAR7y85jXbh7Y4LX4z1QvU30Kp3hwb7FYKgXGCnrnZqG0x6AmlhqfmI/UIzpXJKLqGvzI9IJNFBhK19bKnMIqJlunpZ5cAzfmDT7pq4CfMk6GY1PQRd3jDOEwMTaaRdm0fQm/6kNaxlkT9CsD+icUjivwk7DosSUmhBMAso7XNDtn+KyLtEbKFZC6iIXWuXm7kkiD6PYU6FGvfhHrpaz/ttEDf6trmROospdsqv5aaICIa7j6CWAw077MiHrdnGYqAZCC3EKzKDPc2qiqtdLEkAyvM1jR ssh-key-2025-06-11"
-  # ssh_public_key  = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEoLDbXep4pEg3nXQk4z29xjkWVnLkPCztbYTd4OPTh5"
-
+  ssh_public_key  = ""   #hardcode ADDED  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCt7qx7y18eFTkCMqOUkNis4FzAlA1oCChMyg5CtIg4lOfvUyG/o4Yxv4vPAR7y85jXbh7Y4LX4z1QvU30Kp3hwb7FYKgXGCnrnZqG0x6AmlhqfmI/UIzpXJKLqGvzI9IJNFBhK19bKnMIqJlunpZ5cAzfmDT7pq4CfMk6GY1PQRd3jDOEwMTaaRdm0fQm/6kNaxlkT9CsD+icUjivwk7DosSUmhBMAso7XNDtn+KyLtEbKFZC6iIXWuXm7kkiD6PYU6FGvfhHrpaz/ttEDf6trmROospdsqv5aaICIa7j6CWAw077MiHrdnGYqAZCC3EKzKDPc2qiqtdLEkAyvM1jR ssh-key-2025-06-11
 
   ssh_private_key = file(get_env("BASTION_SSH_KEY", ""))
-  
-               # no key needed when disabled
 
   defined_tags   = {}
   freeform_tags  = include.common.locals.common_tags
 
   # ── values that were missing (all are required by the module) ──
   timezone            = local.timezone
-  upgrade             = true          # run OS package upgrade on first boot
-  user                = "kociadmin"     # extra Linux user to create
+  upgrade             = true          
+  user                = "kociadmin"     
 
   tag_namespace   = local.tag_namespace
-  use_defined_tags = false            # set true if you actually supply them
+  use_defined_tags = false            
 } 

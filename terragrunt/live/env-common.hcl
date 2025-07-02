@@ -24,8 +24,7 @@ locals {
   path_parts               = split("/", local.current_path_rel_to_root)
 
   # Derive the environment name from the folder that follows `envs/`
-  #   live/envs/<env-name>/...  →  index 2  ===  <env-name>
-  # Fallback to "core-services" if the path is shorter (e.g., during tests)
+ 
   env = try(local.path_parts[2], "core-services")
 
   
