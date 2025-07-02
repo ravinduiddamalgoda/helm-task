@@ -33,7 +33,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.doppler.managedSecretName | default "koci-mongodb-secrets" }} #name: main-api-doppler-secrets   | default "koci-mongodb-secrets"
-              key:  {{ .Values.global.databases.mongodb.selfHosted.auth.rootUserSecretKey }} #MONGO_INITDB_ROOT_USERNAME
+              key: MONGO_INITDB_ROOT_USERNAME #{{ .Values.global.databases.mongodb.selfHosted.auth.rootUserSecretKey }} #MONGO_INITDB_ROOT_USERNAME
         - name: MONGO_INITDB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
