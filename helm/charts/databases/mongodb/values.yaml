@@ -97,7 +97,7 @@ existingSecret: ""
 
 # Doppler configuration
 doppler:
-  enabled: enable
+  enabled: false
   projectName: "oci-infra" #"mongodb"
   tokenSecretName: "mongodb-doppler-token-secret"
   managedSecretName: "koci-mongodb-secrets" #"mongodb-doppler-secrets"
