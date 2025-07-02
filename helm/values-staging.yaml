@@ -20,7 +20,7 @@ global:
     enabled: true
     project: "oci-infra"
     tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
-    # configName: "dev"
+    dopplerConfigName: "dev"
   
   databases:
     mysql:
@@ -33,6 +33,13 @@ global:
       selfHosted:
         enabled: true
         replicaCount: 1
+        # Enable Doppler for MongoDB secrets
+        doppler:
+          enabled: true
+          projectName: "oci-infra"
+          tokenSecretName: "oci-infra"
+          managedSecretName: "koci-mongodb-secrets"
+          dopplerConfigName: "dev" 
         persistence:
           storageClass: "oci-bv"  # ✅ FIXED
           size: 50Gi
