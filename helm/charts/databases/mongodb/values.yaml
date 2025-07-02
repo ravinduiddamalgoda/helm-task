@@ -15,7 +15,7 @@ replicaCount: 3  # Primary + 2 secondaries for high availability
 
 auth:
   enabled: true
-  rootUser: MONGO_INITDB_ROOT_USERNAME
+  rootUser: "${MONGO_INITDB_ROOT_USERNAME}"
   rootPassword: "${MONGO_INITDB_ROOT_PASSWORD}"
   replicaSetKey: "${MONGO_REPLICA_SET_KEY}"
 
@@ -97,7 +97,7 @@ existingSecret: ""
 
 # Doppler configuration
 doppler:
-  enabled: false
+  enabled: true
   projectName: "oci-infra" #"mongodb"
   tokenSecretName: "mongodb-doppler-token-secret"
   managedSecretName: "koci-mongodb-secrets" #"mongodb-doppler-secrets"
