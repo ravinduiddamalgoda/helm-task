@@ -37,10 +37,11 @@ global:
           storageClass: "oci-bv"  # ✅ FIXED
           size: 50Gi
         auth:
-          rootUserSecretKey: MONGODB_ROOT_USERNAME
-          rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
-          # rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
-          # rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+          # rootUserSecretKey: MONGODB_ROOT_USERNAME
+          # rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
+          
       backup:
         enabled: true
         schedule: "0 2 * * *"
