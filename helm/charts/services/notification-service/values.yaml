@@ -46,8 +46,8 @@ config:
 # Doppler configuration specific to this service
 doppler:
   enabled: false # Default to disabled, enable via umbrella chart
-  projectName: "notification-service" # Default project name
-  tokenSecretName: "notification-service-doppler-token-secret" # Default token secret name
+  projectName: "oci-infra" # Default project name
+  tokenSecretName: "doppler-token-secret" # Default token secret name
   managedSecretName: "notification-service-secrets" # Default managed secret name (env suffix added by umbrella)
   # configName: uses global.dopplerConfigName by default
 

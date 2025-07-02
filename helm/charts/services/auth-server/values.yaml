@@ -64,8 +64,8 @@ mysql:
 # Doppler configuration
 doppler:
   enabled: false
-  projectName: "auth-server"
-  tokenSecretName: "auth-server-doppler-token-secret"
+  projectName: "oci-infra"
+  tokenSecretName: "doppler-token-secret" # Example token secret name
   managedSecretName: ""
   annotations: {}
 

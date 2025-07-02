@@ -37,7 +37,7 @@ global:
         doppler:
           enabled: true
           projectName: "oci-infra"
-          tokenSecretName: "oci-infra"
+          tokenSecretName: "doppler-token-secret"
           managedSecretName: "koci-mongodb-secrets"
           dopplerConfigName: "dev" 
         persistence:
@@ -90,7 +90,7 @@ mainApi:
   doppler:
     enabled: true
     projectName: "oci-infra"
-    tokenSecretName: "main-api-doppler-token-secret"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: "main-api-doppler-secrets-staging"
   config:
     LOG_LEVEL: "info"
@@ -137,7 +137,7 @@ authServer:
   doppler:
     enabled: true
     projectName: "oci-infra"
-    tokenSecretName: "auth-server-doppler-token-secret"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: "auth-server-doppler-secrets-staging"
   config:
     LOG_LEVEL: "info"
@@ -185,7 +185,7 @@ notificationService:
   doppler:
     enabled: true
     projectName: "oci-infra"
-    tokenSecretName: "notification-service-doppler-token-secret"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: "notification-service-doppler-secrets-staging"
   config:
     LOG_LEVEL: "info"

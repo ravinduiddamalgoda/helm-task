@@ -140,8 +140,8 @@ mainApi:
     enabled: false
   doppler:
     enabled: true
-    projectName: "main-api"
-    tokenSecretName: "main-api-doppler-token-secret"
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: "main-api-doppler-manage-secret-name"
     annotations: {}
   config:
@@ -168,8 +168,8 @@ authServer:
     enabled: false
   doppler:
     enabled: true
-    projectName: "auth-server"
-    tokenSecretName: "auth-server-doppler-token-secret"
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: ""
     annotations: {}
   config:
@@ -212,8 +212,8 @@ notificationService:
     size: 1Gi
   doppler:
     enabled: true
-    projectName: "notification-service"
-    tokenSecretName: "notification-service-doppler-token-secret"
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: ""
     annotations: {}
   config:
