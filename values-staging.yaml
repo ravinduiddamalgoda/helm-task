@@ -18,9 +18,10 @@ global:
   
   doppler:
     enabled: true
+    operatorNamespace: "doppler-operator-system"
+    tokenSecretName: "doppler-token-secret"
     project: "oci-infra"
-    tokenSecret: ""
-    dopplerConfigName: "dev"
+    configName: "dev"
   
   databases:
     mysql:
