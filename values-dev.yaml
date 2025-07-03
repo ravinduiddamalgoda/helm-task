@@ -3,9 +3,11 @@
 # Only MongoDB, Redis, RabbitMQ, and Doppler components
 
 global:
-  deploymentMode: "local"  # Use local mode for development
+  deploymentMode: "local"
   environment: dev
   storageClass: "standard"
+  
+
   
 
     # Image pull secrets for OCI Container Registry
@@ -23,11 +25,13 @@ global:
       email: "k.samaranayake7@gmail.com"
 
 
-  # Enable Doppler for secrets management
+  # Fixed Doppler configuration
   doppler:
     enabled: true
+    operatorNamespace: "doppler-operator-system"
+    tokenSecretName: "doppler-token-secret"
     project: "oci-infra"
-    tokenSecret: "" 
+    configName: "dev"
   
   # Database configuration
   databases:

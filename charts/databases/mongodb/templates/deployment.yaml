@@ -1,29 +1,29 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: main-api-mongodb-deployment
+  name: {{ include "mongodb.fullname" . }}
+  labels:
+    {{- include "mongodb.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: main-api-mongodb
+      {{- include "mongodb.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: main-api-mongodb
+        {{- include "mongodb.selectorLabels" . | nindent 8 }}
     spec:
       {{- if .Values.affinity }}
       affinity:
-{{ toYaml .Values.affinity | indent 8 }}
-      {{- end }}  
-      # NEW: Added tolerations support  # ADDED --- 
+        {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}
       {{- if .Values.tolerations }}
       tolerations:
-{{ toYaml .Values.tolerations | indent 8 }}
-      {{- end }}  # --- ADDED
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
       containers:
-      - name: main-api-mongodb
+      - name: mongodb
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
@@ -32,16 +32,16 @@ spec:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.doppler.managedSecretName | default "koci-mongodb-secrets" }} #name: main-api-doppler-secrets   | default "koci-mongodb-secrets"
-              key: MONGO_INITDB_ROOT_USERNAME #{{ .Values.global.databases.mongodb.selfHosted.auth.rootUserSecretKey }} #MONGO_INITDB_ROOT_USERNAME
+              name: koci-mongodb-secrets  # FIXED: Use consistent secret name
+              key: MONGO_INITDB_ROOT_USERNAME
         - name: MONGO_INITDB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.doppler.managedSecretName | default "koci-mongodb-secrets" }} #name: main-api-doppler-secrets   | default "koci-mongodb-secrets"
+              name: koci-mongodb-secrets  # FIXED: Use consistent secret name
               key: MONGO_INITDB_ROOT_PASSWORD
         {{- if .Values.resources }}
         resources:
-{{ toYaml .Values.resources | indent 10 }}
+          {{- toYaml .Values.resources | nindent 10 }}
         {{- end }}
         volumeMounts:
         - name: data-volume
@@ -49,5 +49,4 @@ spec:
       volumes:
       - name: data-volume
         persistentVolumeClaim:
-          claimName: main-api-mongodb-pvc
-          
+          claimName: {{ include "mongodb.fullname" . }}-pvc
