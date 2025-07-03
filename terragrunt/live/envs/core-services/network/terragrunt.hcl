@@ -32,12 +32,12 @@ locals {
 
   raw_subnets = {
     bastion = { newbits = 11, netnum = 512, dns_label = "bastion", gateway_type = "igw",  ha = false } # 10.2.64.0/27
-    operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27  #hardcode ADDED
+    operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27  
     data    = { newbits = 8,  netnum = 65,  dns_label = "data",    gateway_type = "sgw",  ha = false } # 10.2.65.0/24
     cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false } # 10.2.66.0/26
     int_lb  = { newbits = 10, netnum = 265, dns_label = "ilb",     gateway_type = "ngw",  ha = false } # 10.2.66.64/26
     pub_lb  = { newbits = 10, netnum = 266, dns_label = "plb",     gateway_type = "igw",  ha = false } # 10.2.66.128/26
-    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false } # 10.2.68.0/23 #hardcode ADDED
+    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false } # 10.2.68.0/23 
     pods    = { newbits = 4,  netnum = 8,   dns_label = "pods",    gateway_type = "sgw",  ha = false } # 10.2.128.0/20
   }
 
@@ -46,7 +46,7 @@ locals {
   # Stable, collision-free subnet enumeration
   #########################################################################
   base_order = [
-    "bastion", "operator", "data", "cp", "int_lb", "pub_lb", "workers", "pods" #hardcode ADDED
+    "bastion", "operator", "data", "cp", "int_lb", "pub_lb", "workers", "pods" 
   ]
 
   expanded_subnets = [
@@ -77,7 +77,7 @@ locals {
 
 
   trusted_nodeport_sources = flatten([
-    for name in ["cp", "int_lb", "bastion", "operator"] :       #hardcode ADDED
+    for name in ["cp", "int_lb", "bastion", "operator"] :      
     contains(keys(local.subnets), name) ? [local.subnets[name].cidr] : []
   ])
 
@@ -298,7 +298,7 @@ locals {
           destination_port_range = { min = 443, max = 443 }
         }
       },
-      {   #hardcode ADDED
+      {   
         direction   = "EGRESS" 
         protocol    = "6"
         description = "HTTP outbound 80"
@@ -362,7 +362,7 @@ locals {
           destination_port_range = { min = 6443, max = 6443 }
         }
       },
-      ##hardcode ADDED
+      
       {
         direction   = "INGRESS"
         protocol    = "6" # TCP
@@ -433,7 +433,7 @@ locals {
   nsg_rules_data = [
     { direction = "INGRESS", protocol = "6", description = "MySQL 3306", source = local.vcn_cidr, source_type = "CIDR_BLOCK",
       tcp_options = { destination_port_range = { min = 3306, max = 3306 } } },
-        # SSH from anywhere       hardcode ADDED
+        # SSH from anywhere       
     {
       direction   = "INGRESS"
       protocol    = "6" # TCP
@@ -453,7 +453,7 @@ locals {
       icmp_options = { type = 3, code = 4 }
     },
 
-    ##hardcode ADDED
+    
       {
         direction   = "INGRESS"
         protocol    = "6" # TCP
@@ -552,7 +552,7 @@ locals {
       udp_options = { destination_port_range = { min = 3478, max = 3478 } } },
   ]
 
-  nsg_rules_operator = [  #hardcode ADDED
+  nsg_rules_operator = [  
     # SSH access from bastion and admin
     { direction = "INGRESS", protocol = "6", description = "SSH from bastion", 
       source = local.subnets["bastion"].cidr, source_type = "CIDR_BLOCK",
@@ -617,7 +617,7 @@ locals {
     pub_lb  = local.nsg_rules_pub_lb
     data    = local.nsg_rules_data
     bastion = local.nsg_rules_bastion
-    operator = local.nsg_rules_operator  #hardcode ADDED
+    operator = local.nsg_rules_operator  
     fss     = local.nsg_rules_fss
   }
 

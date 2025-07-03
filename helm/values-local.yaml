@@ -12,10 +12,10 @@ global:
     enabled: true
     project: "oci-infra"
     tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
+    operatorNamespace: "doppler-operator-system"
   
   # Database configuration
   databases:
-    # MySQL - DISABLED
     mysql:
       selfHosted:
         enabled: false
@@ -28,14 +28,14 @@ global:
         enabled: true
         replicaCount: 1
         persistence:
-          size: 2Gi  # Small size for local development
+          size: 2Gi  
         auth:
           rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
           rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
       backup:
-        enabled: true  # Enable backup even locally for testing
+        enabled: true  
         schedule: "0 4 * * *"  # 4 AM daily
-        retention: 2  # Only 2 days retention locally
+        retention: 2  
         storageClass: "standard"
   
   # Cache configuration
@@ -52,7 +52,7 @@ global:
       selfHosted:
         enabled: true
         persistence:
-          size: 512Mi  # Minimal size for local
+          size: 512Mi  
 
 # Disable all application services
 mainApi:
@@ -131,7 +131,7 @@ rabbitmq:
       cpu: 200m
       memory: 256Mi
   config:
-    enableManagement: true  # Useful for local debugging
+    enableManagement: true  
     memoryHighWatermark: 0.4
 
 # Doppler Operator - minimal configuration

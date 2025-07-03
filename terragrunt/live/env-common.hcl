@@ -71,7 +71,7 @@ locals {
   private_key = coalesce(local._raw_private_key, "placeholder-private-key")
   user_ocid = coalesce(local._raw_user_ocid, "ocid1.user.oc1..aaaaaaaa5wuhdts3ys2abun6mlmbvri56ooukocisdzbispy4t2tcymidlcb5q")
   fingerprint = coalesce(local._raw_fingerprint, "6a:da:98:6d:a9:e5:d6:bc:b7:89:74:1d:c8:e7:91:42")
-  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "axjre2lwxpox") ##hardcode ADDED
+  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "axjre2lwxpox") 
   tfstate_bucket = coalesce(local._raw_tfstate_bucket,
                            "${lower(local.name_prefix)}-${local.env}-${substr(local.region, 0, 2)}-init")
   access_key = coalesce(local._raw_tfstate_access_key, "d69f2395ce332944276e358a85ec06451cb11e2d")

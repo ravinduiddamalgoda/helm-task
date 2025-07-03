@@ -1,4 +1,4 @@
-output "security_zone_id" {  #hardcode ADDED
+output "security_zone_id" {  
   description = "OCID of the Cloud Guard Security Zone" 
   value       = var.enabled ? oci_cloud_guard_security_zone.network_security_zone[0].id : null
 }

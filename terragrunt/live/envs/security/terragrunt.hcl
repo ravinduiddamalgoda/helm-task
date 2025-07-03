@@ -325,7 +325,7 @@ generate "outputs" {
     }
 
     
-    # Cloud Guard Security Zone outputs   #hardcode ADDED
+    # Cloud Guard Security Zone outputs   
     output "security_zone_id" {
       description = "OCID of the Cloud Guard Security Zone"
       value       = module.cloud_guard_security_zone.security_zone_id

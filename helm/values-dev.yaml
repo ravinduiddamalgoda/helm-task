@@ -3,7 +3,7 @@
 # Only MongoDB, Redis, RabbitMQ, and Doppler components
 
 global:
-  deploymentMode: "local"  # Use local mode for development
+  deploymentMode: "local"  
   environment: dev
   storageClass: "standard"
   
@@ -28,6 +28,7 @@ global:
     enabled: true
     project: "oci-infra"
     tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
+    operatorNamespace: "doppler-operator-system"
   
   # Database configuration
   databases:
@@ -42,9 +43,9 @@ global:
     mongodb:
       selfHosted:
         enabled: true
-        replicaCount: 1  # Single replica for dev
+        replicaCount: 1  
         persistence:
-          size: 3Gi  # Reasonable size for dev
+          size: 3Gi  
         auth:
           rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
           rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
@@ -109,7 +110,7 @@ mongodb:
   auth:
     enabled: true
     rootUser: "admin"
-    # Passwords will come from Doppler secrets
+   
 
 # Redis configuration for development
 redis:

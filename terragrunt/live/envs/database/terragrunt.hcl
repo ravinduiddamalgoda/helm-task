@@ -112,7 +112,7 @@ locals {
   doppler_project = include.common.locals.doppler_project
 
   # The service-token linked to this layer has access to the "stg" config,
-  env             = "dev"  # hardcode ADDED stg -> dev
+  env             = "dev"  # stg -> dev
 
   # ── MySQL credentials: use Doppler value or create on first apply ───────
   _doppler_mysql_username_cmd = format(

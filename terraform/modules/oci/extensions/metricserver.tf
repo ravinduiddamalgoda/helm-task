@@ -42,7 +42,7 @@ data "helm_template" "metrics_server" {
   }
 }
 
-output "metric_server_manifest_path_yaml" {  #hardcode ADDED
+output "metric_server_manifest_path_yaml" {  
   value = local.yaml_manifest_path
 }
 

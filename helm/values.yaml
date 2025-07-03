@@ -1,15 +1,11 @@
 # Global settings shared across all sub-charts
 global:
-  # Deployment mode: "local" or "cluster"
   deploymentMode: "local"
   
-  # Environment name (overridden in environment-specific values files)
   environment: "dev"
   
-  # Default storage class (overridden in environment-specific values files)
   storageClass: "standard"
-  
-  # OCI-specific configuration (used in cluster mode)
+
   oci:
     enabled: false
     region: ""
@@ -34,13 +30,11 @@ global:
   # Doppler configuration
   doppler:
     enabled: true  # Enable Doppler
-    # Default token secret name (can be overridden per service)
     tokenSecret: "dp.st.dev.tPwnFLbhfyPH06Vu5KDWSzXdVxfUlLMNUBtqAtg2jn2"
-    # Default project name (can be overridden per service)
     project: "oci-infra"
     configName: "dev"
-    # Default naming pattern for managed secrets
-    secretNamePattern: "%s-doppler-secrets-%s" # args: service name, environment
+    secretNamePattern: "%s-doppler-secrets-%s" 
+    operatorNamespace: "doppler-operator-system"
   
   # Image pull secrets (if needed)
   #imagePullSecrets: []
@@ -50,7 +44,6 @@ global:
   
   # Database configuration defaults
   databases:
-    # MySQL configuration - DISABLED
     mysql:
       selfHosted:
         enabled: false  # Disable MySQL
@@ -92,14 +85,13 @@ global:
           region: ""
           credentialsSecretName: ""
   
-  # Cache configuration - ENABLED
+  
   cache:
     redis:
       selfHosted:
-        enabled: true  # Enable Redis
+        enabled: true  
         persistence:
           size: 2Gi
-        # OCI-specific settings for Redis
         oci:
           faultDomain: ""
       managed:
@@ -112,10 +104,9 @@ global:
   messaging:
     rabbitmq:
       selfHosted:
-        enabled: true  # Enable RabbitMQ
+        enabled: true  
         persistence:
           size: 2Gi
-        # OCI-specific settings for RabbitMQ
         oci:
           faultDomain: ""
       managed:
@@ -128,12 +119,8 @@ global:
 
 # Service configurations - ALL DISABLED
 mainApi:
-  enabled: true  # ✅ ENABLED: Enable main-api service for development
+  enabled: true  
   replicaCount: 1
-  # image:
-  #   repository: "yul.ocir.io/axjre2lwxpox/main-api"
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
@@ -156,12 +143,8 @@ mainApi:
       memory: 256Mi
 
 authServer:
-  enabled: true  # ✅ ENABLED: Enable auth-server service for development
+  enabled: true  
   replicaCount: 1
-  # image:
-  #   repository: "yul.ocir.io/axjre2lwxpox/auth-server"
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
@@ -186,10 +169,10 @@ authServer:
   # Database connections for development
   mysql:
     internal:
-      enabled: false  # Use external MySQL in dev
+      enabled: false  
     external:
       enabled: true
-      host: "localhost"  # Local development MySQL
+      host: "localhost"  
       port: 3306
       database: "koci_auth_dev"
       credentialsSecretName: "dev-mysql-credentials"
@@ -197,12 +180,8 @@ authServer:
       passwordKey: "password"
 
 notificationService:
-  enabled: true  # Disable notification-service
+  enabled: true  
   replicaCount: 1
-  # image:
-  #   repository: "yul.ocir.io/axjre2lwxpox/notification-service"  # ⚠️ UPDATE: Replace with your actual OCI registry
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
@@ -227,22 +206,22 @@ notificationService:
     limits:
       cpu: 200m
       memory: 256Mi
-  # Dependencies for development
+  
   redis:
     internal:
-      enabled: true  # Use internal Redis
+      enabled: true  
     external:
       enabled: false
   rabbitmq:
     internal:
-      enabled: true  # Use internal RabbitMQ
+      enabled: true  
     external:
       enabled: false
 
 # Database configurations (defaults for internal deployments)
 mongodb:
   internal:
-    enabled: true  # Enable internal MongoDB
+    enabled: true  
   external:
     enabled: false
     host: ""
@@ -252,7 +231,7 @@ mongodb:
 
 mysql:
   internal:
-    enabled: false  # Disable internal MySQL
+    enabled: false  
     auth:
       rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
       userSecretKey: MYSQL_USER
@@ -271,12 +250,12 @@ mysql:
 # Cache configuration
 redis:
   internal:
-    enabled: true  # Enable internal Redis
+    enabled: true  
     auth:
       enabled: true
       passwordSecretKey: REDIS_PASSWORD
     persistence:
-      enabled: true  # Enable persistence for Redis
+      enabled: true  
   external:
     enabled: false
     host: ""
@@ -285,7 +264,7 @@ redis:
 
 # Messaging configuration
 rabbitmq:
-  enabled: true  # Enable RabbitMQ
+  enabled: true  
   cluster:
     replicas: 1
     persistence:
@@ -309,7 +288,7 @@ rabbitmq:
 
 # Secrets Operator configuration - ENABLED
 dopplerOperator:
-  install: true  # Enable Doppler Operator installation
+  install: true  
   serviceAccount:
     create: true
   resources:
@@ -322,14 +301,14 @@ dopplerOperator:
 
 # MongoDB backup job configuration
 mongodb-backup:
-  enabled: true  # Enable MongoDB backup job
+  enabled: true  
   nameOverride: "mongodb-backup"
   fullnameOverride: "mongodb-backup"
   
   backup:
     image:
       repository: bitnami/mongodb
-      tag: "6.0"  # Updated to match MongoDB version
+      tag: "6.0"  
     
     resources:
       limits:

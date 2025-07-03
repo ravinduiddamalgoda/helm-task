@@ -5,8 +5,7 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   selector:
-    app: {{ include "auth-server.name" . }} # Matches all pods with an app label set to auth-server
-  ports:
+    app: {{ include "auth-server.name" . }} 
     - protocol: TCP
       port: {{ .Values.service.port }}
       targetPort: http

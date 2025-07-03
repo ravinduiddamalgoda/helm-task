@@ -215,7 +215,7 @@ inputs = merge(
 
     # ── Defaults: Calico + Cluster-autoscaler already ON ------------------
     cni_type = "oci_vcn_native"
-    #cni_type = include.common.locals.cni_type  # hardcode ADDED
+    #cni_type = include.common.locals.cni_type  
 
     # minimal autoscaler settings
     cluster_autoscaler_namespace     = "kube-system"
@@ -275,7 +275,7 @@ inputs = merge(
     cluster_addons_to_remove = []
 
     # Extensions (provide defaults, likely false/empty)
-    cilium_install           = false  # hardcode ADDED if using flannel need to true
+    cilium_install           = false  #  if using flannel need to true
     cilium_reapply           = false
     cilium_namespace         = "kube-system"
     cilium_helm_version      = ""
@@ -319,7 +319,7 @@ inputs = merge(
     gatekeeper_helm_values       = {}
     gatekeeper_helm_values_files = []
 
-    create_service_account = true  #hardcode ADDED
+    create_service_account = true  
     service_accounts       = {
       registry = {
         sa_name                     = "registry-sa"
@@ -349,7 +349,7 @@ inputs = merge(
     extensions_remote_host_private_key     = dependency.operator.outputs.ssh_private_key_for_remote_exec
 
     # Kubeconfig generation settings
-    generate_kubeconfig = true  #hardcode ADDED
+    generate_kubeconfig = true  
     user               = "opc"
 
   }

@@ -4,24 +4,24 @@ variable "create_state_bucket" {
   default = false
 } 
 
-variable "compartment_id" { ##hardcode ADDED
+variable "compartment_id" {
   description = ""
   type        = string
   
 }
 
-variable "namespace" {  ##hardcode ADDED
+variable "namespace" {  
   description = ""
   type        = string
   
 }
 
-variable "bucket_name" {  ##hardcode ADDED
+variable "bucket_name" {  
   description = "" 
   type        = string
   
 }
-variable "common_tags" {  ##hardcode ADDED
+variable "common_tags" {  
   description = "Common tags applied to all resources"
   type        = map(string)
   default     = {}

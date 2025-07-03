@@ -74,7 +74,7 @@ inputs = {
                        )
 
   # Use the bastion subnet from the network module
-  subnet_id          = try(dependency.network.outputs.subnet_ids["operator"], "ocid1.subnet.oc1..mock_direct_fallback_operator") #hardcode ADDED
+  subnet_id          = try(dependency.network.outputs.subnet_ids["operator"], "ocid1.subnet.oc1..mock_direct_fallback_operator") 
   availability_domain = null
 
   # full shape map expected by the module
@@ -101,7 +101,7 @@ inputs = {
 
   # ─── network / DNS / tags ----------------------------------------------------
   # When you have no NSGs, use null so the field is not sent to OCI.
-  #hardcode ADDED
+  
   # Use the operator NSG from the network module
   nsg_ids                 = try([dependency.network.outputs.nsg_ids["operator"]], null)
   #nsg_ids                 = null

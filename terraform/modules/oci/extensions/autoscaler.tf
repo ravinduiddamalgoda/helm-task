@@ -107,7 +107,7 @@ data "helm_template" "cluster_autoscaler" {
     }
   }
 }
-output "Auto_scaler_manifest_path_yaml" {  #hardcode ADDED
+output "Auto_scaler_manifest_path_yaml" {  
   value = local.yaml_manifest_path
 }
 

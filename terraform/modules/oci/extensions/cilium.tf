@@ -67,7 +67,7 @@ locals {
   }
 
  # TODO Support Flannel w/ generic-veth & tunnel disabled
-  cilium_tunnel = "vxlan" #var.cni_type == "flannel" ? "disabled" : "vxlan" #or  "vxlan"  #hardcode ADDED
+  cilium_tunnel = "vxlan" #var.cni_type == "flannel" ? "disabled" : "vxlan" #or  "vxlan"  
 
   cilium_flannel_cni = {
     install      = true
@@ -215,7 +215,7 @@ resource "null_resource" "cilium" {
   }
 
   connection {
-    bastion_host        = var.bastion_host_public_ip  #hardcode ADDED
+    bastion_host        = var.bastion_host_public_ip  
     bastion_user        = var.bastion_user
     bastion_private_key = var.ssh_private_key
     host                = var.remote_host_ip

@@ -33,12 +33,9 @@ output "user" {
   value       = var.user
 }
 
-# output "node_pool_ids_map" {   #hardcode ADDED
-#   description = "Map of node pool keys to their OCIDs"
-#   value       = { for k, np in oci_containerengine_node_pool.node_pool : k => np.id }
-# }
 
-output "worker_node_private_ips" {  ##hardcode ADDED
+
+output "worker_node_private_ips" {  
   description = "List of worker node private IP addresses"
   value       = data.oci_core_instances.worker_nodes.instances[*].private_ip
 }

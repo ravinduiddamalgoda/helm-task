@@ -52,7 +52,7 @@ data "helm_template" "prometheus" {
   }
 }
 
-output "prometheus_server_manifest_path_yaml" {  #hardcode ADDED
+output "prometheus_server_manifest_path_yaml" {  
   value = local.yaml_manifest_path
 }
 

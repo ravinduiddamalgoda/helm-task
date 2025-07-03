@@ -4,7 +4,7 @@
 replicaCount: 1
 
 image:
-  repository: busybox #yul.ocir.io/axjre2lwxpox/auth-server
+  repository: yul.ocir.io/axjre2lwxpox/auth-server
   tag: "latest"
   pullPolicy: IfNotPresent
 
@@ -50,10 +50,10 @@ affinity: {}
 mysql:  
   #enabled: true
   internal:
-    enabled: false  # Default to disabled
-    databaseName: "auth_server" # Default internal DB name if enabled
+    enabled: false  
+    databaseName: "auth_server" 
   external:
-    enabled: false  # Default to disabled
+    enabled: false  
     host: ""
     port: 3306
     database: ""
@@ -72,12 +72,12 @@ doppler:
 # Default non-secret config (can be overridden by umbrella authServer.config)
 config:
   LOG_LEVEL: "info"
-  JWT_ISSUER: "koci-auth-server" # Example default issuer
+  JWT_ISSUER: "koci-auth-server" 
 
-# Default probes (can be overridden)
+
 livenessProbe:
   httpGet:
-    path: /healthz # Example health check path for auth-server
+    path: /healthz 
     port: http
   initialDelaySeconds: 15
   periodSeconds: 20
@@ -86,7 +86,7 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: /readyz # Example readiness path
+    path: /readyz 
     port: http
   initialDelaySeconds: 5
   periodSeconds: 10
@@ -94,8 +94,7 @@ readinessProbe:
   failureThreshold: 3
 
 
-# livenessProbe: null
-# readinessProbe: null
+
 
 # Default resource requests/limits (can be overridden)
 resources: {}

@@ -17,11 +17,11 @@ spec:
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
       {{- end }}  
-      # NEW: Added tolerations support  # ADDED --- 
+       
       {{- if .Values.tolerations }}
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
-      {{- end }}  # --- ADDED
+      {{- end }}  
       containers:
       - name: main-api-mongodb
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -32,13 +32,13 @@ spec:
         - name: MONGO_INITDB_ROOT_USERNAME
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.doppler.managedSecretName | default "koci-mongodb-secrets" }} #name: main-api-doppler-secrets   | default "koci-mongodb-secrets"
-              key: MONGO_INITDB_ROOT_USERNAME #{{ .Values.global.databases.mongodb.selfHosted.auth.rootUserSecretKey }} #MONGO_INITDB_ROOT_USERNAME
+              name: {{ .Values.doppler.managedSecretName | default "koci-mongodb-secrets" }} 
+              key: MONGO_INITDB_ROOT_USERNAME 
         - name: MONGO_INITDB_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.doppler.managedSecretName | default "koci-mongodb-secrets" }} #name: main-api-doppler-secrets   | default "koci-mongodb-secrets"
-              key: MONGO_INITDB_ROOT_PASSWORD #{{ .Values.global.databases.mongodb.selfHosted.auth.rootUserSecretKey }} #MONGO_INITDB_ROOT_PASSWORD
+              name: {{ .Values.doppler.managedSecretName | default "koci-mongodb-secrets" }} 
+              key: MONGO_INITDB_ROOT_PASSWORD 
         {{- if .Values.resources }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}

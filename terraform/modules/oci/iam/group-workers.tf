@@ -35,7 +35,7 @@ locals {
     formatlist(statement, local.worker_compartments, var.worker_volume_kms_key_id)
   ])) : []
 
-  # Registry access for pulling images from OCIR  ##hardcode ADDED
+  # Registry access for pulling images from OCIR  
   registry_access_statements = formatlist(
     "Allow dynamic-group %v to use repos in compartment id %v",
     local.worker_group_name, local.worker_compartments
@@ -44,7 +44,7 @@ locals {
   worker_policy_statements = var.create_iam_worker_policy ? tolist(concat(
     local.cluster_join_statements,
     local.worker_kms_volume_statements,
-    local.registry_access_statements,  ##hardcode ADDED
+    local.registry_access_statements,  
   )) : [ ]
 }
 

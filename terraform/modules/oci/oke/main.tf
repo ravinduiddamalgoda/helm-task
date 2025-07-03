@@ -288,7 +288,7 @@ module "extensions" {
   region                 = var.region
   state_id               = var.state_id
   #worker_pools           = var.node_pool_config          # re-use pool map
-  worker_pools           = { for k, v in var.node_pool_config : k => merge(v, { id = oci_containerengine_node_pool.node_pool[k].id }) } # hardcode ADDED
+  worker_pools           = { for k, v in var.node_pool_config : k => merge(v, { id = oci_containerengine_node_pool.node_pool[k].id }) } 
   kubernetes_version     = var.kubernetes_version
   expected_node_count    = var.expected_node_count
   cluster_private_endpoint = module.oke_cluster.private_endpoint
@@ -492,7 +492,7 @@ locals {
 }
 
 # Data source to get worker node instances
-data "oci_core_instances" "worker_nodes" {  ##hardcode ADDED
+data "oci_core_instances" "worker_nodes" {  
   compartment_id = var.compartment_id
   state          = "RUNNING"
   

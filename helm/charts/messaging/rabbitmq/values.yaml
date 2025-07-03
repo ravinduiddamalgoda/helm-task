@@ -11,13 +11,9 @@ replicaCount: 1
 
 # RabbitMQ configuration
 config:
-  # Enable management plugin
   enableManagement: true
-  # Enable metrics plugin
   enableMetrics: false
-  # Memory high watermark
   memoryHighWatermark: 0.4
-  # Disk free limit
   diskFreeLimit: "50MB"
 
 # Service configuration
@@ -91,12 +87,7 @@ clustering:
   enabled: false
   replicaCount: 3
 
-# Default values specific to the rabbitmq sub-chart.
-# These are overridden by the 'rabbitmq:' section in the umbrella chart's values.
 
-# Note: 'enabled' is controlled by the umbrella chart condition.
-
-# Example defaults (assuming use of RabbitMQ Cluster Operator CRD)
 cluster:
   name: "koci-rabbitmq-cluster" # Default cluster name
   replicas: 1
@@ -105,23 +96,15 @@ cluster:
     tag: "3.11-management"
   persistence:
     storage: 10Gi
-    # storageClassName: uses global.storageClass by default or specify here
-  # Define the *names* of the secret keys this chart expects for auth
+
   auth:
     usernameSecretKey: RABBITMQ_USERNAME
     passwordSecretKey: RABBITMQ_PASSWORD
-    # erlangCookieSecretKey: RABBITMQ_ERLANG_COOKIE
-    # existingSecret: "" # Umbrella chart can set this if needed
+
   service:
     port: 5672
     managementPort: 15672
 
-# Optional: Doppler config for RabbitMQ itself (e.g., for default user/pass)
-# doppler:
-#   enabled: false
-#   projectName: "rabbitmq"
-#   tokenSecretName: "rabbitmq-doppler-token-secret"
-#   managedSecretName: "rabbitmq-doppler-secrets"
 
 # Add other RabbitMQ cluster configurations as needed (plugins, policies, resources, etc.)
 resources: {} 
@@ -136,7 +119,7 @@ doppler:
 # Authentication (add this section if not exists)
 auth:
   username: "admin"
-  password: ""  # Will be auto-generated if empty
+  password: ""  
   existingSecret: ""
 
 # Existing secret configuration

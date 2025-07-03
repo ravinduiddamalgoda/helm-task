@@ -2,7 +2,7 @@
 global:
   deploymentMode: "cluster"
   environment: staging
-  storageClass: "oci-bv"  # ✅ FIXED: Use working storage class
+  storageClass: "oci-bv"  
 
   imagePullSecrets:
     - name: ocir-secret
@@ -21,6 +21,7 @@ global:
     project: "oci-infra"
     tokenSecret: "dp.st.dev.tPwnFLbhfyPH06Vu5KDWSzXdVxfUlLMNUBtqAtg2jn2"
     dopplerConfigName: "dev"
+    operatorNamespace: "doppler-operator-system"
   
   databases:
     mysql:
@@ -41,19 +42,17 @@ global:
           managedSecretName: "koci-mongodb-secrets"
           configName: "dev"
         persistence:
-          storageClass: "oci-bv"  # ✅ FIXED
+          storageClass: "oci-bv" 
           size: 50Gi
         auth:
           rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
           rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
-          # rootUserSecretKey: MONGODB_ROOT_USERNAME
-          # rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
           
       backup:
         enabled: true
         schedule: "0 2 * * *"
         retention: 14
-        storageClass: "oci-bv"  # ✅ FIXED
+        storageClass: "oci-bv"  
   
   cache:
     redis:
@@ -61,7 +60,7 @@ global:
         enabled: true
         persistence:
           size: 10Gi
-          storageClass: "oci-bv"  # ✅ FIXED
+          storageClass: "oci-bv"  
   
   messaging:
     rabbitmq:
@@ -69,17 +68,13 @@ global:
         enabled: true
         persistence:
           size: 10Gi
-          storageClass: "oci-bv"  # ✅ FIXED
+          storageClass: "oci-bv"  
 
 # all application services
 
 mainApi:
   enabled: true  # ✅ ENABLED: Enable main-api service
   replicaCount: 1
-  # image:
-  #   repository: yul.ocir.io/axjre2lwxpox/main-api
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -105,10 +100,10 @@ mainApi:
   # Database connections
   mysql:
     internal:
-      enabled: false  # Use external MySQL in staging
+      enabled: false  
     external:
       enabled: true
-      host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
+      host: "staging-mysql.example.com"  
       port: 3306
       database: "koci_main"
       credentialsSecretName: "staging-mysql-credentials"
@@ -116,17 +111,13 @@ mainApi:
       passwordKey: "password"
   mongodb:
     internal:
-      enabled: true  # Use internal MongoDB
+      enabled: true  
     external:
       enabled: false
 
 authServer:
-  enabled: true  # ✅ ENABLED: Enable auth-server service
+  enabled: true  
   replicaCount: 2
-  # image:
-  #   repository: "yul.ocir.io/axjre2lwxpox/auth-server"
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -153,10 +144,10 @@ authServer:
   # Database connections
   mysql:
     internal:
-      enabled: false  # Use external MySQL in staging
+      enabled: false 
     external:
       enabled: true
-      host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
+      host: "staging-mysql.example.com"  
       port: 3306
       database: "koci_auth"
       credentialsSecretName: "staging-mysql-credentials"
@@ -165,12 +156,8 @@ authServer:
 
 
 notificationService:
-  enabled: true  # ✅ ENABLED: Enable notification-service
+  enabled: true  
   replicaCount: 2
-  # image:
-  #   repository: "yul.ocir.io/axjre2lwxpox/notification-service"
-  #   tag: "latest"
-  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -201,12 +188,12 @@ notificationService:
   # Dependencies
   redis:
     internal:
-      enabled: true  # Use internal Redis
+      enabled: true  
     external:
       enabled: false
   rabbitmq:
     internal:
-      enabled: true  # Use internal RabbitMQ
+      enabled: true  
     external:
       enabled: false
 
@@ -236,10 +223,6 @@ mongodb:
     # size: 50Gi
     size: 20Gi           ##ADDED ---
     storageClass: "oci-bv"
-  # nodeSelector:
-  #   workload-type: stateful-db
-  # NEW: Node affinity for database workloads
-  # FIXED: Node affinity for database workloads
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -262,7 +245,7 @@ mongodb:
     - key: "workload-type"
       operator: "Equal"
       value: "stateful-db"
-      effect: "NoSchedule"                    ##  ---ADDED
+      effect: "NoSchedule"                   
 
 # Redis configuration
 redis:
@@ -280,12 +263,9 @@ redis:
       memory: 2Gi
   persistence:
     enabled: true
-    #storageClass: "oci-bv"  # ✅ FIXED   ##ADDED ---
     size: 10Gi
     storageClass: "oci-bv"
-  # nodeSelector:
-  #   workload-type: stateful-db
-  # FIXED: Node affinity for database workloads
+
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -308,7 +288,7 @@ redis:
     - key: "workload-type"
       operator: "Equal"
       value: "stateful-db"
-      effect: "NoSchedule"                 ##  ---ADDED
+      effect: "NoSchedule"                
 
 # RabbitMQ configuration (already working)
 rabbitmq:
@@ -318,8 +298,8 @@ rabbitmq:
     replicas: 3
     persistence:
       enabled: true
-      storage: 20Gi  ##ADDED
-      storageClass: "oci-bv"  # Already correct
+      storage: 20Gi  
+      storageClass: "oci-bv"  
     auth:
       usernameSecretKey: RABBITMQ_USERNAME
       passwordSecretKey: RABBITMQ_PASSWORD
@@ -331,7 +311,7 @@ rabbitmq:
       enabled: true
     external:
       enabled: false
-    resources: ##ADDED ---
+    resources:
       requests:
         cpu: 500m
         memory: 1Gi
@@ -341,9 +321,7 @@ rabbitmq:
     config:
       enableManagement: true
       memoryHighWatermark: 0.6
-  # nodeSelector:
-  #   workload-type: stateful-mq
-    # FIXED: Node affinity for messaging workloads
+  
   affinity:
     nodeAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -358,7 +336,7 @@ rabbitmq:
     - key: "workload-type"
       operator: "Equal"
       value: "stateful-mq"
-      effect: "NoSchedule"                          # ---ADDED
+      effect: "NoSchedule"                         
 
 # Doppler Operator configuration
 dopplerOperator:
@@ -386,7 +364,7 @@ mongodb-backup:
 # Staging-specific settings
 persistence:
   enabled: true
-  storageClass: "oci-bv"  # ✅ FIXED
+  storageClass: "oci-bv"  
 
 networkPolicy:
   enabled: true
