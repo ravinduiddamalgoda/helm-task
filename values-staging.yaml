@@ -392,3 +392,7 @@ persistence:
 networkPolicy:
   enabled: true
 
+
+# ✅ FIXED: Add doppler token value for staging
+doppler:
+  token: "dp.st.dev.tPwnFLbhfyPH06Vu5KDWSzXdVxfUlLMNUBtqAtg2jn2"
