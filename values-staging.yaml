@@ -19,7 +19,7 @@ global:
   doppler:
     enabled: true
     project: "oci-infra"
-    tokenSecret: "token"
+    tokenSecret: ""
     dopplerConfigName: "dev"
   
   databases:
