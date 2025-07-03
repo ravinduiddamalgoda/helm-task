@@ -3,15 +3,24 @@ global:
   deploymentMode: "cluster"
   environment: staging
   storageClass: "oci-bv"  # ✅ FIXED: Use working storage class
+
+  imagePullSecrets:
+    - name: ocir-secret
   
   oci:
     enabled: true
-    region: "us-ashburn-1"
+    region: "ca-montreal-1"
+    registry:
+      server: "yul.ocir.io"
+      username: "axjre2lwxpox/k.samaranayake7@gmail.com"
+      password: "M>.(8z79tM696kNNgln{"
+      email: "k.samaranayake7@gmail.com"
   
   doppler:
     enabled: true
-    project: "koci"
-    tokenSecret: "doppler-token-secret"
+    project: "oci-infra"
+    tokenSecret: ""
+    dopplerConfigName: "dev"
   
   databases:
     mysql:
@@ -23,13 +32,23 @@ global:
     mongodb:
       selfHosted:
         enabled: true
-        replicaCount: 3
+        replicaCount: 1
+        # Enable Doppler for MongoDB secrets
+        doppler:
+          enabled: true
+          projectName: "oci-infra"
+          tokenSecretName: "doppler-token-secret"
+          managedSecretName: "koci-mongodb-secrets"
+          configName: "dev"
         persistence:
           storageClass: "oci-bv"  # ✅ FIXED
           size: 50Gi
         auth:
-          rootUserSecretKey: MONGODB_ROOT_USERNAME
-          rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+          # rootUserSecretKey: MONGODB_ROOT_USERNAME
+          # rootPasswordSecretKey: MONGODB_ROOT_PASSWORD
+          
       backup:
         enabled: true
         schedule: "0 2 * * *"
@@ -52,13 +71,146 @@ global:
           size: 10Gi
           storageClass: "oci-bv"  # ✅ FIXED
 
-# Disable all application services
+# all application services
+
 mainApi:
-  enabled: false
+  enabled: true  # ✅ ENABLED: Enable main-api service
+  replicaCount: 1
+  # image:
+  #   repository: yul.ocir.io/axjre2lwxpox/main-api
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "main-api-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # Database connections
+  mysql:
+    internal:
+      enabled: false  # Use external MySQL in staging
+    external:
+      enabled: true
+      host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
+      port: 3306
+      database: "koci_main"
+      credentialsSecretName: "staging-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
+  mongodb:
+    internal:
+      enabled: true  # Use internal MongoDB
+    external:
+      enabled: false
+
 authServer:
-  enabled: false
+  enabled: true  # ✅ ENABLED: Enable auth-server service
+  replicaCount: 2
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/auth-server"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "auth-server-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    JWT_ISSUER: "koci-auth-server-staging"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 150m
+      memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  # Database connections
+  mysql:
+    internal:
+      enabled: false  # Use external MySQL in staging
+    external:
+      enabled: true
+      host: "staging-mysql.example.com"  # Replace with actual staging MySQL host
+      port: 3306
+      database: "koci_auth"
+      credentialsSecretName: "staging-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
+
+
 notificationService:
-  enabled: false
+  enabled: true  # ✅ ENABLED: Enable notification-service
+  replicaCount: 2
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/notification-service"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: "oci-bv"
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "notification-service-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    DEFAULT_EMAIL_SENDER: "noreply@staging.koci.com"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # Dependencies
+  redis:
+    internal:
+      enabled: true  # Use internal Redis
+    external:
+      enabled: false
+  rabbitmq:
+    internal:
+      enabled: true  # Use internal RabbitMQ
+    external:
+      enabled: false
+
+
 
 # MongoDB configuration
 mongodb:
@@ -66,18 +218,51 @@ mongodb:
     enabled: true
   external:
     enabled: false
-  replicaCount: 3
+  replicaCount: 1
   resources:
-    limits:
-      cpu: 2
-      memory: 4Gi
+    # limits:
+    #   cpu: 2
+    #   memory: 4Gi
     requests:
-      cpu: 1
+      #cpu: 1
+      cpu: 1000m
       memory: 2Gi
+    limits: ##ADDED ---
+      cpu: 2000m
+      memory: 4Gi  ##  ---ADDED
   persistence:
     enabled: true
-    storageClass: "oci-bv"  # ✅ FIXED
-    size: 50Gi
+    # storageClass: "oci-bv"  # ✅ FIXED
+    # size: 50Gi
+    size: 20Gi           ##ADDED ---
+    storageClass: "oci-bv"
+  # nodeSelector:
+  #   workload-type: stateful-db
+  # NEW: Node affinity for database workloads
+  # FIXED: Node affinity for database workloads
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-db
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: node.kubernetes.io/instance-type
+            operator: In
+            values:
+            - VM.Standard.E4.Flex
+  # Tolerations for database workloads
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "stateful-db"
+      effect: "NoSchedule"                    ##  ---ADDED
 
 # Redis configuration
 redis:
@@ -91,21 +276,49 @@ redis:
       cpu: 500m
       memory: 1Gi
     limits:
-      cpu: 1
+      cpu: 1000m
       memory: 2Gi
   persistence:
     enabled: true
-    storageClass: "oci-bv"  # ✅ FIXED
+    #storageClass: "oci-bv"  # ✅ FIXED   ##ADDED ---
     size: 10Gi
+    storageClass: "oci-bv"
+  # nodeSelector:
+  #   workload-type: stateful-db
+  # FIXED: Node affinity for database workloads
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-db
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: node.kubernetes.io/instance-type
+            operator: In
+            values:
+            - VM.Standard.E4.Flex
+  # Tolerations for database workloads
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "stateful-db"
+      effect: "NoSchedule"                 ##  ---ADDED
 
 # RabbitMQ configuration (already working)
 rabbitmq:
   enabled: true
+  replicaCount: 1
   cluster:
     replicas: 3
     persistence:
       enabled: true
-      storage: 10Gi
+      storage: 20Gi  ##ADDED
       storageClass: "oci-bv"  # Already correct
     auth:
       usernameSecretKey: RABBITMQ_USERNAME
@@ -118,6 +331,34 @@ rabbitmq:
       enabled: true
     external:
       enabled: false
+    resources: ##ADDED ---
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    config:
+      enableManagement: true
+      memoryHighWatermark: 0.6
+  # nodeSelector:
+  #   workload-type: stateful-mq
+    # FIXED: Node affinity for messaging workloads
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-mq
+    # Tolerations for messaging workloads
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "stateful-mq"
+      effect: "NoSchedule"                          # ---ADDED
 
 # Doppler Operator configuration
 dopplerOperator:
@@ -149,3 +390,4 @@ persistence:
 
 networkPolicy:
   enabled: true
+

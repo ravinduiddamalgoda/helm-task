@@ -10,8 +10,8 @@ global:
   # Doppler configuration for local development
   doppler:
     enabled: true
-    project: "koci"
-    tokenSecret: "doppler-token-secret"
+    project: "oci-infra"
+    tokenSecret: ""
   
   # Database configuration
   databases:

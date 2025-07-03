@@ -4,7 +4,8 @@
 replicaCount: 1
 
 image:
-  repository: k8s-test/main-api # Default repo, MUST be overridden in umbrella values
+  repository: yul.ocir.io/axjre2lwxpox/main-api # Default repo, MUST be overridden in umbrella values
+  tag: "latest"
   pullPolicy: IfNotPresent
   # tag: is provided by the umbrella chart
 
@@ -40,8 +41,8 @@ config:
 # Doppler configuration specific to this service
 doppler:
   enabled: false # Disabled by default, enabled via umbrella chart
-  projectName: "main-api" # Should match Doppler project
-  tokenSecretName: "main-api-doppler-token-secret" # Name of the K8s secret holding the Doppler token
+  projectName: "oci-infra" # Should match Doppler project
+  tokenSecretName: "doppler-token-secret" # Name of the K8s secret holding the Doppler token
   managedSecretName: "main-api-doppler-secrets" # Name of the K8s secret Doppler will manage
   # configName: uses global.dopplerConfigName by default
 
@@ -93,6 +94,9 @@ readinessProbe:
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
+
+# livenessProbe: null
+# readinessProbe: null
 
 # Default resource requests/limits (can be overridden)
 resources: {}

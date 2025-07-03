@@ -4,7 +4,7 @@
 replicaCount: 1
 
 image:
-  repository: koci/auth-server
+  repository: busybox #yul.ocir.io/axjre2lwxpox/auth-server
   tag: "latest"
   pullPolicy: IfNotPresent
 
@@ -47,14 +47,25 @@ tolerations: []
 affinity: {}
 
 # Database configuration
-mysql:
-  enabled: true
+mysql:  
+  #enabled: true
+  internal:
+    enabled: false  # Default to disabled
+    databaseName: "auth_server" # Default internal DB name if enabled
+  external:
+    enabled: false  # Default to disabled
+    host: ""
+    port: 3306
+    database: ""
+    credentialsSecretName: "" # Secret containing user/pass
+    usernameKey: "username"
+    passwordKey: "password"
 
 # Doppler configuration
 doppler:
   enabled: false
-  projectName: "auth-server"
-  tokenSecretName: "auth-server-doppler-token-secret"
+  projectName: "oci-infra"
+  tokenSecretName: "doppler-token-secret" # Example token secret name
   managedSecretName: ""
   annotations: {}
 
@@ -81,6 +92,10 @@ readinessProbe:
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
+
+
+# livenessProbe: null
+# readinessProbe: null
 
 # Default resource requests/limits (can be overridden)
 resources: {}

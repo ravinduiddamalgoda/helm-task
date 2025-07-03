@@ -7,11 +7,27 @@ global:
   environment: dev
   storageClass: "standard"
   
+
+    # Image pull secrets for OCI Container Registry
+  imagePullSecrets:
+    - name: ocir-secret
+  
+  # OCI Registry configuration
+  oci:
+    enabled: false
+    region: "us-ashburn-1"
+    registry:
+      server: "yul.ocir.io"
+      username: "axjre2lwxpox/k.samaranayake7@gmail.com"
+      password: "M>.(8z79tM696kNNgln{"
+      email: "k.samaranayake7@gmail.com"
+
+
   # Enable Doppler for secrets management
   doppler:
     enabled: true
-    project: "koci"
-    tokenSecret: "doppler-token-secret"
+    project: "oci-infra"
+    tokenSecret: "" 
   
   # Database configuration
   databases:
