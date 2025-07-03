@@ -35,7 +35,7 @@ global:
   doppler:
     enabled: true  # Enable Doppler
     # Default token secret name (can be overridden per service)
-    tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
+    tokenSecret: "token"
     # Default project name (can be overridden per service)
     project: "oci-infra"
     configName: "dev"
