@@ -28,7 +28,8 @@ spec:
       labels:
         {{- include "common.selectorLabels" $root | nindent 8 }}
     spec:
-      {{- with $root.Values.imagePullSecrets }}
+      #{{- with $root.Values.imagePullSecrets }}
+      {{- with $root.Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -71,6 +72,7 @@ spec:
             {{- else if eq $key "rabbitmq" }}
             # Add RabbitMQ environment variables
             {{- include "common.rabbitmq.envVars" $root | nindent 12 }}
+            {{- end }}
             {{- end }}
             {{- end }}
             {{- end }}

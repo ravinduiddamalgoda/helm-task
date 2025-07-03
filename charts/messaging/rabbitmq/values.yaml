@@ -129,8 +129,8 @@ resources: {}
 # Doppler configuration (add this section)
 doppler:
   enabled: false
-  projectName: "rabbitmq"
-  tokenSecretName: "rabbitmq-doppler-token-secret"
+  projectName: "oci-infra"
+  tokenSecretName: "doppler-token-secret"
   managedSecretName: "rabbitmq-doppler-secrets"
 
 # Authentication (add this section if not exists)

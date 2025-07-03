@@ -24,19 +24,29 @@ global:
     flexShape:
       ocpus: 1
       memoryInGBs: 16
+
+    registry:
+      server: "yul.ocir.io"
+      username: "axjre2lwxpox/k.samaranayake7@gmail.com"
+      password: "M>.(8z79tM696kNNgln{"
+      email: "k.samaranayake7@gmail.com"
   
   # Doppler configuration
   doppler:
     enabled: true  # Enable Doppler
     # Default token secret name (can be overridden per service)
-    tokenSecret: "doppler-token-secret"
+    tokenSecret: "dp.st.dev.CoCYxY6uqifrqLJtP5kv0lAcSGhrfHMfTQ8Xooa4Z8Y"
     # Default project name (can be overridden per service)
-    project: "koci"
+    project: "oci-infra"
+    configName: "dev"
     # Default naming pattern for managed secrets
     secretNamePattern: "%s-doppler-secrets-%s" # args: service name, environment
   
   # Image pull secrets (if needed)
-  imagePullSecrets: []
+  #imagePullSecrets: []
+
+  imagePullSecrets:
+    - name: ocir-secret
   
   # Database configuration defaults
   databases:
@@ -118,36 +128,81 @@ global:
 
 # Service configurations - ALL DISABLED
 mainApi:
-  enabled: false  # Disable main-api service
+  enabled: true  # ✅ ENABLED: Enable main-api service for development
   replicaCount: 1
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/main-api"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
     enabled: false
   doppler:
-    enabled: false
-    projectName: "main-api"
-    tokenSecretName: "main-api-doppler-token-secret"
-    managedSecretName: ""
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "main-api-doppler-manage-secret-name"
     annotations: {}
+  config:
+    LOG_LEVEL: "debug"
+    APP_ENV: "dev"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
 
 authServer:
-  enabled: false  # Disable auth-server service
+  enabled: true  # ✅ ENABLED: Enable auth-server service for development
   replicaCount: 1
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/auth-server"
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
     enabled: false
   doppler:
-    enabled: false
-    projectName: "auth-server"
-    tokenSecretName: "auth-server-doppler-token-secret"
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: ""
     annotations: {}
+  config:
+    LOG_LEVEL: "debug"
+    JWT_ISSUER: "koci-auth-server-dev"
+    APP_ENV: "dev"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Database connections for development
+  mysql:
+    internal:
+      enabled: false  # Use external MySQL in dev
+    external:
+      enabled: true
+      host: "localhost"  # Local development MySQL
+      port: 3306
+      database: "koci_auth_dev"
+      credentialsSecretName: "dev-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
 
 notificationService:
-  enabled: false  # Disable notification-service
+  enabled: true  # Disable notification-service
   replicaCount: 1
+  # image:
+  #   repository: "yul.ocir.io/axjre2lwxpox/notification-service"  # ⚠️ UPDATE: Replace with your actual OCI registry
+  #   tag: "latest"
+  #   pullPolicy: IfNotPresent
   autoscaling:
     enabled: false
   networkPolicy:
@@ -156,11 +211,33 @@ notificationService:
     enabled: true
     size: 1Gi
   doppler:
-    enabled: false
-    projectName: "notification-service"
-    tokenSecretName: "notification-service-doppler-token-secret"
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
     managedSecretName: ""
     annotations: {}
+  config:
+    LOG_LEVEL: "debug"
+    DEFAULT_EMAIL_SENDER: "noreply@dev.koci.com"
+    APP_ENV: "dev"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Dependencies for development
+  redis:
+    internal:
+      enabled: true  # Use internal Redis
+    external:
+      enabled: false
+  rabbitmq:
+    internal:
+      enabled: true  # Use internal RabbitMQ
+    external:
+      enabled: false
 
 # Database configurations (defaults for internal deployments)
 mongodb:
