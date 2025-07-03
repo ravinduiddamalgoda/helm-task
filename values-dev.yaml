@@ -47,6 +47,13 @@ global:
       selfHosted:
         enabled: true
         replicaCount: 1  # Single replica for dev
+        # ✅ FIXED: Add missing doppler configuration
+        doppler:
+          enabled: true
+          projectName: "oci-infra"
+          tokenSecretName: "doppler-token-secret"
+          managedSecretName: "koci-mongodb-secrets"
+          configName: "dev"
         persistence:
           size: 3Gi  # Reasonable size for dev
         auth:
@@ -114,6 +121,12 @@ mongodb:
     enabled: true
     rootUser: "admin"
     # Passwords will come from Doppler secrets
+  # ✅ FIXED: Add doppler configuration at chart level too
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "koci-mongodb-secrets"
 
 # Redis configuration for development
 redis:
@@ -225,6 +238,10 @@ mongodb-backup:
           schedule: "0 3 * * *"  # 3 AM daily
           retention: 3  # 3 days retention for dev
           storageClass: "standard"
+
+# ✅ FIXED: Add doppler token value for development
+doppler:
+  token: "dp.st.dev.tPwnFLbhfyPH06Vu5KDWSzXdVxfUlLMNUBtqAtg2jn2"
 
 # Resource defaults for development environment
 resources:
