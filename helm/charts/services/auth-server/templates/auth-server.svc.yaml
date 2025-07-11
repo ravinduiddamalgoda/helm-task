@@ -5,8 +5,7 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   selector:
-    app: {{ include "auth-server.name" . }} 
-  ports:   
+    app: {{ include "auth-server.name" . }}   
     - protocol: TCP
       port: {{ .Values.service.port }}
       targetPort: http
