@@ -135,6 +135,8 @@ locals {
     RabbitMQ_Mgmt  = { protocol = "6", tcp_options = { destination_port_range = { min = 15672, max = 15672 } }, source = local.vcn_cidr, source_type = "CIDR_BLOCK" }
     MongoDB        = { protocol = "6", tcp_options = { destination_port_range = { min = 27017, max = 27017 } }, source = local.vcn_cidr, source_type = "CIDR_BLOCK" }
     MySQL_HeatWave = { protocol = "6", tcp_options = { destination_port_range = { min = 3306,  max = 3306  } }, source = local.vcn_cidr, source_type = "CIDR_BLOCK" }
+    Redis          = { protocol = "6", tcp_options = { destination_port_range = { min = 6379,  max = 6379  } }, source = local.vcn_cidr, source_type = "CIDR_BLOCK" }
+    Prometheus     = { protocol = "6", tcp_options = { destination_port_range = { min = 9090,  max = 9090  } }, source = local.vcn_cidr, source_type = "CIDR_BLOCK" }
   }
 
   load_balancers          = "both"
@@ -362,6 +364,7 @@ locals {
           destination_port_range = { min = 6443, max = 6443 }
         }
       },
+
       
       {
         direction   = "INGRESS"
@@ -371,6 +374,50 @@ locals {
         source_type = "CIDR_BLOCK"
         tcp_options = { destination_port_range = { min = 3306, max = 3306 } }
       },
+
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "RabbitMQ_AMQP"
+        source      = local.vcn_cidr
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 5672, max = 5672 } }
+      },
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "RabbitMQ_Mgmt"
+        source      = local.vcn_cidr
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 15672, max = 15672 } }
+      },
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "MongoDB"
+        source      = local.vcn_cidr
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 27017, max = 27017 } }
+      },
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "Prometheus"
+        source      = local.vcn_cidr
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 9090, max = 9090 } }
+      },
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "Redis"
+        source      = local.vcn_cidr
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 6379, max = 6379 } }
+      },
+      { direction = "INGRESS", protocol = "6", description = "MongoDB 27017 ingress",
+      source = local.vcn_cidr, source_type = "CIDR_BLOCK",
+      tcp_options = { destination_port_range = { min = 27017, max = 27017 } } },
 
       {
         direction   = "INGRESS"
@@ -462,6 +509,48 @@ locals {
         source_type = "CIDR_BLOCK"
         tcp_options = { destination_port_range = { min = 3306, max = 3306 } }
       },
+
+    {
+      direction   = "INGRESS"
+      protocol    = "6" # TCP
+      description = "Prometheus"
+      source      = local.vcn_cidr
+      source_type = "CIDR_BLOCK"
+      tcp_options = { destination_port_range = { min = 9090, max = 9090 } }
+    },
+
+    {
+      direction   = "INGRESS"
+      protocol    = "6" # TCP
+      description = "RabbitMQ_AMQP"
+      source      = local.vcn_cidr
+      source_type = "CIDR_BLOCK"
+      tcp_options = { destination_port_range = { min = 5672, max = 5672 } }
+    },
+    {
+      direction   = "INGRESS"
+      protocol    = "6" # TCP
+      description = "RabbitMQ_Mgmt"
+      source      = local.vcn_cidr
+      source_type = "CIDR_BLOCK"
+      tcp_options = { destination_port_range = { min = 15672, max = 15672 } }
+    },
+    {
+      direction   = "INGRESS"
+      protocol    = "6" # TCP
+      description = "MongoDB"
+      source      = local.vcn_cidr
+      source_type = "CIDR_BLOCK"
+      tcp_options = { destination_port_range = { min = 27017, max = 27017 } }
+    },
+    {
+      direction   = "INGRESS"
+      protocol    = "6" # TCP
+      description = "Redis"
+      source      = local.vcn_cidr
+      source_type = "CIDR_BLOCK"
+      tcp_options = { destination_port_range = { min = 6379, max = 6379 } }
+    },
 
     # ICMP type 3 from VCN
     {

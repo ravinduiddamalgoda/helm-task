@@ -60,14 +60,13 @@ locals {
     file("${get_env("HOME")}/.ssh/id_rsa.pub"),
     get_env("OPERATOR_SSH_PUBLIC_KEY", "__DEFAULT_KEY_NOT_FOUND__")
   )
-  # Set to null if marker is present (meaning no key was found), otherwise use the key
+  
   _final_ssh_public_key = local._raw_ssh_public_key == "__DEFAULT_KEY_NOT_FOUND__" ? null : local._raw_ssh_public_key
 }
 
 inputs = {
   # ─── core placement ────────────────────────────────────────────────────
-  # If compartment_ocid is a map use the env-specific key;
-  # otherwise fall back to the plain string value.
+
   compartment_id     = try(
                          include.common.locals.compartment_ocid["core-services"],
                          include.common.locals.compartment_ocid
@@ -87,8 +86,7 @@ inputs = {
 
   # ─── access & users ────────────────────────────────────────────────────
   user               = "opc"
-  # first try to read the default pub-key; if it is missing,
-  # fall back to the OPERATOR_SSH_PUBLIC_KEY env-var (or "")
+  
   ssh_public_key     = local._final_ssh_public_key
   ssh_private_key    = file(get_env("BASTION_SSH_KEY", ""))
 
@@ -97,14 +95,13 @@ inputs = {
   state_id        = "core-services"
   region          = try(include.common.locals.region, get_env("OCI_REGION", "ca-montreal-1"))
   #cluster_name    = dependency.oke.outputs.cluster_name  # hardcode
-  cluster_name    = "oke"                 # arbitrary, but required      # hardcord
+  cluster_name    = "oke"                
 
   # ─── network / DNS / tags ----------------------------------------------------
-  # When you have no NSGs, use null so the field is not sent to OCI.
+  
   
   # Use the operator NSG from the network module
   nsg_ids                 = try([dependency.network.outputs.nsg_ids["operator"]], null)
-  #nsg_ids                 = null
   assign_dns              = false
   tag_namespace           = "koci"
   defined_tags            = {}
@@ -129,7 +126,7 @@ inputs = {
 
   # ─── cloud-init & misc -------------------------------------------------------
   await_cloudinit      = true
-  cloud_init           = []           # list(map(string)) as required
+  cloud_init           = []           
   timezone             = "UTC"
   upgrade              = true
 
@@ -141,12 +138,10 @@ inputs = {
   install_k9s               = true
   install_kubectx           = true
   install_stern             = true
-  install_kubectl_from_repo = true  # hardcode
+  install_kubectl_from_repo = true  
 
-  # keep operator module from trying to build OCI CLI from source repo
   install_oci_cli_from_repo = true
 
-  # set to true once your OKE cluster is ready and you want the VM to
-  # pull the kubeconfig; leave false to skip the remote-exec step
-  #generate_kubeconfig = false  # hardcode
+ auto_destroy = false
+terragrunt_dir = get_terragrunt_dir()
 } 

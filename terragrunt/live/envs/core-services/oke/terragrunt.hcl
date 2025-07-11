@@ -214,8 +214,8 @@ inputs = merge(
     expected_autoscale_worker_pools = local.expected_autoscale_worker_pools
 
     # ── Defaults: Calico + Cluster-autoscaler already ON ------------------
-    cni_type = "oci_vcn_native"
-    #cni_type = include.common.locals.cni_type  
+    #cni_type = "oci_vcn_native"
+    cni_type = include.common.locals.cni_type  
 
     # minimal autoscaler settings
     cluster_autoscaler_namespace     = "kube-system"

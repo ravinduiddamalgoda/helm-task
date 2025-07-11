@@ -62,6 +62,15 @@ variable "tailscale_auth_key" {
   sensitive   = true
 }
 
+variable "auto_destroy" {
+  type    = bool
+  default = false
+}
+variable "terragrunt_dir" {
+  type = string
+}
+
+
 # variable "generate_kubeconfig" {
 #   description = "Run the remote-exec step that builds a kubeconfig on the operator VM"
 #   type        = bool
