@@ -23,15 +23,15 @@ global:
 
     registry:
       server: "yul.ocir.io"
-      username: ${OCI_USERNAME}
-      password: ${OCI_PASSWORD}
-      email: ${OCI_EMAIL}
+      username: "${OCI_USERNAME}"
+      password: "${OCI_PASSWORD}"
+      email: "${OCI_EMAIL}"
   
   # Doppler configuration
   doppler:
     enabled: true  # Enable Doppler
     tokenSecret: "${DOPPLER_SERVICE_TOKEN}"
-    #tokenSecret: "dp.st.dev.F5mkxW6Bwm8jMriOnN4rWD6kFIisIqIGFitEfjlQxZW"
+    
     project: "oci-infra"
     configName: "dev"
     secretNamePattern: "%s-doppler-secrets-%s" 

@@ -39,3 +39,27 @@ output "worker_node_private_ips" {
   description = "List of worker node private IP addresses"
   value       = data.oci_core_instances.worker_nodes.instances[*].private_ip
 }
+
+# output "worker_nodes_testing" {  
+#   description = "List of worker node private IP addresses"
+#   value       = data.oci_core_instances.worker_nodes
+# }
+
+# output "worker_nodes_instances" {  
+#   description = "List of worker node private IP addresses"
+#   value       = data.oci_core_instances.worker_nodes.instances
+# }
+
+
+# output "node_private_ips" {
+#   description = "A list of private IP addresses for all nodes in the specified node pool."
+#   # The 'nodes' attribute is a list of objects, each representing a node.
+#   # We use a 'for' expression to iterate over this list and extract the 'private_ip' attribute.
+#   value = [for node in data.oci_containerengine_node_pool.example_node_pool.nodes : node.private_ip]
+# }
+output "nodes_private_ips_workers" {
+  value = {
+    for k, v in data.oci_core_vnic.vnics :
+    k => v.private_ip
+  }
+}
