@@ -7,9 +7,9 @@ spec:
     app: main-api-mongodb
   ports:
     - protocol: TCP
-      port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.port }}
-  type: {{ .Values.service.type }}
+      port: {{ .Values.service.port | default 27017 | int }}
+      targetPort: {{ .Values.service.port | default 27017 | int }}
+  type: {{ .Values.service.type | default "ClusterIP" }}
   {{- if eq .Values.service.type "ClusterIP" }}
   clusterIP: None  # Headless service for internal access
   {{- end }}

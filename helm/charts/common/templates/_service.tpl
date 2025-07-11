@@ -25,12 +25,12 @@ spec:
     {{- with $root.Values.service.ports }}
     {{- toYaml . | nindent 4 }}
     {{- else }}
-    - port: {{ $root.Values.service.port | default 80 }}
+    - port: {{ $root.Values.service.port | default 80 | int }}
       targetPort: {{ $root.Values.service.targetPort | default "http" }}
       protocol: {{ $root.Values.service.protocol | default "TCP" }}
       name: {{ $root.Values.service.portName | default "http" }}
       {{- if and (eq ($root.Values.service.type | default "ClusterIP") "NodePort") $root.Values.service.nodePort }}
-      nodePort: {{ $root.Values.service.nodePort }}
+      nodePort: {{ $root.Values.service.nodePort | int }}
       {{- end }}
     {{- end }}
   selector:

@@ -82,6 +82,10 @@ mainApi:
     targetCPUUtilizationPercentage: 70
   networkPolicy:
     enabled: true
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
   doppler:
     enabled: true
     projectName: "oci-infra"
@@ -125,6 +129,10 @@ authServer:
     targetCPUUtilizationPercentage: 70
   networkPolicy:
     enabled: true
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
   doppler:
     enabled: true
     projectName: "oci-infra"
@@ -165,6 +173,10 @@ notificationService:
     targetCPUUtilizationPercentage: 70
   networkPolicy:
     enabled: true
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
   persistence:
     enabled: true
     size: 5Gi
