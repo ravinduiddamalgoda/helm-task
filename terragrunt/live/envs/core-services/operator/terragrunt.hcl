@@ -142,6 +142,6 @@ inputs = {
 
   install_oci_cli_from_repo = true
 
- auto_destroy = false
-terragrunt_dir = get_terragrunt_dir()
+#  auto_destroy = true
+#  terragrunt_dir = get_terragrunt_dir()
 } 

@@ -101,24 +101,24 @@ resource "null_resource" "operator_changed" {
   }
 }
 
-resource "null_resource" "operator_task_and_destroy" {
-  count = var.auto_destroy ? 1 : 0
+# resource "null_resource" "operator_task_and_destroy" {
+#   count = var.auto_destroy ? 1 : 0
 
-  triggers = {
-    always_run = timestamp()
-  }
+#   triggers = {
+#     always_run = timestamp()
+#   }
 
-  provisioner "local-exec" {
-    command = <<EOT
-      echo "[INFO] Waiting  minutes before auto-destroy..."
-      sleep 300
-      echo "[INFO] Auto-destroying operator..."
-      cd ${var.terragrunt_dir} && terragrunt destroy --auto-approve --lock=false
-    EOT
-  }
+#   provisioner "local-exec" {
+#     command = <<EOT
+#       echo "[INFO] Waiting  minutes before auto-destroy..."
+#       sleep 300
+#       echo "[INFO] Auto-destroying operator..."
+#       cd ${var.terragrunt_dir} && terragrunt destroy --auto-approve --lock=false
+#     EOT
+#   }
 
 
-  depends_on = [
-    null_resource.await_cloudinit
-  ]
-}
+#   depends_on = [
+#     null_resource.await_cloudinit
+#   ]
+# }
