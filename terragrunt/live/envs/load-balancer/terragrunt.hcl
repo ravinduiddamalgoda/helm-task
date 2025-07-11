@@ -85,7 +85,7 @@ inputs = {
   is_private = local.lb_is_private
   
   # Backend configuration
-  backend_ips = try(dependency.oke.outputs.nodes_private_ips_workers, ["10.2.68.10", "10.2.68.11"])  # Example backend IPs from workers subnet - update as needed
+  backend_ips = try(dependency.oke.outputs.worker_node_private_ips, ["10.2.68.10", "10.2.68.11"])  # Example backend IPs from workers subnet - update as needed
   backend_set_name = "app-backendset"
   
   # NSG configuration

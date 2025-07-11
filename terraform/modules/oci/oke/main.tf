@@ -498,49 +498,13 @@ data "oci_core_instances" "worker_nodes" {
   
   filter {
     name   = "display_name"
-    values = [for np in oci_containerengine_node_pool.node_pool : "${var.env_name}-${np.private_ip}-*"]
+    values = [for np in oci_containerengine_node_pool.node_pool : "${var.env_name}-${np.name}-*"]
   }
   
   depends_on = [oci_containerengine_node_pool.node_pool]
 }
 
-# data "oci_containerengine_node_pool" "example_node_pool" {
-#   # The OCID of the OKE cluster to which the node pool belongs.
-#   # You can find this in the OCI Console under Container Engine for Kubernetes -> Clusters.
-#   cluster_id = module.oke_cluster.id # <<< REPLACE WITH YOUR CLUSTER OCID
-#   # The OCID of the specific node pool you want to query.
-#   # You can find this in the OCI Console under Container Engine for Kubernetes -> Clusters -> Your Cluster -> Node Pools.
-#   node_pool_id = "ocid1.nodepool.oc1..exampleuniquenodepoolid" # <<< REPLACE WITH YOUR NODE POOL OCID
-# }
-data "oci_containerengine_node_pools" "all_node_pools" {
-  compartment_id = var.compartment_id
-  cluster_id     = module.oke_cluster.id
-}
 
-data "oci_containerengine_node_pool" "node_pools_testing" {
-  for_each = toset(data.oci_containerengine_node_pools.all_node_pools.items[*].id)  
-  node_pool_id = each.key
-}
-
-data "oci_core_instance" "nodes_testing" {
-  for_each = merge([
-    for np in data.oci_containerengine_node_pool.node_pools_testing :
-    {
-      for node_id in np.value.nodes[*].id :
-      node_id => {
-        id = node_id
-      }
-    }
-  ]...)
-  instance_id = each.value.id
-}
-
-data "oci_core_vnic_attachments" "vnic_attachments" {
-  for_each       = data.oci_core_instance.nodes_testing
-  compartment_id = var.compartment_id
-  availability_domain = each.value.availability_domain
-  instance_id    = each.value.id
-}
 
 
 
