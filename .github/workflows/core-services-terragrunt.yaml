@@ -108,6 +108,8 @@ jobs:
           bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)" --accept-all-defaults
           echo 'export PATH=~/bin:$PATH' >> ~/.bashrc
           source ~/.bashrc
+          export PATH="$HOME/bin:$PATH"
+
           
           # Install Doppler CLI
           echo "Installing Doppler CLI..."
@@ -187,7 +189,7 @@ jobs:
         run: |
           sudo tailscaled &  # Start Tailscale daemon
           sleep 5            # Give it time to start
-          sudo tailscale up --authkey ${{ secrets.TAILSCALE_AUTH_KEY }} --hostname github-runner
+          sudo tailscale up --authkey ${{ secrets.TAILSCALE_AUTH_KEY }} --hostname github-runner-${{ github.run_id }}
 
       - name: Verify Tailscale Status
         run: |
@@ -220,19 +222,19 @@ jobs:
           echo "Available services:"
           ls -la
           
-          echo "Dependencies from terragrunt.hcl:"
-          if [ -f "terragrunt.hcl" ]; then
-            grep -A 10 "dependencies" terragrunt.hcl || echo "No dependencies block found"
-          fi
+          # echo "Dependencies from terragrunt.hcl:"
+          # if [ -f "terragrunt.hcl" ]; then
+          #   grep -A 10 "dependencies" terragrunt.hcl || echo "No dependencies block found"
+          # fi
           
-          echo "Service directories found:"
-          for service in network bastion operator oke; do
-            if [ -d "$service" ]; then
-              echo "✅ $service"
-            else
-              echo "❌ $service (missing)"
-            fi
-          done
+          # echo "Service directories found:"
+          # for service in network bastion operator oke; do
+          #   if [ -d "$service" ]; then
+          #     echo "✅ $service"
+          #   else
+          #     echo "❌ $service (missing)"
+          #   fi
+          # done
       
 
       - name: Get Doppler Secrets for All Services
