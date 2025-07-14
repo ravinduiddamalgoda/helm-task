@@ -150,6 +150,13 @@ jobs:
           echo "Generated SSH Public Key:"
           cat ~/.ssh/oci_bastion_ed25519.pub
 
+      - name: Check Environment Variables
+        run: |
+          echo "✅ DOPPLER_TOKEN: ${DOPPLER_TOKEN:0:6}********"
+          echo "✅ DOPPLER_SERVICE_TOKEN: ${DOPPLER_SERVICE_TOKEN:0:6}********"
+          echo "✅ TAILSCALE_AUTH_KEY: ${TAILSCALE_AUTH_KEY:0:6}********"
+          echo "✅ BASTION_SSH_KEY: $BASTION_SSH_KEY"
+
       - name: Configure OCI credentials
         run: |
           echo "Configuring OCI credentials..."
@@ -176,10 +183,15 @@ jobs:
           doppler configure set token $DOPPLER_TOKEN
           doppler secrets list --project=${{ secrets.DOPPLER_PROJECT }} --config=$ENVIRONMENT
 
-      - name: Configure Tailscale
+      - name: Start and Authenticate Tailscale
         run: |
-          echo "Configuring Tailscale..."
-          echo "TAILSCALE_AUTH_KEY is set globally: ${{ env.TAILSCALE_AUTH_KEY != '' }}"
+          sudo tailscaled &  # Start Tailscale daemon
+          sleep 5            # Give it time to start
+          sudo tailscale up --authkey ${{ secrets.TAILSCALE_AUTH_KEY }} --hostname github-runner
+
+      - name: Verify Tailscale Status
+        run: |
+          sudo tailscale status
 
       - name: Validate Terragrunt configuration
         run: |
@@ -221,6 +233,7 @@ jobs:
               echo "❌ $service (missing)"
             fi
           done
+      
 
       - name: Get Doppler Secrets for All Services
         working-directory: ${{ env.CORE_SERVICES_DIR }}
