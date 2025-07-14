@@ -86,10 +86,10 @@ jobs:
           # Install system dependencies
           sudo apt-get install -y jq curl wget unzip software-properties-common apt-transport-https ca-certificates gnupg lsb-release
           
-          # Install Python
-          echo "Using system default Python..."
+          echo "Using system Python..."
           python3 --version
-          python3 -m ensurepip
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-venv
           python3 -m pip install --upgrade pip
 
           # Install Terraform
