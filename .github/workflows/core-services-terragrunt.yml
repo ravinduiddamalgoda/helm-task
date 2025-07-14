@@ -2,13 +2,13 @@ name: Core Services Terragrunt Execution
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop ]
     paths:
       - 'terragrunt/live/envs/core-services/**'
       - 'terraform/modules/oci/**'
       - '.github/workflows/core-services-terragrunt.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ develop ]
     paths:
       - 'terragrunt/live/envs/core-services/**'
       - 'terraform/modules/oci/**'
