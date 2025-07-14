@@ -118,8 +118,7 @@ jobs:
           python3 install.py --accept-all-defaults
           echo "$HOME/bin" >> $GITHUB_PATH
 
-          which oci
-          oci --version
+          
 
 
           
