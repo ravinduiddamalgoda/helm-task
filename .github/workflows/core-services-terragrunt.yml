@@ -113,17 +113,30 @@ jobs:
           chmod +x terragrunt_linux_amd64 && sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
           
           # Install OCI CLI
-          echo "Installing OCI CLI..."
-          bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)" --accept-all-defaults
-          echo 'export PATH=~/bin:$PATH' >> ~/.bashrc
-          source ~/.bashrc
-          export PATH="$HOME/bin:$PATH"
+          echo "Installing OCI CLI (non-interactive)..."
+          curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.py -o install.py
+          python3 install.py --accept-all-defaults
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+          which oci
+          oci --version
+
 
           
           # Install Doppler CLI
           echo "Installing Doppler CLI..."
-          curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh | sh
-          export PATH="$HOME/.local/bin:$PATH"
+          sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+
+          curl -sLf --retry 3 --tlsv1.2 --proto "=https" \
+            https://packages.doppler.com/public/cli/gpg.DE2A7741A397C129.key \
+            | sudo gpg --dearmor -o /usr/share/keyrings/doppler-archive-keyring.gpg
+
+          echo "deb [signed-by=/usr/share/keyrings/doppler-archive-keyring.gpg] https://packages.doppler.com/public/cli/deb/debian any-version main" \
+            | sudo tee /etc/apt/sources.list.d/doppler-cli.list
+
+          sudo apt-get update && sudo apt-get install -y doppler
+
+          echo "/usr/local/bin" >> $GITHUB_PATH
           
           # Install Tailscale
           echo "Installing Tailscale..."
