@@ -69,3 +69,10 @@ dependencies:
     version: "^1.5.0"
     condition: dopplerOperator.install
     alias: doppler-operator
+
+  
+  # KNative Functions
+  - name: functions
+    repository: file://charts/functions
+    version: "*"
+    condition: functions.enabled

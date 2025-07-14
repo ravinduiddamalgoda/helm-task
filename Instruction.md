@@ -44,10 +44,10 @@ terragrunt apply
 🔄 Change Directory
 cd helm/
 
-export DOPPLER_SERVICE_TOKEN="dp.st.dev.F5mkxW6Bwm8jMriOnN4rWD6kFIisIqIGFitEfjlQxZW"
-export OCI_USERNAME=""
-export OCI_PASSWORD=""
-export OCI_EMAIL=""
+Install the Knative Serving component
+
+kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.18.1/serving-crds.yaml
+kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.18.1/serving-core.yaml
 
 📦 Helm Deployment Commands
 

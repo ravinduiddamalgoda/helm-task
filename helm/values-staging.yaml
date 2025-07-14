@@ -381,3 +381,29 @@ persistence:
 networkPolicy:
   enabled: true
 
+functions:
+  enabled: true
+  image:
+    repository: yul.ocir.io/axjre2lwxpox/helloworld-python-knative
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+    annotations: {}
+  knative:
+    enabled: true
+    serviceName: ""
+    annotations: {}
+    labels: {}
+  ingress:
+    enabled: true
+    className: ""
+    hosts:
+      - host: function.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
