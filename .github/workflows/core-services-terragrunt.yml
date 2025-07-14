@@ -146,6 +146,7 @@ jobs:
           
           # Verify installations
           echo "Verifying tool installations..."
+          export PATH="$HOME/bin:$PATH"
           terraform --version
           terragrunt --version
           oci --version
