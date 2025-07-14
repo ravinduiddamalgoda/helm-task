@@ -39,7 +39,7 @@ on:
         type: string
 
 env:
-  TERRAFORM_VERSION: "1.5.7"
+  TERRAFORM_VERSION: "1.6.6"
   TERRAGRUNT_VERSION: "0.54.11"
   CORE_SERVICES_DIR: "terragrunt/live/envs/core-services"
   # Global environment variables for all services
