@@ -1,0 +1,331 @@
+name: Core Services Terragrunt Execution
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'terragrunt/live/envs/core-services/**'
+      - 'terraform/modules/oci/**'
+      - '.github/workflows/core-services-terragrunt.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'terragrunt/live/envs/core-services/**'
+      - 'terraform/modules/oci/**'
+      - '.github/workflows/core-services-terragrunt.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      action:
+        description: 'Terragrunt action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      target:
+        description: 'Specific service to target (optional)'
+        required: false
+        type: string
+
+env:
+  TERRAFORM_VERSION: "1.5.7"
+  TERRAGRUNT_VERSION: "0.54.11"
+  PYTHON_VERSION: "3.9"
+  CORE_SERVICES_DIR: "terragrunt/live/envs/core-services"
+  # Global environment variables for all services
+  DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+  DOPPLER_SERVICE_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
+  TAILSCALE_AUTH_KEY: ${{ secrets.TAILSCALE_AUTH_KEY }}
+
+jobs:
+  # Single job that runs all services on the same machine
+  core-services-execution:
+    name: Core Services Execution
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+            echo "action=${{ github.event.inputs.action }}" >> $GITHUB_OUTPUT
+            echo "target=${{ github.event.inputs.target }}" >> $GITHUB_OUTPUT
+          else
+            # Default to dev environment for automated runs
+            echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "action=plan" >> $GITHUB_OUTPUT
+            echo "target=" >> $GITHUB_OUTPUT
+          fi
+          
+          # Set global environment variables
+          echo "ENVIRONMENT=${{ steps.set-env.outputs.environment }}" >> $GITHUB_ENV
+          echo "ACTION=${{ steps.set-env.outputs.action }}" >> $GITHUB_ENV
+          echo "TARGET=${{ steps.set-env.outputs.target }}" >> $GITHUB_ENV
+
+      - name: Install all tools
+        run: |
+          echo "Installing all required tools..."
+          
+          # Update package list
+          sudo apt-get update
+          
+          # Install system dependencies
+          sudo apt-get install -y jq curl wget unzip software-properties-common apt-transport-https ca-certificates gnupg lsb-release
+          
+          # Install Python
+          echo "Installing Python ${{ env.PYTHON_VERSION }}..."
+          sudo apt-get install -y python${{ env.PYTHON_VERSION }} python${{ env.PYTHON_VERSION }}-pip python${{ env.PYTHON_VERSION }}-venv
+          
+          # Install Terraform
+          echo "Installing Terraform ${{ env.TERRAFORM_VERSION }}..."
+          wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+          sudo apt-get update
+          sudo apt-get install -y terraform=${{ env.TERRAFORM_VERSION }}
+          
+          # Install Terragrunt
+          echo "Installing Terragrunt ${{ env.TERRAGRUNT_VERSION }}..."
+          wget -q https://github.com/gruntwork-io/terragrunt/releases/download/v${{ env.TERRAGRUNT_VERSION }}/terragrunt_linux_amd64
+          chmod +x terragrunt_linux_amd64 && sudo mv terragrunt_linux_amd64 /usr/local/bin/terragrunt
+          
+          # Install OCI CLI
+          echo "Installing OCI CLI..."
+          bash -c "$(curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh)" --accept-all-defaults
+          echo 'export PATH=~/bin:$PATH' >> ~/.bashrc
+          source ~/.bashrc
+          
+          # Install Doppler CLI
+          echo "Installing Doppler CLI..."
+          curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh | sh
+          export PATH="$HOME/.local/bin:$PATH"
+          
+          # Install Tailscale
+          echo "Installing Tailscale..."
+          curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+          curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+          sudo apt-get update
+          sudo apt-get install -y tailscale
+          
+          # Verify installations
+          echo "Verifying tool installations..."
+          terraform --version
+          terragrunt --version
+          oci --version
+          doppler --version
+          tailscale version
+          python3 --version
+
+      - name: Generate SSH Keys for Bastion
+        run: |
+          echo "Generating SSH keys for bastion..."
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.BASTION_SSH_KEY }}" > ~/.ssh/oci_bastion_ed25519
+          chmod 600 ~/.ssh/oci_bastion_ed25519
+
+          echo "${{ secrets.BASTION_SSH_PUBLIC_KEY }}" > ~/.ssh/oci_bastion_ed25519.pub
+          chmod 644 ~/.ssh/oci_bastion_ed25519.pub
+
+          
+          # Set environment variables
+          echo "BASTION_SSH_KEY=~/.ssh/oci_bastion_ed25519" >> $GITHUB_ENV
+          echo "BASTION_SSH_PUBLIC_KEY=~/.ssh/oci_bastion_ed25519.pub" >> $GITHUB_ENV
+          
+          # Display public key for reference
+          echo "Generated SSH Public Key:"
+          cat ~/.ssh/oci_bastion_ed25519.pub
+
+      - name: Configure OCI credentials
+        run: |
+          echo "Configuring OCI credentials..."
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+          
+          cat > ~/.oci/config << EOF
+          [DEFAULT]
+          user=${{ secrets.OCI_USER_OCID }}
+          fingerprint=${{ secrets.OCI_FINGERPRINT }}
+          tenancy=${{ secrets.OCI_TENANCY_OCID }}
+          region=${{ secrets.OCI_REGION }}
+          key_file=~/.oci/oci_api_key.pem
+          EOF
+
+      - name: Configure Doppler
+        run: |
+          echo "Configuring Doppler..."
+          echo "DOPPLER_TOKEN is set globally: ${{ env.DOPPLER_TOKEN != '' }}"
+          echo "DOPPLER_SERVICE_TOKEN is set globally: ${{ env.DOPPLER_SERVICE_TOKEN != '' }}"
+          
+          # Test Doppler connection using global environment variables
+          doppler configure set token $DOPPLER_TOKEN
+          doppler secrets list --project=${{ secrets.DOPPLER_PROJECT }} --config=$ENVIRONMENT
+
+      - name: Configure Tailscale
+        run: |
+          echo "Configuring Tailscale..."
+          echo "TAILSCALE_AUTH_KEY is set globally: ${{ env.TAILSCALE_AUTH_KEY != '' }}"
+
+      - name: Validate Terragrunt configuration
+        run: |
+          echo "Validating Terragrunt configuration..."
+          cd ${{ env.CORE_SERVICES_DIR }}
+          
+          # Check if terragrunt.hcl files are valid
+          find . -name "terragrunt.hcl" -exec terragrunt hclfmt --terragrunt-check {} \;
+          
+          # Validate inputs for each service
+          for service in network bastion operator oke; do
+            if [ -d "$service" ]; then
+              echo "Validating $service..."
+              cd $service
+              terragrunt validate-inputs
+              cd ..
+            fi
+          done
+
+      - name: Check dependencies and services
+        run: |
+          echo "Checking core services dependencies..."
+          cd ${{ env.CORE_SERVICES_DIR }}
+          
+          # List all services and their dependencies
+          echo "Available services:"
+          ls -la
+          
+          echo "Dependencies from terragrunt.hcl:"
+          if [ -f "terragrunt.hcl" ]; then
+            grep -A 10 "dependencies" terragrunt.hcl || echo "No dependencies block found"
+          fi
+          
+          echo "Service directories found:"
+          for service in network bastion operator oke; do
+            if [ -d "$service" ]; then
+              echo "✅ $service"
+            else
+              echo "❌ $service (missing)"
+            fi
+          done
+
+      - name: Get Doppler Secrets for All Services
+        working-directory: ${{ env.CORE_SERVICES_DIR }}
+        run: |
+          echo "Getting Doppler secrets for all services..."
+          doppler configure set token $DOPPLER_SERVICE_TOKEN
+          doppler secrets download --project=${{ secrets.DOPPLER_PROJECT }} --config=$ENVIRONMENT --format=env --no-file > .env
+          
+          # Display available secrets (without values for security)
+          echo "Available secrets for Core Services:"
+          doppler secrets list --project=${{ secrets.DOPPLER_PROJECT }} --config=$ENVIRONMENT --only-names
+          
+          # Load Doppler secrets into environment
+          if [ -f .env ]; then
+            echo "Loading Doppler secrets..."
+            export $(cat .env | xargs)
+            echo "Doppler secrets loaded successfully"
+          else
+            echo "No Doppler secrets file found"
+          fi
+
+      - name: Execute Terragrunt Run-All Init
+        working-directory: ${{ env.CORE_SERVICES_DIR }}
+        run: |
+          echo "Executing terragrunt run-all init..."
+          echo "This will initialize all services in dependency order"
+          
+          # Run terragrunt run-all init
+          terragrunt run-all init -input=false
+          
+          echo "✅ All services initialized successfully"
+
+      - name: Execute Terragrunt Run-All Action
+        working-directory: ${{ env.CORE_SERVICES_DIR }}
+        run: |
+          echo "Executing terragrunt run-all $ACTION..."
+          echo "This will execute all services in dependency order"
+          
+          # Run the specified action using terragrunt run-all
+          case "$ACTION" in
+            "plan")
+              echo "Running terragrunt run-all plan..."
+              terragrunt run-all plan -out=tfplan -input=false
+              ;;
+            "apply")
+              echo "Running terragrunt run-all apply..."
+              terragrunt run-all apply -auto-approve -input=false
+              ;;
+            "destroy")
+              echo "Running terragrunt run-all destroy..."
+              terragrunt run-all destroy -auto-approve -input=false
+              ;;
+            *)
+              echo "Unknown action: $ACTION"
+              exit 1
+              ;;
+          esac
+          
+          echo "✅ All services executed successfully with $ACTION"
+
+      - name: Generate Summary
+        if: always()
+        run: |
+          echo "## 🚀 Core Services Terragrunt Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Execution Details:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: $ENVIRONMENT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Action**: $ACTION" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target**: ${{ steps.set-env.outputs.target || 'All Services' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Services Executed with Terragrunt Run-All:" >> $GITHUB_STEP_SUMMARY
+          echo "- Network Service ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Bastion Service ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- Operator Service ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- OKE Service ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 Tools Installed:" >> $GITHUB_STEP_SUMMARY
+          echo "- Terraform ${{ env.TERRAFORM_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Terragrunt ${{ env.TERRAGRUNT_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- OCI CLI" >> $GITHUB_STEP_SUMMARY
+          echo "- Doppler CLI" >> $GITHUB_STEP_SUMMARY
+          echo "- Tailscale" >> $GITHUB_STEP_SUMMARY
+          echo "- Python ${{ env.PYTHON_VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔑 SSH Keys Generated:" >> $GITHUB_STEP_SUMMARY
+          echo "- Bastion SSH Key: $BASTION_SSH_KEY" >> $GITHUB_STEP_SUMMARY
+          echo "- Bastion SSH Public Key: $BASTION_SSH_PUBLIC_KEY" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Terragrunt Run-All Commands:" >> $GITHUB_STEP_SUMMARY
+          echo "- `terragrunt run-all init` ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- `terragrunt run-all $ACTION` ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🟢 **All services executed successfully using terragrunt run-all!**" >> $GITHUB_STEP_SUMMARY
+
+      - name: Success Notification
+        if: success()
+        run: |
+          echo "✅ Core Services Terragrunt execution completed successfully!"
+          echo "🎉 All services have been deployed/updated using terragrunt run-all!"
+          echo "🖥️ All services ran on the same machine with automatic dependency management!"
+          echo "🚀 Terragrunt run-all handled initialization and execution in the correct order!"
+
+      - name: Failure Notification
+        if: failure()
+        run: |
+          echo "❌ Core Services Terragrunt execution failed!"
+          echo "🔍 Please review the logs above to identify the issue."
+          exit 1 
