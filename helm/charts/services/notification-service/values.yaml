@@ -1,0 +1,126 @@
+# Default values specific to the notification-service sub-chart.
+
+
+replicaCount: 1
+
+image:
+  repository: yul.ocir.io/axjre2lwxpox/notification-service 
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+# Default to secure pod and container security contexts
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+
+service:
+  type: ClusterIP
+  port: 2502 
+  targetPort: 8080 
+
+
+config:
+  LOG_LEVEL: "info"
+  DEFAULT_EMAIL_SENDER: "noreply@example.com" 
+
+# Doppler configuration specific to this service
+doppler:
+  enabled: false 
+  projectName: "oci-infra" 
+  tokenSecretName: "doppler-token-secret" 
+  managedSecretName: "notification-service-secrets" 
+
+
+
+redis:
+  internal:
+    enabled: false 
+   
+    passwordSecretKey: REDIS_PASSWORD
+  external:
+    enabled: false 
+    host: ""
+    port: 6379
+    
+    passwordSecretName: ""
+    passwordSecretKey: "password" 
+
+
+livenessProbe:
+  httpGet:
+    path: /healthz 
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz 
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+
+startupProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  failureThreshold: 30
+  periodSeconds: 10
+
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Network policy
+networkPolicy:
+  enabled: false
+
+# Other defaults
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Persistence configuration
+persistence:
+  enabled: false 
+  accessMode: ReadWriteOnce
+  size: 1Gi
+ 

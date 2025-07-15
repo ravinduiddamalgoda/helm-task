@@ -1,0 +1,389 @@
+# Global settings shared across all sub-charts
+global:
+  deploymentMode: "local"
+  
+  environment: "dev"
+  
+  storageClass: "standard"
+
+  oci:
+    enabled: false
+    region: ""
+    compartmentId: ""
+    availabilityDomains:
+      - ""
+    faultDomains:
+      - ""
+    # Default instance shape for compute
+    instanceShape: "VM.Standard.E3.Flex"
+    # Default flexible shape configuration
+    flexShape:
+      ocpus: 1
+      memoryInGBs: 16
+
+    registry:
+      server: "yul.ocir.io"
+      username: "${OCI_USERNAME}"
+      password: "${OCI_PASSWORD}"
+      email: "${OCI_EMAIL}"
+  
+  # Doppler configuration
+  doppler:
+    enabled: true  # Enable Doppler
+    tokenSecret: "${DOPPLER_SERVICE_TOKEN}"
+    
+    project: "oci-infra"
+    configName: "dev"
+    secretNamePattern: "%s-doppler-secrets-%s" 
+    operatorNamespace: "doppler-operator-system"
+  
+  # Image pull secrets (if needed)
+  #imagePullSecrets: []
+
+  imagePullSecrets:
+    - name: ocir-secret
+  
+  # Database configuration defaults
+  databases:
+    mysql:
+      selfHosted:
+        enabled: false  # Disable MySQL
+        persistence:
+          size: 2Gi
+        auth:
+          rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+          userSecretKey: MYSQL_USER
+          passwordSecretKey: MYSQL_PASSWORD
+      managed:
+        enabled: false
+        host: ""
+        port: 3306
+        credentialsSecretName: ""
+        usernameKey: "username"
+        passwordKey: "password"
+    
+    # MongoDB configuration - ENABLED
+    mongodb:
+      selfHosted:
+        enabled: true  # Enable MongoDB
+        persistence:
+          size: 5Gi  # Increased size for production use
+        auth:
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+        # OCI-specific settings for MongoDB
+        oci:
+          faultDomain: ""
+      backup:
+        enabled: true  # Enable MongoDB backup
+        schedule: "0 2 * * *"  # Daily at 2 AM
+        storageClass: ""
+        retention: 7  # Keep backups for 7 days
+        # OCI Object Storage for backups
+        objectStorage:
+          enabled: false
+          bucketName: ""
+          region: ""
+          credentialsSecretName: ""
+  
+  
+  cache:
+    redis:
+      selfHosted:
+        enabled: true  
+        persistence:
+          size: 2Gi
+        oci:
+          faultDomain: ""
+      managed:
+        enabled: false
+        host: ""
+        port: 6379
+        credentialsSecretName: ""
+  
+  # Messaging configuration - ENABLED
+  messaging:
+    rabbitmq:
+      selfHosted:
+        enabled: true  
+        persistence:
+          size: 2Gi
+        oci:
+          faultDomain: ""
+      managed:
+        enabled: false
+        host: ""
+        port: 5672
+        credentialsSecretName: ""
+        usernameKey: "username"
+        passwordKey: "password"
+
+# Service configurations - ALL DISABLED
+mainApi:
+  enabled: true  
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "main-api-doppler-manage-secret-name"
+    annotations: {}
+  config:
+    LOG_LEVEL: "debug"
+    APP_ENV: "dev"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+authServer:
+  enabled: true  
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: ""
+    annotations: {}
+  config:
+    LOG_LEVEL: "debug"
+    JWT_ISSUER: "koci-auth-server-dev"
+    APP_ENV: "dev"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  # Database connections for development
+  mysql:
+    internal:
+      enabled: false  
+    external:
+      enabled: true
+      host: "localhost"  
+      port: 3306
+      database: "koci_auth_dev"
+      credentialsSecretName: "dev-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
+
+notificationService:
+  enabled: true  
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  networkPolicy:
+    enabled: false
+  persistence:
+    enabled: true
+    size: 1Gi
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: ""
+    annotations: {}
+  config:
+    LOG_LEVEL: "debug"
+    DEFAULT_EMAIL_SENDER: "noreply@dev.koci.com"
+    APP_ENV: "dev"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  
+  redis:
+    internal:
+      enabled: true  
+    external:
+      enabled: false
+  rabbitmq:
+    internal:
+      enabled: true  
+    external:
+      enabled: false
+
+# Database configurations (defaults for internal deployments)
+mongodb:
+  internal:
+    enabled: true  
+  external:
+    enabled: false
+    host: ""
+    port: 27017
+  database: "koci"
+  existingSecret: ""
+
+mysql:
+  internal:
+    enabled: false  
+    auth:
+      rootPasswordSecretKey: MYSQL_ROOT_PASSWORD
+      userSecretKey: MYSQL_USER
+      passwordSecretKey: MYSQL_PASSWORD
+  external:
+    enabled: false
+    host: ""
+    port: 3306
+  database: "koci"
+  existingSecret: ""
+  ssl:
+    enabled: false
+    mode: "VERIFY_CA"
+    caKey: "OCI_MYSQL_CA_CERT"
+
+# Cache configuration
+redis:
+  internal:
+    enabled: true  
+    auth:
+      enabled: true
+      passwordSecretKey: REDIS_PASSWORD
+    persistence:
+      enabled: true  
+  external:
+    enabled: false
+    host: ""
+    port: 6379
+  existingSecret: ""
+
+# Messaging configuration
+rabbitmq:
+  enabled: true  
+  cluster:
+    replicas: 1
+    persistence:
+      enabled: true
+      storage: 2Gi
+    auth:
+      usernameSecretKey: RABBITMQ_USERNAME
+      passwordSecretKey: RABBITMQ_PASSWORD
+    service:
+      port: 5672
+      managementPort: 15672
+  connection:
+    internal:
+      enabled: true
+    external:
+      enabled: false
+      host: ""
+      port: 5672
+  vhost: "/"
+  existingSecret: ""
+
+# Secrets Operator configuration - ENABLED
+dopplerOperator:
+  install: true  
+  serviceAccount:
+    create: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# MongoDB backup job configuration
+mongodb-backup:
+  enabled: true  
+  nameOverride: "mongodb-backup"
+  fullnameOverride: "mongodb-backup"
+  
+  backup:
+    image:
+      repository: bitnami/mongodb
+      tag: "6.0"  
+    
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+# Default resource profiles
+resources:
+  small:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  medium:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 400m
+      memory: 512Mi
+  large:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+# Default persistence configuration
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  ephemeral: false
+
+# Default network policy configuration
+networkPolicy:
+  enabled: false
+  ingress:
+    enabled: true
+    from: []
+  egress:
+    enabled: true
+    rules: []
+
+
+functions:
+  enabled: true
+  image:
+    repository: yul.ocir.io/axjre2lwxpox/helloworld-python-knative
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+    annotations: {}
+  knative:
+    enabled: true
+    serviceName: ""
+    annotations: {}
+    labels: {}
+  ingress:
+    enabled: true
+    className: ""
+    hosts:
+      - host: function.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []

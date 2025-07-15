@@ -1,0 +1,113 @@
+# Default values specific to the main-api sub-chart.
+# These are overridden by the 'mainApi:' section in the umbrella chart's values.
+
+replicaCount: 1
+
+image:
+  repository: yul.ocir.io/axjre2lwxpox/main-api # Default repo, MUST be overridden in umbrella values
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  # tag: is provided by the umbrella chart
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false # Assume default service account unless specified
+  annotations: {}
+  name: "" # Defaults to fullname if create is true
+
+podAnnotations: {}
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 2500 # External port for the service
+  targetPort: 8080 # Named port on the container
+
+# Default non-secret config (can be overridden by umbrella mainApi.config)
+config:
+  LOG_LEVEL: "info"
+
+# Doppler configuration specific to this service
+doppler:
+  enabled: false # Disabled by default, enabled via umbrella chart
+  projectName: "oci-infra" # Should match Doppler project
+  tokenSecretName: "doppler-token-secret" # Name of the K8s secret holding the Doppler token
+  managedSecretName: "main-api-doppler-secrets" # Name of the K8s secret Doppler will manage
+  # configName: uses global.dopplerConfigName by default
+
+  # --- Dependency Connection Details ---
+  # Define structure, umbrella chart enables one section or the other.
+
+mysql:
+  internal:
+    enabled: false # Default to disabled
+    databaseName: "main_api" # Default internal DB name if enabled
+    # Assumes standard secret keys (MYSQL_USER, MYSQL_PASSWORD) exist in this service's Doppler secret
+    userSecretKey: MYSQL_USER
+    passwordSecretKey: MYSQL_PASSWORD
+  external:
+    enabled: false # Default to disabled
+    host: ""
+    port: 3306
+    database: ""
+    credentialsSecretName: "" # Secret containing user/pass
+    usernameKey: "username"
+    passwordKey: "password"
+
+mongodb:
+  internal:
+    enabled: false # Default to disabled
+    # databaseName: "" # Optional: Default internal DB name if needed
+    # Assumes connection string or user/pass keys exist in this service's Doppler secret
+    # Example: connectionStringSecretKey: MONGO_URI
+  external:
+    enabled: false # Default to disabled
+    connectionStringSecretName: "" # Secret containing Mongo URI
+    connectionStringSecretKey: "uri"
+
+# Default probes (can be overridden)
+livenessProbe:
+  httpGet:
+    path: /health_check
+    port: http # Use the container port name
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health_check
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# livenessProbe: null
+# readinessProbe: null
+
+# Default resource requests/limits (can be overridden)
+resources: {}
+# limits:
+#   cpu: 500m
+#   memory: 512Mi
+# requests:
+#   cpu: 250m
+#   memory: 256Mi
+
+# Other defaults
+nodeSelector: {}
+tolerations: []
+affinity: {}

@@ -1,0 +1,111 @@
+# Default values for auth-server
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
+image:
+  repository: yul.ocir.io/axjre2lwxpox/auth-server
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: auth.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  profile: "small"
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Database configuration
+mysql:  
+  #enabled: true
+  internal:
+    enabled: false  
+    databaseName: "auth_server" 
+  external:
+    enabled: false  
+    host: ""
+    port: 3306
+    database: ""
+    credentialsSecretName: "" # Secret containing user/pass
+    usernameKey: "username"
+    passwordKey: "password"
+
+# Doppler configuration
+doppler:
+  enabled: false
+  projectName: "oci-infra"
+  tokenSecretName: "doppler-token-secret" # Example token secret name
+  managedSecretName: ""
+  annotations: {}
+
+# Default non-secret config (can be overridden by umbrella authServer.config)
+config:
+  LOG_LEVEL: "info"
+  JWT_ISSUER: "koci-auth-server" 
+
+
+livenessProbe:
+  httpGet:
+    path: /healthz 
+    port: http
+  initialDelaySeconds: 15
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz 
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+
+
+
+# Default resource requests/limits (can be overridden)
+resources: {}
+# limits:
+#   cpu: 300m
+#   memory: 256Mi
+# requests:
+#   cpu: 150m
+#   memory: 128Mi
+
+# Other defaults
+nodeSelector: {}
+tolerations: []
+affinity: {} 

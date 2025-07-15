@@ -1,0 +1,16 @@
+
+module "cloud_guard_security_zone" {
+  source = "${module_base_path}"
+  
+  # Required variables
+  compartment_id = "${compartment_id}"
+  env_name       = "${env_name}"
+  vcn_id         = "${vcn_id}"
+  tenancy_ocid   = "${tenancy_ocid}"
+  
+  # Enable Cloud Guard and Security Zone
+  enabled = true
+  
+  # Optional: Specify reporting region (uses home region if not specified)
+  reporting_region = null
+} 

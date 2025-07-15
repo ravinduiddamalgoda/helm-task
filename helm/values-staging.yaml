@@ -1,0 +1,409 @@
+# Environment: Staging - CORRECTED VERSION
+global:
+  deploymentMode: "cluster"
+  environment: staging
+  storageClass: "oci-bv"  
+
+  imagePullSecrets:
+    - name: ocir-secret
+  
+  oci:
+    enabled: true
+    region: "ca-montreal-1"
+    registry:
+      server: "yul.ocir.io"
+      username: ${OCI_USERNAME}
+      password: ${OCI_PASSWORD}
+      email: ${OCI_EMAIL}
+  
+  doppler:
+    enabled: true
+    project: "oci-infra"
+    tokenSecret: "${DOPPLER_SERVICE_TOKEN}"
+    dopplerConfigName: "dev"
+    operatorNamespace: "doppler-operator-system"
+  
+  databases:
+    mysql:
+      selfHosted:
+        enabled: false
+      managed:
+        enabled: false
+    
+    mongodb:
+      selfHosted:
+        enabled: true
+        replicaCount: 1
+        
+        doppler:
+          enabled: true
+          projectName: "oci-infra"
+          tokenSecretName: "doppler-token-secret"
+          managedSecretName: "koci-mongodb-secrets"
+          configName: "dev"
+        persistence:
+          storageClass: "oci-bv" 
+          size: 50Gi
+        auth:
+          rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
+          rootPasswordSecretKey: MONGO_INITDB_ROOT_PASSWORD
+          
+      backup:
+        enabled: true
+        schedule: "0 2 * * *"
+        retention: 14
+        storageClass: "oci-bv"  
+  
+  cache:
+    redis:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 10Gi
+          storageClass: "oci-bv"  
+  
+  messaging:
+    rabbitmq:
+      selfHosted:
+        enabled: true
+        persistence:
+          size: 10Gi
+          storageClass: "oci-bv"  
+
+# all application services
+
+mainApi:
+  enabled: true 
+  replicaCount: 1
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "main-api-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # Database connections
+  mysql:
+    internal:
+      enabled: false  
+    external:
+      enabled: true
+      host: "staging-mysql.example.com"  
+      port: 3306
+      database: "koci_main"
+      credentialsSecretName: "staging-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
+  mongodb:
+    internal:
+      enabled: true  
+    external:
+      enabled: false
+
+authServer:
+  enabled: true  
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "auth-server-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    JWT_ISSUER: "koci-auth-server-staging"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 150m
+      memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  # Database connections
+  mysql:
+    internal:
+      enabled: false 
+    external:
+      enabled: true
+      host: "staging-mysql.example.com"  
+      port: 3306
+      database: "koci_auth"
+      credentialsSecretName: "staging-mysql-credentials"
+      usernameKey: "username"
+      passwordKey: "password"
+
+
+notificationService:
+  enabled: true  
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 70
+  networkPolicy:
+    enabled: true
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClass: "oci-bv"
+  doppler:
+    enabled: true
+    projectName: "oci-infra"
+    tokenSecretName: "doppler-token-secret"
+    managedSecretName: "notification-service-doppler-secrets-staging"
+  config:
+    LOG_LEVEL: "info"
+    DEFAULT_EMAIL_SENDER: "noreply@staging.koci.com"
+    APP_ENV: "staging"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  # Dependencies
+  redis:
+    internal:
+      enabled: true  
+    external:
+      enabled: false
+  rabbitmq:
+    internal:
+      enabled: true  
+    external:
+      enabled: false
+
+
+
+# MongoDB configuration
+mongodb:
+  internal:
+    enabled: true
+  external:
+    enabled: false
+  replicaCount: 1
+  resources:
+    # limits:
+    #   cpu: 2
+    #   memory: 4Gi
+    requests:
+      #cpu: 1
+      cpu: 1000m
+      memory: 2Gi
+    limits: 
+      cpu: 2000m
+      memory: 4Gi  
+  persistence:
+    enabled: true
+    # storageClass: "oci-bv"  
+    # size: 50Gi
+    size: 20Gi           
+    storageClass: "oci-bv"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-db
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: node.kubernetes.io/instance-type
+            operator: In
+            values:
+            - VM.Standard.E4.Flex
+  # Tolerations for database workloads
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "stateful-db"
+      effect: "NoSchedule"                   
+
+# Redis configuration
+redis:
+  internal:
+    enabled: true
+  external:
+    enabled: false
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "oci-bv"
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-db
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: node.kubernetes.io/instance-type
+            operator: In
+            values:
+            - VM.Standard.E4.Flex
+  # Tolerations for database workloads
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "stateful-db"
+      effect: "NoSchedule"                
+
+# RabbitMQ configuration (already working)
+rabbitmq:
+  enabled: true
+  replicaCount: 1
+  cluster:
+    replicas: 3
+    persistence:
+      enabled: true
+      storage: 20Gi  
+      storageClass: "oci-bv"  
+    auth:
+      usernameSecretKey: RABBITMQ_USERNAME
+      passwordSecretKey: RABBITMQ_PASSWORD
+    service:
+      port: 5672
+      managementPort: 15672
+  connection:
+    internal:
+      enabled: true
+    external:
+      enabled: false
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    config:
+      enableManagement: true
+      memoryHighWatermark: 0.6
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: workload-type
+            operator: In
+            values:
+            - stateful-mq
+    # Tolerations for messaging workloads
+  tolerations:
+    - key: "workload-type"
+      operator: "Equal"
+      value: "stateful-mq"
+      effect: "NoSchedule"                         
+
+# Doppler Operator configuration
+dopplerOperator:
+  install: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# MongoDB backup job
+mongodb-backup:
+  enabled: true
+  backup:
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+# Staging-specific settings
+persistence:
+  enabled: true
+  storageClass: "oci-bv"  
+
+networkPolicy:
+  enabled: true
+
+functions:
+  enabled: true
+  image:
+    repository: yul.ocir.io/axjre2lwxpox/helloworld-python-knative
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+    annotations: {}
+  knative:
+    enabled: true
+    serviceName: ""
+    annotations: {}
+    labels: {}
+  ingress:
+    enabled: true
+    className: ""
+    hosts:
+      - host: function.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
