@@ -16,7 +16,7 @@ inputs = {
   # Repository configuration
   repository_name = "koci-images"
   is_public       = false
-  
+#   
 
   # Tags
   freeform_tags = include.common.locals.common_tags
