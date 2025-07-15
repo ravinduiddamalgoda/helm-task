@@ -30,24 +30,35 @@ locals {
   vcn_cidr = "10.2.0.0/16"
 
 
-  raw_subnets = {
+  # ─── CNI choice & associated VXLAN ports ────────────────────────────────
+
+  cni_type = try(include.common.locals.cni_type, "calico")
+
+  # ─── Conditional subnet configuration based on CNI type ──────────────────
+  # Base subnets that are always needed
+  base_subnets = {
     bastion = { newbits = 11, netnum = 512, dns_label = "bastion", gateway_type = "igw",  ha = false } # 10.2.64.0/27
-    operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27  
+    operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27
     data    = { newbits = 8,  netnum = 65,  dns_label = "data",    gateway_type = "sgw",  ha = false } # 10.2.65.0/24
     cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false } # 10.2.66.0/26
     int_lb  = { newbits = 10, netnum = 265, dns_label = "ilb",     gateway_type = "ngw",  ha = false } # 10.2.66.64/26
     pub_lb  = { newbits = 10, netnum = 266, dns_label = "plb",     gateway_type = "igw",  ha = false } # 10.2.66.128/26
-    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false } # 10.2.68.0/23 
-    pods    = { newbits = 4,  netnum = 8,   dns_label = "pods",    gateway_type = "sgw",  ha = false } # 10.2.128.0/20
+    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false } # 10.2.68.0/23
   }
 
+  # Pod subnet - only needed for flannel and calico (not for oci_vcn_native)
+  pod_subnet = {
+    pods = { newbits = 4, netnum = 8, dns_label = "pods", gateway_type = "sgw", ha = false } # 10.2.128.0/20
+  }
 
-  #########################################################################
-  # Stable, collision-free subnet enumeration
-  #########################################################################
-  base_order = [
-    "bastion", "operator", "data", "cp", "int_lb", "pub_lb", "workers", "pods" 
-  ]
+  # Combine subnets based on CNI type
+  raw_subnets = merge(
+    local.base_subnets,
+    local.cni_type == "oci_vcn_native" ? {} : local.pod_subnet
+  )
+
+ #─── Conditional base order based on CNI type ───────────────────────────
+  base_order = local.cni_type == "oci_vcn_native" ? ["bastion", "operator", "data", "cp", "int_lb", "pub_lb", "workers"] : ["bastion", "operator", "data", "cp", "int_lb", "pub_lb", "workers", "pods"]
 
   expanded_subnets = [
     for name in local.base_order : merge(
@@ -56,6 +67,7 @@ locals {
         name      = name
         base_name = name
         ad        = null
+        # use explicit netnum if present; otherwise fall back to index()
         netnum    = lookup(local.raw_subnets[name], "netnum", index(local.base_order, name))
       }
     )
@@ -77,13 +89,10 @@ locals {
 
 
   trusted_nodeport_sources = flatten([
-    for name in ["cp", "int_lb", "bastion", "operator"] :      
+    for name in ["cp", "int_lb", "bastion", "operator"] :       #hardcode ADDED
     contains(keys(local.subnets), name) ? [local.subnets[name].cidr] : []
   ])
 
-  # ─── CNI choice & associated VXLAN ports ────────────────────────────────
-  # • default is Calico; override in env-common.kocil with:  cni_type = "flannel"
-  cni_type = try(include.common.locals.cni_type, "calico")
 
   cni_udp_rules = (
     local.cni_type == "flannel" ? [
@@ -108,9 +117,8 @@ locals {
     ] : [] # For "calico", "oci_vcn_native", or any other CNI, no specific VXLAN rules are added here.
   )
 
-  # -----------------------------------------------------------
-  # -----------------------------------------------------------
-  extra_nsg_keys = ["fss", "pods", "workers"]
+
+  extra_nsg_keys = local.cni_type == "oci_vcn_native" ? ["fss", "workers"] : ["fss", "pods", "workers"]
 
   # toggles / ACL helpers
   bastion_allowed_cidrs        = ["0.0.0.0/0"]
@@ -437,6 +445,14 @@ locals {
         source_type = "CIDR_BLOCK"
         icmp_options = { type = 3, code = 4 }
       },
+      {
+        direction   = "INGRESS"
+        protocol    = "6" # TCP
+        description = "MYSQL"
+        source      = "10.2.0.0/16"
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 3306, max = 3306 } }
+      },
 
       # ICMP type 3 from VCN
       {
@@ -501,14 +517,14 @@ locals {
     },
 
     
-      {
-        direction   = "INGRESS"
-        protocol    = "6" # TCP
-        description = "MYSQL"
-        source      = "10.2.0.0/16"
-        source_type = "CIDR_BLOCK"
-        tcp_options = { destination_port_range = { min = 3306, max = 3306 } }
-      },
+    {
+      direction   = "INGRESS"
+      protocol    = "6" # TCP
+      description = "MYSQL"
+      source      = "10.2.0.0/16"
+      source_type = "CIDR_BLOCK"
+      tcp_options = { destination_port_range = { min = 3306, max = 3306 } }
+    },
 
     {
       direction   = "INGRESS"

@@ -149,15 +149,15 @@ resource "null_resource" "create_kubeconfig" {
     cluster_name   = var.cluster_name
     compartment_id = var.compartment_id
     region         = var.region
-    user           = var.user # Added user to triggers as $HOME depends on it
+    user           = var.user 
   }
 
   connection {
     bastion_host        = var.bastion_host_public_ip
     bastion_user        = var.bastion_user
     bastion_private_key = var.ssh_private_key
-    host                = var.operator_host   #oci_core_instance.operator.private_ip   #hardcode
-    user                = var.user # Connect and run commands as this user
+    host                = var.operator_host   
+    user                = var.user 
     private_key         = var.ssh_private_key
     timeout             = "40m"
     type                = "ssh"

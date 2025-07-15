@@ -77,9 +77,12 @@ inputs = {
   }
 
   # ── SSH (leave empty to disable) ───────────────────────────────────────
-  ssh_public_key  = file("~/.ssh/oci_bastion_ed25519.pub")  
+  # ssh_public_key  = file("~/.ssh/oci_bastion_ed25519.pub")  
 
-  ssh_private_key = file(get_env("BASTION_SSH_KEY", ""))
+  # ssh_private_key = file(get_env("BASTION_SSH_KEY", ""))
+
+  ssh_public_key  = include.common.locals.bastion_ssh_public_key != "" ? include.common.locals.bastion_ssh_public_key : ""
+  ssh_private_key = include.common.locals.bastion_ssh_private_key != "" ? include.common.locals.bastion_ssh_private_key : ""
 
   defined_tags   = {}
   freeform_tags  = include.common.locals.common_tags

@@ -13,8 +13,7 @@ spec:
     metadata:
       labels:
         {{- include "redis.selectorLabels" . | nindent 8 }}
-    spec:
-      # NEW: Added affinity support                          #ADDED  ---
+    spec:                       
       {{- if .Values.affinity }}
       affinity:
 {{ toYaml .Values.affinity | indent 8 }}
@@ -22,7 +21,7 @@ spec:
       {{- if .Values.tolerations }}
       tolerations:
 {{ toYaml .Values.tolerations | indent 8 }}
-      {{- end }}                                            # ---ADDED 
+      {{- end }}                                            
       securityContext:
         {{- if .Values.securityContext.enabled }}
         fsGroup: {{ .Values.securityContext.fsGroup }}

@@ -34,7 +34,7 @@ global:
       selfHosted:
         enabled: true
         replicaCount: 1
-        # Enable Doppler for MongoDB secrets
+        
         doppler:
           enabled: true
           projectName: "oci-infra"
@@ -73,7 +73,7 @@ global:
 # all application services
 
 mainApi:
-  enabled: true  # ✅ ENABLED: Enable main-api service
+  enabled: true 
   replicaCount: 1
   autoscaling:
     enabled: true
@@ -226,14 +226,14 @@ mongodb:
       #cpu: 1
       cpu: 1000m
       memory: 2Gi
-    limits: ##ADDED ---
+    limits: 
       cpu: 2000m
-      memory: 4Gi  ##  ---ADDED
+      memory: 4Gi  
   persistence:
     enabled: true
-    # storageClass: "oci-bv"  # ✅ FIXED
+    # storageClass: "oci-bv"  
     # size: 50Gi
-    size: 20Gi           ##ADDED ---
+    size: 20Gi           
     storageClass: "oci-bv"
   affinity:
     nodeAffinity:

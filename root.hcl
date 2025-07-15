@@ -118,6 +118,41 @@ KEY
     "placeholder-secret-key"
   )
 
+  bastion_ssh_private_key = coalesce(
+    (lookup(local._secret_map, "BASTION_SSH_PRIVATE_KEY", "") != "" ?
+      lookup(local._secret_map, "BASTION_SSH_PRIVATE_KEY", "") : null),
+    local.empty_to_null.bastion_ssh_key_env,
+    "placeholder"
+  )
+
+  bastion_ssh_public_key = coalesce(
+    (lookup(local._secret_map, "BASTION_SSH_PUBLIC_KEY", "") != "" ?
+      lookup(local._secret_map, "BASTION_SSH_PUBLIC_KEY", "") : null),
+    local.empty_to_null.bastion_ssh_public_key_env,
+    "placeholder"
+  )
+
+  registry_username = coalesce(
+    (lookup(local._secret_map, "REGISTRY_USERNAME", "") != "" ?
+      lookup(local._secret_map, "REGISTRY_USERNAME", "") : null),
+    trimspace(get_env("REGISTRY_USERNAME", "")),
+    "placeholder-username"
+  )
+  
+  registry_password = coalesce(
+    (lookup(local._secret_map, "REGISTRY_PASSWORD", "") != "" ?
+      lookup(local._secret_map, "REGISTRY_PASSWORD", "") : null),
+    trimspace(get_env("REGISTRY_PASSWORD", "")),
+    "placeholder-password"
+  )
+  
+  registry_email = coalesce(
+    (lookup(local._secret_map, "REGISTRY_EMAIL", "") != "" ?
+      lookup(local._secret_map, "REGISTRY_EMAIL", "") : null),
+    trimspace(get_env("REGISTRY_EMAIL", "")),
+    "placeholder@example.com"
+  )
+
   # -----------------------------------------------------------------------
   # Default tags
   # -----------------------------------------------------------------------
@@ -137,6 +172,12 @@ KEY
 
     aws_access_key_env     = trimspace(get_env("TF_STATE_ACCESS_KEY", "")),
     aws_secret_key_env     = trimspace(get_env("TF_STATE_SECRET_KEY", "")),
+
+    bastion_ssh_key_env    = trimspace(get_env("BASTION_SSH_KEY", "")),
+    bastion_ssh_public_key_env = trimspace(get_env("BASTION_SSH_PUBLIC_KEY", "")),
+    registry_username_env  = trimspace(get_env("REGISTRY_USERNAME", "")),
+    registry_password_env  = trimspace(get_env("REGISTRY_PASSWORD", "")),
+    registry_email_env     = trimspace(get_env("REGISTRY_EMAIL", ""))
   } : k => (v == "" ? null : v) }
   # End of empty_to_null map definition
   #####################################################################
@@ -182,6 +223,8 @@ inputs = {
   region          = local.region
   doppler_project = local.doppler_project 
   common_tags     = local.tags
+  # bastion_ssh_private_key = local.bastion_ssh_private_key
+  # bastion_ssh_public_key  = local.bastion_ssh_public_key
 }
 
 # ---------------------------------------------------------------------------

@@ -26,9 +26,6 @@ variable "tags" {
   default     = {}
 }
 
-# Add variables for backup policies if needed 
-
-# --- Added Variable ---
 variable "kms_key_id" {
   description = "Optional OCID of the OCI KMS key to use for Block Volume encryption."
   type        = string

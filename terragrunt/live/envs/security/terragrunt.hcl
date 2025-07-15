@@ -21,7 +21,7 @@ dependency "network" {
     # Add mocks for any other network outputs needed by security during planning
     # e.g., subnet IDs/CIDRs if rules depend on them
   }
-  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"] # Added destroy
+  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"] 
 }
 
 ###############################################################################

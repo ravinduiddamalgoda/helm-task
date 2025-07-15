@@ -11,4 +11,3 @@ dependencies:
   - name: common
     repository: file://../../common
     version: ">=0.1.0"
-# appVersion: "7" # Example Redis version 

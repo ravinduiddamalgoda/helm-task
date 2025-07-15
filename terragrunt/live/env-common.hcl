@@ -13,7 +13,7 @@ locals {
 
   name_prefix  = "koci"     
 
-  cni_type = "oci_vcn_native" #"calico" or "flannel" or ""oci_vcn_native""          
+  cni_type = "flannel" #"calico" or "flannel" or ""oci_vcn_native""          
 
   environments_to_bootstrap = {
     "core-services" = "ca-montreal-1"
@@ -29,6 +29,7 @@ locals {
 
   
   doppler_project = local.root_config.inputs.doppler_project
+  doppler_config = trimspace(get_env("DOPPLER_CONFIG", ""))
   doppler_service_token  = coalesce(
     get_env("DOPPLER_SERVICE_TOKEN"),
     get_env("DOPPLER_TOKEN"),
@@ -42,11 +43,19 @@ locals {
   _doppler_json_output = local.is_init_phase || local.doppler_service_token == "placeholder-token" ? "{}" : try(run_cmd(
       "bash", "-c",
       # (added STDERR redirection **and** fallback echo so the command exits 0)
-      "DOPPLER_TOKEN='${local.doppler_service_token}' doppler secrets download --no-file --format json --project ${local.doppler_project} 2>/dev/null || echo '{}'"
+      #"DOPPLER_TOKEN='${local.doppler_service_token}' doppler secrets download --no-file --format json --project ${local.doppler_project} 2>/dev/null || echo '{}'"
+      "DOPPLER_TOKEN='${local.doppler_service_token}' doppler secrets download --no-file --format json --project ${local.doppler_project} --config ${local.doppler_config} 2>/dev/null || echo '{}'"
   ), "{}")
 
   _secret_map = jsondecode(local._doppler_json_output)
 
+
+  # Debug: Log the Doppler fetch status (only during non-init phases)
+  _debug_doppler_status = local.is_init_phase ? "skipped (init phase)" : (
+    local.doppler_service_token == "placeholder-token" ? "skipped (placeholder token)" : (
+      local._doppler_json_output == "{}" ? "failed (empty response)" : "success"
+    )
+  )
   # --- SAFE Lookups for Backend Config & Inputs ---
 
   # 1. Attempt the raw lookups (will be null during init)
@@ -60,22 +69,33 @@ locals {
   _raw_tfstate_bucket = lookup(local._secret_map, "TFSTATE_BUCKET", null)
   _raw_tfstate_access_key = lookup(local._secret_map, "TF_STATE_ACCESS_KEY", null)
   _raw_tfstate_secret_key = lookup(local._secret_map, "TF_STATE_SECRET_KEY", null)
+  _raw_bastion_ssh_private_key = lookup(local._secret_map, "BASTION_SSH_PRIVATE_KEY", null)
+  _raw_bastion_ssh_public_key = lookup(local._secret_map, "BASTION_SSH_PUBLIC_KEY", null)
+  _raw_registry_username = lookup(local._secret_map, "REGISTRY_USERNAME", null)
+  _raw_registry_password = lookup(local._secret_map, "REGISTRY_PASSWORD", null)
+  _raw_registry_email = lookup(local._secret_map, "REGISTRY_EMAIL", null)
 
   # 2. Define final values with fallbacks using coalesce (will use placeholders during init)
   compartment_ocid = coalesce(
     local._raw_compartment_ocid,
-    "ocid1.compartment.oc1..aaaaaaaajklnsyhmjt2tem4opqeqxv5n3njn5u5t6v6khiph3if5uso6pfoa"
+    "ocid1.compartment.oc1..placeholder"
   )
-  tenancy_ocid = coalesce(local._raw_tenancy_ocid, "ocid1.tenancy.oc1..aaaaaaaauasokfuusmntkiyr3xqynfsvazqxr6s6lyj3swfbu7u6pdnra6aq")
-  region = coalesce(local._raw_region, "ca-montreal-1")
+  tenancy_ocid = coalesce(local._raw_tenancy_ocid, "ocid1.tenancy.oc1..placeholder")
+  region = coalesce(local._raw_region, "placeholder-region")
   private_key = coalesce(local._raw_private_key, "placeholder-private-key")
-  user_ocid = coalesce(local._raw_user_ocid, "ocid1.user.oc1..aaaaaaaa5wuhdts3ys2abun6mlmbvri56ooukocisdzbispy4t2tcymidlcb5q")
-  fingerprint = coalesce(local._raw_fingerprint, "6a:da:98:6d:a9:e5:d6:bc:b7:89:74:1d:c8:e7:91:42")
-  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "axjre2lwxpox") 
+  user_ocid = coalesce(local._raw_user_ocid, "ocid1.user.oc1..placeholder")
+  fingerprint = coalesce(local._raw_fingerprint, "placeholder")
+  bastion_ssh_private_key = coalesce(local._raw_bastion_ssh_private_key, "placeholder-bastion-ssh-private-key")
+  bastion_ssh_public_key = coalesce(local._raw_bastion_ssh_public_key, "placeholder-bastion-ssh-public-key")
+  registry_username = coalesce(local._raw_registry_username, "placeholder-registry-username")
+  registry_password = coalesce(local._raw_registry_password, "placeholder-registry-password")
+  registry_email = coalesce(local._raw_registry_email, "placeholder-registry-email")
+  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "placeholder") 
+  
+  access_key = coalesce(local._raw_tfstate_access_key, "placeholder")
+  secret_key = coalesce(local._raw_tfstate_secret_key, "placeholder")
   tfstate_bucket = coalesce(local._raw_tfstate_bucket,
                            "${lower(local.name_prefix)}-${local.env}-${substr(local.region, 0, 2)}-init")
-  access_key = coalesce(local._raw_tfstate_access_key, "d69f2395ce332944276e358a85ec06451cb11e2d")
-  secret_key = coalesce(local._raw_tfstate_secret_key, "QwZecNhdDrt7UVfax4wD3DE/pZ4rrCHK09i+7ehLIAo=")
 
   # 3. Construct endpoint based explicitly on whether the *raw* namespace lookup succeeded (will use placeholder URL during init)
   tfstate_endpoint = (
@@ -136,7 +156,12 @@ locals {
   )
 
   compartment_id = local.compartment_ocid
+
+
 }
+
+
+
 
 # Inputs block remains the same - it defines defaults if modules need them,
 # but specific stacks override these with dependency outputs where necessary.

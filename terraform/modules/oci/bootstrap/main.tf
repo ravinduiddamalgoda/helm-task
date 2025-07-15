@@ -400,7 +400,7 @@ resource "doppler_secret" "secrets" {
 resource "oci_kms_vault" "bootstrap" {
   count          = local.create_kms ? 1 : 0
   compartment_id = var.tenancy_ocid
-  display_name   = "tf-bootstrap-vault-${var.name_prefix}" # Added prefix for clarity
+  display_name   = "tf-bootstrap-vault-${var.name_prefix}" 
   vault_type     = "DEFAULT"
   freeform_tags  = var.common_tags
 }
@@ -408,7 +408,7 @@ resource "oci_kms_vault" "bootstrap" {
 resource "oci_kms_key" "bootstrap" {
   count                = local.create_kms ? 1 : 0
   compartment_id       = var.tenancy_ocid
-  display_name         = "tf-bootstrap-key-${var.name_prefix}" # Added prefix for clarity
+  display_name         = "tf-bootstrap-key-${var.name_prefix}" 
   management_endpoint  = oci_kms_vault.bootstrap[0].management_endpoint
   protection_mode      = "HSM" # Consider changing to SOFTWARE if HSM limits are also an issue
 

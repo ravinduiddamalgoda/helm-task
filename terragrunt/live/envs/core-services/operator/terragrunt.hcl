@@ -87,14 +87,13 @@ inputs = {
   # ─── access & users ────────────────────────────────────────────────────
   user               = "opc"
   
-  ssh_public_key     = local._final_ssh_public_key
-  ssh_private_key    = file(get_env("BASTION_SSH_KEY", ""))
+  ssh_public_key     = include.common.locals.bastion_ssh_public_key #local._final_ssh_public_key
+  ssh_private_key    = include.common.locals.bastion_ssh_private_key
 
 
   # ─── required core identifiers ────────────────────────────────────────
   state_id        = "core-services"
   region          = try(include.common.locals.region, get_env("OCI_REGION", "ca-montreal-1"))
-  #cluster_name    = dependency.oke.outputs.cluster_name  # hardcode
   cluster_name    = "oke"                
 
   # ─── network / DNS / tags ----------------------------------------------------
