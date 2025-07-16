@@ -7,7 +7,7 @@ global:
   storageClass: "standard"
 
   oci:
-    enabled: false
+    enabled: true
     region: ""
     compartmentId: ""
     availabilityDomains:
