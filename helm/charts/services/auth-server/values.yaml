@@ -4,7 +4,7 @@
 replicaCount: 1
 
 image:
-  repository: yul.ocir.io/axjre2lwxpox/auth-server
+  repository: yul.ocir.io/axjre2lwxpox/koci-images:latest
   tag: "latest"
   pullPolicy: IfNotPresent
 

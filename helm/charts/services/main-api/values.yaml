@@ -4,7 +4,7 @@
 replicaCount: 1
 
 image:
-  repository: yul.ocir.io/axjre2lwxpox/main-api # Default repo, MUST be overridden in umbrella values
+  repository: yul.ocir.io/axjre2lwxpox/koci-images:latest # Default repo, MUST be overridden in umbrella values
   tag: "latest"
   pullPolicy: IfNotPresent
   # tag: is provided by the umbrella chart
