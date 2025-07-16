@@ -2,8 +2,8 @@
 Common deployment template with safer dependency handling
 */}}
 {{- define "common.deployment" -}}
-{{- $root := .root -}}
-{{- $dependencies := .dependencies | default dict -}}
+{{- $root := . -}}
+{{- $dependencies := dict -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,10 +28,6 @@ spec:
       labels:
         {{- include "common.selectorLabels" $root | nindent 8 }}
     spec:
-      {{- with $root.Values.global.oci.enabled }}
-      # Use registry service account for OCI instance principal authentication
-      serviceAccountName: {{ $root.Release.Name }}-registry-sa
-      {{- end }}
       {{- with $root.Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
