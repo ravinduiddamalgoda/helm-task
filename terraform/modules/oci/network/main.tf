@@ -1,6 +1,54 @@
 # ------------------------------------------------------------------
 # Create / lookup the VCN – all subnet modules depend on this
 # ------------------------------------------------------------------
+
+# Add missing locals for NAT Gateway logic and subnet resolution
+locals {
+  # Base /16 comes from var.vcn_cidr
+  _vcn_cidr = var.vcn_cidr
+
+  resolved_subnets = {
+    for s in var.subnets :
+    s.name => merge(s, {
+      # Final CIDR
+      cidr_final = coalesce(
+        s.cidr,
+        (
+          alltrue([
+            contains(keys(s),"newbits"),
+            contains(keys(s),"netnum")
+          ])
+          ? cidrsubnet(local._vcn_cidr, s.newbits, s.netnum)
+          : null
+        )
+      ),
+      # DNS label (caller-supplied → auto → empty)
+      dns_label_final = coalesce(
+        s.dns_label,
+        substr(replace(lower(s.name), "-", ""),0,15),
+      ),
+      # honour "create" flag – default is auto / always
+      create_final = s.create == "never" ? false : true,
+      # Ensure nsg_keys exists
+      nsg_keys = lookup(s, "nsg_keys", [s.name])
+    })
+  }
+
+  # Create NGW when any subnet uses gateway_type = "ngw"
+  need_ngw = length([for s in local.resolved_subnets : s if s.gateway_type == "ngw"]) > 0
+  need_sgw = length([for s in local.resolved_subnets : s if s.gateway_type == "sgw"]) > 0
+  need_igw = length([for s in local.resolved_subnets : s if s.gateway_type == "igw"]) > 0
+  need_drg = length([for s in local.resolved_subnets : s if s.gateway_type == "drg"]) > 0
+
+  # Build the final NSG map by merging defaults and inputs
+  autogen_nsgs = merge(
+    # default: one empty-rule NSG per subnet key
+    { for k in keys(local.resolved_subnets) : k => { rules = [] } },
+    # caller-supplied NSGs (may override defaults or add new ones)
+    var.network_security_groups
+  )
+}
+
 module "vcn" {
   source  = "./vcn"
 
@@ -78,51 +126,3 @@ module "subnet" {
 }
 
 # ─────────────────────────────────────────────────────────────
-# 1)  Resolve / normalise subnet definitions
-# ─────────────────────────────────────────────────────────────
-locals {
-  # Base /16 comes from var.vcn_cidr
-  _vcn_cidr = var.vcn_cidr
-
-  resolved_subnets = {
-    for s in var.subnets :
-    s.name => merge(s, {
-      # Final CIDR
-      cidr_final = coalesce(
-        s.cidr,
-        (
-          alltrue([
-            contains(keys(s),"newbits"),
-            contains(keys(s),"netnum")
-          ])
-          ? cidrsubnet(local._vcn_cidr, s.newbits, s.netnum)
-          : null
-        )
-      ),
-      # DNS label (caller-supplied → auto → empty)
-      dns_label_final = coalesce(
-        s.dns_label,
-        substr(replace(lower(s.name), "-", ""),0,15),
-      ),
-      # honour "create" flag – default is auto / always
-      create_final = s.create == "never" ? false : true
-    })
-  }
-
-  # ────────────────────────────────────────────────────────────
-  # 2)  Build the final NSG map by merging defaults and inputs
-  # ────────────────────────────────────────────────────────────
-  autogen_nsgs = merge(
-    # default: one empty-rule NSG per subnet key
-    { for k in keys(local.resolved_subnets) : k => { rules = [] } },
-
-    # caller-supplied NSGs (may override defaults or add new ones)
-    var.network_security_groups
-  )
-
-  # ── NEW : does at least one subnet use the given gateway? ────────────────
-  need_igw = length([for s in local.resolved_subnets : s if s.gateway_type == "igw"]) > 0
-  need_ngw = length([for s in local.resolved_subnets : s if s.gateway_type == "ngw"]) > 0
-  need_sgw = length([for s in local.resolved_subnets : s if s.gateway_type == "sgw"]) > 0
-  need_drg = length([for s in local.resolved_subnets : s if s.gateway_type == "drg"]) > 0
-}

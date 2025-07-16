@@ -29,7 +29,6 @@ locals {
   # ─── VCN settings ───────────────────────────────────────────────────────
   vcn_cidr = "10.2.0.0/16"
 
-
   # ─── CNI choice & associated VXLAN ports ────────────────────────────────
 
   cni_type = try(include.common.locals.cni_type, "calico")
@@ -37,18 +36,18 @@ locals {
   # ─── Conditional subnet configuration based on CNI type ──────────────────
   # Base subnets that are always needed
   base_subnets = {
-    bastion = { newbits = 11, netnum = 512, dns_label = "bastion", gateway_type = "igw",  ha = false } # 10.2.64.0/27
-    operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false } # 10.2.64.32/27
-    data    = { newbits = 8,  netnum = 65,  dns_label = "data",    gateway_type = "sgw",  ha = false } # 10.2.65.0/24
-    cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false } # 10.2.66.0/26
-    int_lb  = { newbits = 10, netnum = 265, dns_label = "ilb",     gateway_type = "ngw",  ha = false } # 10.2.66.64/26
-    pub_lb  = { newbits = 10, netnum = 266, dns_label = "plb",     gateway_type = "igw",  ha = false } # 10.2.66.128/26
-    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false } # 10.2.68.0/23
+    bastion = { newbits = 11, netnum = 512, dns_label = "bastion", gateway_type = "igw",  ha = false, nsg_keys = ["bastion"] } # 10.2.64.0/27
+    operator = { newbits = 11, netnum = 513, dns_label = "operator", gateway_type = "ngw", ha = false, nsg_keys = ["operator"] } # 10.2.64.32/27
+    data    = { newbits = 8,  netnum = 65,  dns_label = "data",    gateway_type = "sgw",  ha = false, nsg_keys = ["data"] } # 10.2.65.0/24
+    cp      = { newbits = 10, netnum = 264, dns_label = "cp",      gateway_type = "ngw",  ha = false, nsg_keys = ["cp"] } # 10.2.66.0/26
+    int_lb  = { newbits = 10, netnum = 265, dns_label = "ilb",     gateway_type = "ngw",  ha = false, nsg_keys = ["int_lb"] } # 10.2.66.64/26
+    pub_lb  = { newbits = 10, netnum = 266, dns_label = "plb",     gateway_type = "igw",  ha = false, nsg_keys = ["pub_lb"] } # 10.2.66.128/26
+    workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false, nsg_keys = ["workers"] } # 10.2.68.0/23
   }
 
   # Pod subnet - only needed for flannel and calico (not for oci_vcn_native)
   pod_subnet = {
-    pods = { newbits = 4, netnum = 8, dns_label = "pods", gateway_type = "sgw", ha = false } # 10.2.128.0/20
+    pods = { newbits = 4, netnum = 8, dns_label = "pods", gateway_type = "sgw", ha = false, nsg_keys = ["pods"] } # 10.2.128.0/20
   }
 
   # Combine subnets based on CNI type
