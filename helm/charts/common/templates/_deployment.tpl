@@ -28,7 +28,6 @@ spec:
       labels:
         {{- include "common.selectorLabels" $root | nindent 8 }}
     spec:
-      serviceAccountName: {{ .Release.Name }}-registry-sa
       {{- with $root.Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
