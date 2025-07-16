@@ -19,9 +19,14 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.global.imagePullSecrets }} # Use global imagePullSecrets
+      {{- if .Values.global.oci.enabled }}
+      # Use registry service account for OCI instance principal authentication
+      serviceAccountName: {{ .Release.Name }}-registry-sa
+      {{- else }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml .Values.imagePullSecrets | nindent 8 }}
+      {{- end }}
       {{- end }}
       containers:
         - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

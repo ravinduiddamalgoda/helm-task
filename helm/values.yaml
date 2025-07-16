@@ -21,11 +21,9 @@ global:
       ocpus: 1
       memoryInGBs: 16
 
+    
     registry:
       server: "yul.ocir.io"
-      username: "${OCI_USERNAME}"
-      password: "${OCI_PASSWORD}"
-      email: "${OCI_EMAIL}"
   
   # Doppler configuration
   doppler:

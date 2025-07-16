@@ -10,11 +10,10 @@ global:
   oci:
     enabled: true
     region: "ca-montreal-1"
+    oci:
+    enabled: true
     registry:
       server: "yul.ocir.io"
-      username: ${OCI_USERNAME}
-      password: ${OCI_PASSWORD}
-      email: ${OCI_EMAIL}
   
   doppler:
     enabled: true

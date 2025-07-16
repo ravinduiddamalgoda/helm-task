@@ -125,6 +125,8 @@ generate_ssh_keys() {
     # Read the keys
     local private_key_content=$(cat "$private_key_file")
     local public_key_content=$(cat "$public_key_file")
+
+
     
     # Clean up temporary files
     rm -rf "$temp_dir"
@@ -163,7 +165,6 @@ store_ssh_keys_in_doppler() {
 create_local_ssh_key_file() {
     print_status "INFO" "Creating local SSH key file from Doppler..."
     
-    # Get the Doppler token
     local doppler_token=""
     if [ -n "$DOPPLER_TOKEN" ]; then
         doppler_token="$DOPPLER_TOKEN"
@@ -171,19 +172,22 @@ create_local_ssh_key_file() {
         doppler_token="$DOPPLER_SERVICE_TOKEN"
     fi
     
-    # Create .ssh directory if it doesn't exist
     mkdir -p ~/.ssh
     
-    # Get private key from Doppler and save to local file
-    DOPPLER_TOKEN="$doppler_token" doppler secrets get "$SSH_KEY_NAME" --project "$DOPPLER_PROJECT" --config "$DOPPLER_CONFIG" --silent > ~/.ssh/oci_bastion_ed25519
+    # Fetch private key in plain format
+    DOPPLER_TOKEN="$doppler_token" doppler secrets get "$SSH_KEY_NAME" \
+        --project "$DOPPLER_PROJECT" \
+        --config "$DOPPLER_CONFIG" \
+        --plain > ~/.ssh/oci_bastion_ed25519
     
-    # Set correct permissions
     chmod 600 ~/.ssh/oci_bastion_ed25519
     
-    # Get public key from Doppler and save to local file
-    DOPPLER_TOKEN="$doppler_token" doppler secrets get "$SSH_PUBLIC_KEY_NAME" --project "$DOPPLER_PROJECT" --config "$DOPPLER_CONFIG" --silent > ~/.ssh/oci_bastion_ed25519.pub
+    # Fetch public key in plain format
+    DOPPLER_TOKEN="$doppler_token" doppler secrets get "$SSH_PUBLIC_KEY_NAME" \
+        --project "$DOPPLER_PROJECT" \
+        --config "$DOPPLER_CONFIG" \
+        --plain > ~/.ssh/oci_bastion_ed25519.pub
     
-    # Set correct permissions
     chmod 644 ~/.ssh/oci_bastion_ed25519.pub
     
     print_status "SUCCESS" "Local SSH key files created"

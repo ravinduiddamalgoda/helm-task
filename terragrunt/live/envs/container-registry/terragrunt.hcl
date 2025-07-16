@@ -16,7 +16,11 @@ inputs = {
   # Repository configuration
   repository_name = "koci-images"
   is_public       = false
-#   
+  
+  # IAM configuration
+  create_iam_policy         = true
+  worker_dynamic_group_name = "oke-workers-${include.common.locals.env}"
+  function_dynamic_group_name = "functions-${include.common.locals.env}"
 
   # Tags
   freeform_tags = include.common.locals.common_tags
