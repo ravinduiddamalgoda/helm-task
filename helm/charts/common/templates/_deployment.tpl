@@ -28,7 +28,16 @@ spec:
       labels:
         {{- include "common.selectorLabels" $root | nindent 8 }}
     spec:
-      serviceAccountName: koci-registry-sa
+      {{- if .Values.global.oci.enabled }}
+      # Use registry service account for OCI instance principal authentication
+      serviceAccountName: {{ $root.Release.Name }}-registry-sa
+      {{- else }}
+      {{- with $root.Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "common.names.serviceAccountName" $root }}
+      {{- end }}
       {{- with $root.Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
