@@ -4,7 +4,7 @@
 replicaCount: 1
 
 image:
-  repository: yul.ocir.ioaxjre2lwxpox/pub-repo
+  repository: yul.ocir.io/axjre2lwxpox/pub-repo
   tag: latest
   pullPolicy: IfNotPresent
 
