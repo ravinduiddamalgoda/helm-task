@@ -4,8 +4,8 @@ global:
   environment: staging
   storageClass: "oci-bv"  
 
-  imagePullSecrets:
-    - name: ocir-secret
+  # imagePullSecrets:
+  #   - name: ocir-secret
   
   oci:
     enabled: true

@@ -5,7 +5,7 @@ replicaCount: 1
 
 image:
   repository: yul.ocir.ioaxjre2lwxpox/pub-repo
-  tag: "latest"
+  tag: latest
   pullPolicy: IfNotPresent
 
 nameOverride: ""
