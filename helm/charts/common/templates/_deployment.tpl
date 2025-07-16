@@ -2,7 +2,7 @@
 Common deployment template with safer dependency handling
 */}}
 {{- define "common.deployment" -}}
-{{- $root := .root -}}
+{{- $root := . -}}
 {{- $dependencies := .dependencies | default dict -}}
 apiVersion: apps/v1
 kind: Deployment
