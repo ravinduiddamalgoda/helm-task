@@ -4,14 +4,38 @@ global:
   environment: staging
   storageClass: "oci-bv"  
 
-  # imagePullSecrets:
-  #   - name: ocir-secret
-  
   oci:
     enabled: true
     region: "ca-montreal-1"
     registry:
       server: "yul.ocir.io"
+    compartmentId: ""
+    availabilityDomains:
+      - ""
+    faultDomains:
+      - ""
+    # Default instance shape for compute
+    instanceShape: "VM.Standard.E3.Flex"
+    # Default flexible shape configuration
+    flexShape:
+      ocpus: 2
+      memoryInGBs: 32
+
+    # OKE Credential Provider Configuration
+    credentialProvider:
+      enabled: true
+      # Cache duration for credentials (default: 55m)
+      cacheDuration: "55m"
+      # Registry token path for OCI instance principal auth
+      tokenPath: "/20180419/docker/token"
+      # Default user for OCIR authentication
+      defaultUser: "BEARER_TOKEN"
+      # Registry protocol
+      protocol: "https"
+      # OCI authentication method (INSTANCE_PRINCIPAL or USER_PRINCIPAL)
+      authMethod: "INSTANCE_PRINCIPAL"
+      # Token validation setting
+      tokenValidation: "enabled"
   
   doppler:
     enabled: true

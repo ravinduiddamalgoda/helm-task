@@ -18,12 +18,24 @@ global:
     instanceShape: "VM.Standard.E3.Flex"
     # Default flexible shape configuration
     flexShape:
-      ocpus: 1
-      memoryInGBs: 16
+      ocpus: 2
+      memoryInGBs: 32
 
-    
-    registry:
-      server: "yul.ocir.io"
+    # OKE Credential Provider Configuration
+    credentialProvider:
+      enabled: true
+      # Cache duration for credentials (default: 55m)
+      cacheDuration: "55m"
+      # Registry token path for OCI instance principal auth
+      tokenPath: "/20180419/docker/token"
+      # Default user for OCIR authentication
+      defaultUser: "BEARER_TOKEN"
+      # Registry protocol
+      protocol: "https"
+      # OCI authentication method (INSTANCE_PRINCIPAL or USER_PRINCIPAL)
+      authMethod: "INSTANCE_PRINCIPAL"
+      # Token validation setting
+      tokenValidation: "enabled"
   
   # Doppler configuration
   doppler:
