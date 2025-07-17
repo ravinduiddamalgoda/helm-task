@@ -98,6 +98,6 @@ doppler:
   projectName: "oci-infra" 
   tokenSecretName: "doppler-token-secret"
   managedSecretName: "koci-mongodb-secrets" 
-  tokenSecret: ""
+  tokenSecret: "dp.st.dev.F5mkxW6Bwm8jMriOnN4rWD6kFIisIqIGFitEfjlQxZW"
   #existingSecret: "koci-mongodb-secrets"
   

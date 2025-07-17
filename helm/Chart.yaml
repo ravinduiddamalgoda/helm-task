@@ -72,7 +72,7 @@ dependencies:
 
   
   # KNative Functions
-  - name: functions
-    repository: file://charts/functions
-    version: "*"
-    condition: functions.enabled
+  # - name: functions
+  #   repository: file://charts/functions
+  #   version: "*"
+  #   condition: functions.enabled

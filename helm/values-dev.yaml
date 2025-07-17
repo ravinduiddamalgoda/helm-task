@@ -18,9 +18,6 @@ global:
     region: "us-ashburn-1"
     registry:
       server: "yul.ocir.io"
-      username: "axjre2lwxpox/k.samaranayake7@gmail.com"
-      password: "M>.(8z79tM696kNNgln{"
-      email: "k.samaranayake7@gmail.com"
 
 
   # Enable Doppler for secrets management

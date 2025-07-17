@@ -12,11 +12,16 @@ spec:
       labels:
         app: {{ include "auth-server.name" . }}
     spec:
-      {{- with .Values.global.imagePullSecrets }}
+      {{- if .Values.global.oci.enabled }}
+      # Use registry service account for OCI instance principal authentication
+      serviceAccountName: {{ .Release.Name }}-registry-sa
+      {{- else }}
+      {{- with .Values.global.imagePullSecrets }} # Use global imagePullSecrets
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "auth-server.serviceAccountName" . }}
+      serviceAccountName: {{ include "main-api.serviceAccountName" . }}
+      {{- end }}
       containers:
         - name: {{ include "auth-server.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
