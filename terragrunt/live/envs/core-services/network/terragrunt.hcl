@@ -27,7 +27,7 @@ locals {
   ]
 
   # ─── VCN settings ───────────────────────────────────────────────────────
-  vcn_cidr = "10.2.0.0/16"
+  vcn_cidr = "10.2.0.0/8"
 
   # ─── CNI choice & associated VXLAN ports ────────────────────────────────
 
@@ -45,10 +45,10 @@ locals {
     workers = { newbits = 7,  netnum = 34,  dns_label = "workers", gateway_type = "ngw",  ha = false, nsg_keys = ["workers"] } # 10.2.68.0/23
   }
 
-  # Pod subnet - only needed for flannel and calico (not for oci_vcn_native)
-  pod_subnet = {
-    pods = { newbits = 4, netnum = 8, dns_label = "pods", gateway_type = "ngw", ha = false, nsg_keys = ["pods"] } # 10.2.128.0/20
-  }
+# Pod subnet - only needed for flannel and calico (not for oci_vcn_native)
+pod_subnet = {
+  pods = { newbits = 8, netnum = 2, dns_label = "pods", gateway_type = "ngw", ha = false, nsg_keys = ["pods"] } # 10.2.128.0/16
+}
 
   # Combine subnets based on CNI type
   raw_subnets = merge(
