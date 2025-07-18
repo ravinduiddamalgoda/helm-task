@@ -118,11 +118,8 @@ module "subnet" {
     all_services_cidr  = module.vcn.service_gateway_service_cidr
     drg_id             = module.vcn.drg_attachment_id
 
-    # keep NSG mapping, but it now works even when some keys have no rules
-    network_security_group_ids = [
-      for key in each.value.nsg_keys : module.nsg[key].nsg_id
-      if contains(keys(module.nsg), key)
-    ]
+    # Note: network_security_group_ids not supported in OCI provider ~> 6.35
+    # NSGs are created separately via the nsg module above
 }
 
 # ─────────────────────────────────────────────────────────────

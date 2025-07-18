@@ -52,8 +52,6 @@ resource "oci_core_subnet" "this" {
     route_table_id        = var.create_route_table ? module.rt[0].route_table_id : var.route_table_id
     security_list_ids     = local.security_list_ids_final
 
-    network_security_group_ids = var.network_security_group_ids
-
     availability_domain        = local.resolved_availability_domain
 }
 

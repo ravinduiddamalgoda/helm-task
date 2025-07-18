@@ -115,12 +115,6 @@ variable "create_log_group" {
   default     = true
 }
 
-variable "network_security_group_ids" {
-  description = "List of Network Security Group OCIDs to associate with the subnet."
-  type        = list(string)
-  default     = []
-}
-
 variable "drg_id" {
   description = "OCID of the DRG attachment (if gateway_type = drg)."
   type        = string

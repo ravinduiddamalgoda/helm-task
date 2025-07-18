@@ -4,7 +4,7 @@
 
 # -------------------------------------------------------------------
 # Inherit all settings (extra_arguments, generate blocks, …) from
-# the repo-root stack definition in root.kocil
+# the repo-root stack definition in root.hcl
 # -------------------------------------------------------------------
 
 locals {
