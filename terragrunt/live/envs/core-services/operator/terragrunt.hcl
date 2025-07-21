@@ -92,7 +92,7 @@ inputs = {
 
 
   # ─── required core identifiers ────────────────────────────────────────
-  state_id        = "core-services"
+  state_id        = "${include.common.locals.prefix_env}-core-services"
   region          = try(include.common.locals.region, get_env("OCI_REGION", "ca-montreal-1"))
   cluster_name    = "oke"                
 

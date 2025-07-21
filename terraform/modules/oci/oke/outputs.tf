@@ -40,4 +40,7 @@ output "worker_node_private_ips" {
   value       = data.oci_core_instances.worker_nodes.instances[*].private_ip
 }
 
+# output "worker_private_ips" {
+#   value = local.worker_private_ips
+# }
 

@@ -11,7 +11,8 @@ locals {
   root_config = read_terragrunt_config(find_in_parent_folders("root.hcl"))
   root_dir    = dirname(find_in_parent_folders("root.hcl"))
 
-  name_prefix  = "koci"     
+  name_prefix  = "koci" 
+  prefix_env = "dev"    
 
   cni_type = "oci_vcn_native" #"calico" or "flannel" or ""oci_vcn_native""          
 

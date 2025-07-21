@@ -167,7 +167,7 @@ inputs = {
   subnet_id      = dependency.network.outputs.subnet_ids["data"]
   tenancy_ocid   = include.common.locals.tenancy_ocid
 
-  env_name       = local.env_slug
+  env_name       = "${include.common.locals.prefix_env}-${local.env_slug}"
   admin_username = local.mysql_admin_username
 
   # ---------------------------------------------------------------------------

@@ -49,7 +49,7 @@ dependency "security" {
 # Locals – compute values we need
 ###############################################################################
 locals {
-  env_name = "${include.common.locals.name_prefix}-${include.common.locals.env}"
+  env_name = "${include.common.locals.name_prefix}-${include.common.locals.prefix_env}-${include.common.locals.env}"
   
   # Load balancer configuration
   lb_shape = "100Mbps"  # or "10Mbps", "100Mbps", "400Mbps", "8000Mbps"

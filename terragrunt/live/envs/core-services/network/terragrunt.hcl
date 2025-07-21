@@ -48,7 +48,7 @@ locals {
 
   # Pod subnet - only needed for flannel and calico (not for oci_vcn_native)
   pod_subnet = {
-    pods = { newbits = 4, netnum = 8, dns_label = "pods", gateway_type = "sgw", ha = false } # 10.2.128.0/20
+    pods = { newbits = 4, netnum = 8, dns_label = "pods", gateway_type = "ngw", ha = false } # 10.2.128.0/20
   }
 
   # Combine subnets based on CNI type

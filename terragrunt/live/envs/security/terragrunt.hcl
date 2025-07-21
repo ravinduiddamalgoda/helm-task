@@ -29,7 +29,7 @@ dependency "network" {
 ###############################################################################
 locals {
   # Environment label we can compute without dependencies
-  env_name = "${include.common.locals.name_prefix}-${include.common.locals.env}"
+  env_name = "${include.common.locals.name_prefix}-${include.common.locals.prefix_env}-${include.common.locals.env}"
 
   # -------------------------------------------------------------------------
   # Policy knobs
