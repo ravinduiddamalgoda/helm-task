@@ -817,7 +817,7 @@ inputs = merge(
     # ── mandatory ───────────────────────────────────────────────────────────
     compartment_id = try(include.common.locals.compartment_ocid, "")
     tenancy_ocid   = try(include.common.locals.tenancy_ocid,   "")
-    env_name       = local.env_name
+    env_name       = "${include.common.locals.prefix_env}-${local.env_name}"
     vcn_cidr       = local.vcn_cidr
     vcn_dns_label  = local.vcn_dns_label
 
