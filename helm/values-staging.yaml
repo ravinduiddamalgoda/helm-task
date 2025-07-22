@@ -40,7 +40,7 @@ global:
   doppler:
     enabled: true
     project: "oci-infra"
-    tokenSecret: "dp.st.dev.O1UL9GDFj9zNr6jIEafSZq56U2nmBkrMXZKN0hncXkb" #"${DOPPLER_SERVICE_TOKEN}"
+    tokenSecret: "${DOPPLER_SERVICE_TOKEN}"
     dopplerConfigName: "dev"
     operatorNamespace: "doppler-operator-system"
   
