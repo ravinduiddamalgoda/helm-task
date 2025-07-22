@@ -431,7 +431,7 @@ generate "iam_module" {
       defined_tags               = {}
       freeform_tags              = {}
 
-      policy_name                = "oke-${local.env_name}"
+      policy_name                = "${include.common.locals.prefix_env}-core-services-oke-${local.env_name}"
 
       # ─── optional KMS keys (empty if unused) ─────────────
       cluster_kms_key_id         = ""
