@@ -493,26 +493,26 @@ locals {
 
 
 # Fetch all nodes for each node pool
-data "oci_containerengine_nodes" "nodes_per_pool" {
-  for_each    = oci_containerengine_node_pool.node_pool
-  cluster_id  = module.oke_cluster.id
-  node_pool_id = each.value.id
-}
-# Fetch instance details for each node in each pool
-data "oci_core_instance" "worker_nodes" {
-  for_each = {
-    for item in flatten([
-      for pool_key, pool in data.oci_containerengine_nodes.nodes_per_pool : [
-        for idx, n in pool.nodes : {
-          key = "${pool_key}-${idx}"
-          id  = n.id
-        }
-      ]
-    ]) : item.key => item.id
-  }
+# data "oci_containerengine_nodes" "nodes_per_pool" {
+#   for_each    = oci_containerengine_node_pool.node_pool
+#   cluster_id  = module.oke_cluster.id
+#   node_pool_id = each.value.id
+# }
+# # Fetch instance details for each node in each pool
+# data "oci_core_instance" "worker_nodes" {
+#   for_each = {
+#     for item in flatten([
+#       for pool_key, pool in data.oci_containerengine_nodes.nodes_per_pool : [
+#         for idx, n in pool.nodes : {
+#           key = "${pool_key}-${idx}"
+#           id  = n.id
+#         }
+#       ]
+#     ]) : item.key => item.id
+#   }
 
-  instance_id = each.value
-}
+#   instance_id = each.value
+# }
 
 # Aggregate all private IPs into a single list
 # locals {
@@ -522,15 +522,15 @@ data "oci_core_instance" "worker_nodes" {
 #   ])
 # }
 
-locals {
-  worker_private_ips = [
-    for inst in data.oci_core_instance.worker_nodes : inst.private_ip
-  ]
-}
+# locals {
+#   worker_private_ips = [
+#     for inst in data.oci_core_instance.worker_nodes : inst.private_ip
+#   ]
+# }
 
-output "worker_private_ips" {
-  value = local.worker_private_ips
-}
+# output "worker_private_ips" {
+#   value = local.worker_private_ips
+# }
 
 # Data source to get worker node instances
 # data "oci_core_instances" "worker_nodes" {  
