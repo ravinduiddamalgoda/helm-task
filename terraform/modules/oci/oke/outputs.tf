@@ -35,12 +35,3 @@ output "user" {
 
 
 
-# output "worker_node_private_ips" {  
-#   description = "List of worker node private IP addresses"
-#   value       = data.oci_core_instances.worker_nodes.instances[*].private_ip
-# }
-
-# output "worker_private_ips" {
-#   value = local.worker_private_ips
-# }
-
