@@ -355,6 +355,10 @@ inputs = merge(
     generate_kubeconfig = true  
     user               = "opc"
 
+    doppler_token   = ""
+    doppler_project = ""
+    doppler_config  = ""
+
   }
   
 )
