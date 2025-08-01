@@ -491,20 +491,6 @@ locals {
   extensions_kubeconfig_hash = sha1(jsonencode(var.extensions_kubeconfig_dependency_trigger))
 }
 
-# Data source to get worker node instances
-data "oci_core_instances" "worker_nodes" {  
-  compartment_id = var.compartment_id
-  state          = "RUNNING"
-  
-  filter {
-    name   = "display_name"
-    values = [for np in oci_containerengine_node_pool.node_pool : "${var.env_name}-${np.name}-*"]
-  }
-  
-  depends_on = [oci_containerengine_node_pool.node_pool]
-}
-
-
 
 
 

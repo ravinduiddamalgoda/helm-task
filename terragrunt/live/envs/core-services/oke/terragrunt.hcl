@@ -162,7 +162,7 @@ inputs = merge(
     vcn_id            = dependency.network.outputs.vcn_id
     env_name          = local.env_name
     state_id          = local.state_id
-    cluster_name      = "${local.env_name}-oke"
+    cluster_name      = "${include.common.locals.prefix_env}-${include.common.locals.env}-oke"
     cluster_type      = "ENHANCED_CLUSTER"
     kubernetes_version = "v1.32.1"
     region            = include.common.locals.region
@@ -431,7 +431,7 @@ generate "iam_module" {
       defined_tags               = {}
       freeform_tags              = {}
 
-      policy_name                = "oke-${local.env_name}"
+      policy_name                = "${include.common.locals.prefix_env}-core-services-oke-${local.env_name}"
 
       # ─── optional KMS keys (empty if unused) ─────────────
       cluster_kms_key_id         = ""

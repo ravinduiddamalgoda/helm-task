@@ -4,16 +4,17 @@
 
 # -------------------------------------------------------------------
 # Inherit all settings (extra_arguments, generate blocks, …) from
-# the repo-root stack definition in root.hcl
+# the repo-root stack definition in root.kocil
 # -------------------------------------------------------------------
 
 locals {
   root_config = read_terragrunt_config(find_in_parent_folders("root.hcl"))
   root_dir    = dirname(find_in_parent_folders("root.hcl"))
 
-  name_prefix  = "koci"     
+  name_prefix  = "koci" 
+  prefix_env = "dev"    
 
-  cni_type = "flannel" #"calico" or "flannel" or ""oci_vcn_native""          
+  cni_type = "oci_vcn_native" #"calico" or "flannel" or ""oci_vcn_native""          
 
   environments_to_bootstrap = {
     "core-services" = "ca-montreal-1"
@@ -175,22 +176,20 @@ locals {
 # ---------------------------------------------------------------------
 # Remote State Configuration (OCI Object Storage - S3 Compatible)
 # ---------------------------------------------------------------------
+
 # remote_state {
 #  backend = "s3"
 #  config = {
 #    # --- Bucket and Key ---
-#    bucket = local.tfstate_bucket#"koci-core-services-ca-init"  #"bucket-oci-infra-tfstate-2025-6-7" #local.tfstate_bucket 
+#    bucket = local.tfstate_bucket   
 #    key = "${path_relative_to_include()}/terraform.tfstate"
 
 #    # --- OCI S3 Compatibility Settings ---
 #    region   = local.region       
-#     #endpoint =local.tfstate_endpoint #"https://placeholder.init.fail" #local.tfstate_endpoint  #"https://axjre2lwxpox.compat.objectstorage.ca-montreal-1.oraclecloud.com" #local.tfstate_endpoint
-#   # endpoints = {
-#   #     s3 = "https://axjre2lwxpox.compat.objectstorage.ca-montreal-1.oraclecloud.com"
-#   #   }
-#   endpoints = {
+  
+#    endpoints = {
 #       s3 = local.tfstate_endpoint
-#     }
+#    }
 #      # --- Credentials ---
 #    # These are automatically picked up from the locals defined earlier
 #    access_key = local.access_key 

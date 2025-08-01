@@ -50,7 +50,7 @@ inputs = {
   state_id              = "core-services"
 
   # Name overrides
-  instance_display_name = "${include.common.locals.env}-bastion"   
+  instance_display_name = "${include.common.locals.prefix_env}-core-services-bastion"    
   hostname_label        = "core-services-bastion"                  
 
   # place the VM in the bastion subnet / NSG created by the network layer

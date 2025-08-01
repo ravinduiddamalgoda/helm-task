@@ -37,8 +37,8 @@ locals {
 
   # Registry access for pulling images from OCIR  
   registry_access_statements = formatlist(
-    "Allow dynamic-group %v to use repos in compartment id %v",
-    local.worker_group_name, local.worker_compartments
+     "Allow dynamic-group %v to use repos in compartment id %v",
+     local.worker_group_name, local.worker_compartments
   )
 
   worker_policy_statements = var.create_iam_worker_policy ? tolist(concat(

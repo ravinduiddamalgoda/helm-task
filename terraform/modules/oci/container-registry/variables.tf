@@ -34,3 +34,20 @@ variable "defined_tags" {
   default     = {}
 } 
 
+variable "create_iam_policy" {
+  description = "Whether to create IAM policy for registry access"
+  type        = bool
+  default     = true
+}
+
+variable "worker_dynamic_group_name" {
+  description = "Name of the OKE worker dynamic group"
+  type        = string
+  default     = ""
+}
+
+variable "function_dynamic_group_name" {
+  description = "Name of the function dynamic group"
+  type        = string
+  default     = ""
+}

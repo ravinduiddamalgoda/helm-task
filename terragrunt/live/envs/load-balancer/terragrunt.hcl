@@ -23,8 +23,8 @@ dependency "network" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan", "destroy"]
 }
 
-dependency "oke" {
-  config_path = "../core-services/oke"
+dependency "oke-workers-info" {
+  config_path = "../core-services/oke-workers-info"
 
   mock_outputs = {
     vcn_id         = "ocid1.vcn.oc1..mocknetwork"
@@ -53,10 +53,8 @@ locals {
   
   # Load balancer configuration
   lb_shape = "100Mbps"  # or "10Mbps", "100Mbps", "400Mbps", "8000Mbps"
-  lb_is_private = false  # Set to true for private load balancer
-  
-
-  backend_ips = try(dependency.oke.outputs.worker_node_private_ips, ["10.2.68.10", "10.2.68.11"]) 
+  lb_is_private = true  # Set to true for private load balancer
+   
   
   common_tags = include.common.locals.common_tags
 }
@@ -85,7 +83,7 @@ inputs = {
   is_private = local.lb_is_private
   
   # Backend configuration
-  backend_ips = try(dependency.oke.outputs.worker_node_private_ips, ["10.2.68.10", "10.2.68.11"])  # Example backend IPs from workers subnet - update as needed
+  backend_ips = try(dependency.oke-workers-info.outputs.worker_node_private_ips, ["10.2.68.10", "10.2.68.11"])  # Example backend IPs from workers subnet - update as needed
   backend_set_name = "app-backendset"
   
   # NSG configuration
@@ -96,5 +94,5 @@ inputs = {
   certificate_name = "default-cert"
   
   # WAF configuration 
-  waf_policy_id = dependency.security.outputs.waf_policy_id 
+  waf_policy_id = ""#dependency.security.outputs.waf_policy_id 
 } 

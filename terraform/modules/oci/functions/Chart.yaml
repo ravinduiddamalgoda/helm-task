@@ -1,0 +1,16 @@
+# apiVersion: v2
+# name: functions
+# description: KNative functions for serverless workloads
+# type: application
+# version: 0.1.0
+# appVersion: "1.0.0"
+# keywords:
+#   - knative
+#   - serverless
+#   - functions
+# home: https://knative.dev
+# sources:
+#   - https://github.com/knative/serving
+# maintainers:
+#   - name: KOCI Team
+#     email: team@koci.com 

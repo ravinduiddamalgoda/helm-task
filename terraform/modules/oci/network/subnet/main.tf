@@ -52,6 +52,8 @@ resource "oci_core_subnet" "this" {
     route_table_id        = var.create_route_table ? module.rt[0].route_table_id : var.route_table_id
     security_list_ids     = local.security_list_ids_final
 
+    #network_security_group_ids = var.network_security_group_ids
+
     availability_domain        = local.resolved_availability_domain
 }
 
@@ -69,8 +71,7 @@ module "rt" {
         destination        = var.gateway_type == "sgw" ? coalesce(var.all_services_cidr, "ERROR_SERVICE_CIDR_IS_NULL") : "0.0.0.0/0"
         destination_type   = var.gateway_type == "sgw" ? "SERVICE_CIDR_BLOCK" : "CIDR_BLOCK"
         network_entity_id = (
-          var.gateway_type == "igw" ? var.igw_id :
-          var.gateway_type == "ngw" ? var.ngw_id :  # This should route to NAT Gateway
+          var.gateway_type == "ngw" ? var.ngw_id :
           var.gateway_type == "sgw" ? var.sgw_id :
           var.igw_id
         )
