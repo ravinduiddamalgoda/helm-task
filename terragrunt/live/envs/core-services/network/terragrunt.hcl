@@ -839,7 +839,7 @@ locals {
       tcp_options = {
         destination_port_range = { min = 53, max = 53 }
       }
-    }
+    },
     
     # STUN for Tailscale
     { direction = "EGRESS", protocol = "17", description = "STUN 3478/UDP",
