@@ -282,17 +282,24 @@ locals {
       },
 
       # Intra-VCN
+        #     {
+        #       direction   = "INGRESS"
+        #       protocol    = "6"
+        #       description = "TCP intra-VCN"
+        #       source      = local.vcn_cidr
+        #       source_type = "CIDR_BLOCK"
+        #     },
+        #     {
+        #       direction   = "INGRESS"
+        #       protocol    = "17"
+        #       description = "UDP intra-VCN"
+        #       source      = local.vcn_cidr
+        #       source_type = "CIDR_BLOCK"
+        #     },
       {
         direction   = "INGRESS"
-        protocol    = "6"
-        description = "TCP intra-VCN"
-        source      = local.vcn_cidr
-        source_type = "CIDR_BLOCK"
-      },
-      {
-        direction   = "INGRESS"
-        protocol    = "17"
-        description = "UDP intra-VCN"
+        protocol    = "all"
+        description = "All protocols intra-VCN (pod-to-pod, node-to-pod)"
         source      = local.vcn_cidr
         source_type = "CIDR_BLOCK"
       },
@@ -338,6 +345,14 @@ locals {
           destination_port_range = { min = 53, max = 53 }
         }
       },
+      {
+        direction   = "INGRESS"
+        protocol    = "6"
+        description = "SSH from anywhere"
+        source      = "0.0.0.0/0"
+        source_type = "CIDR_BLOCK"
+        tcp_options = { destination_port_range = { min = 22, max = 22 } }
+      },
       # --- NEW DNS rules for 169.254.169.253 -----------------------
       {
         direction   = "EGRESS"
@@ -358,7 +373,101 @@ locals {
         udp_options = {
           destination_port_range = { min = 53, max = 53 }
         }
+      },
+        # ═══ EGRESS RULES ═══
+
+      # Complete outbound internet access (covers Doppler API, package repos, etc.)
+      {
+        direction   = "EGRESS"
+        protocol    = "all"
+        description = "All protocols to internet (Doppler, DNS, HTTPS, etc.)"
+        destination = "0.0.0.0/0"
+        destination_type = "CIDR_BLOCK"
+      },
+
+      # Complete intra-VCN egress (pod-to-pod, pod-to-service, node communication)
+      {
+        direction   = "EGRESS"
+        protocol    = "all"
+        description = "All protocols intra-VCN (pod-to-service, operator-to-node)"
+        destination = local.vcn_cidr
+        destination_type = "CIDR_BLOCK"
+      },
+
+      # Kubernetes service network communication (critical for DNS)
+      {
+        direction   = "EGRESS"
+        protocol    = "all"
+        description = "All protocols to Kubernetes services (CoreDNS, API)"
+        destination = "10.97.0.0/16"
+        destination_type = "CIDR_BLOCK"
+      },
+
+      # External DNS resolution (CRITICAL for Doppler)
+      {
+        direction   = "EGRESS"
+        protocol    = "17"
+        description = "External DNS UDP (Google, Cloudflare, etc.)"
+        destination = "0.0.0.0/0"
+        destination_type = "CIDR_BLOCK"
+        udp_options = {
+          destination_port_range = { min = 53, max = 53 }
+        }
+      },
+
+      {
+        direction   = "EGRESS"
+        protocol    = "6"
+        description = "External DNS TCP (fallback)"
+        destination = "0.0.0.0/0"
+        destination_type = "CIDR_BLOCK"
+        tcp_options = {
+          destination_port_range = { min = 53, max = 53 }
+        }
+      },
+
+      # OCI DNS servers (keep existing)
+      {
+        direction   = "EGRESS"
+        protocol    = "6"
+        description = "DNS TCP to OCI DNS"
+        destination = "169.254.169.254/32"
+        destination_type = "CIDR_BLOCK"
+        tcp_options = {
+          destination_port_range = { min = 53, max = 53 }
+        }
+      },
+      {
+        direction   = "EGRESS"
+        protocol    = "17"
+        description = "DNS UDP to OCI DNS"
+        destination = "169.254.169.254/32"
+        destination_type = "CIDR_BLOCK"
+        udp_options = {
+          destination_port_range = { min = 53, max = 53 }
+        }
+      },
+      {
+        direction   = "EGRESS"
+        protocol    = "6"
+        description = "DNS TCP to OCI DNS (.253)"
+        destination = "169.254.169.253/32"
+        destination_type = "CIDR_BLOCK"
+        tcp_options = {
+          destination_port_range = { min = 53, max = 53 }
+        }
+      },
+      {
+        direction   = "EGRESS"
+        protocol    = "17"
+        description = "DNS UDP to OCI DNS (.253)"
+        destination = "169.254.169.253/32"
+        destination_type = "CIDR_BLOCK"
+        udp_options = {
+          destination_port_range = { min = 53, max = 53 }
+        }
       }
+
       
     ],
     [
@@ -437,14 +546,15 @@ locals {
       },
 
       # ICMP type 3, code 4 from anywhere (Fragmentation Needed and Don't Fragment was Set)
-      {
+       {
         direction   = "INGRESS"
-        protocol    = "1" # ICMP
-        description = "ICMP traffic for: 3, 4 Destination Unreachable: Fragmentation Needed and Don't Fragment was Set"
+        protocol    = "1"
+        description = "ICMP from anywhere for diagnostics"
         source      = "0.0.0.0/0"
         source_type = "CIDR_BLOCK"
         icmp_options = { type = 3, code = 4 }
       },
+
       {
         direction   = "INGRESS"
         protocol    = "6" # TCP
@@ -667,11 +777,12 @@ locals {
       tcp_options = { destination_port_range = { min = 22, max = 22 } } },
 
     # Intra-VCN communication
-    { direction = "INGRESS", protocol = "6", description = "TCP intra-VCN", 
+    #{ direction = "INGRESS", protocol = "6", description = "TCP intra-VCN", 
+    # source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
+    #{ direction = "INGRESS", protocol = "17", description = "UDP intra-VCN", 
+    #  source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
+    { direction = "INGRESS", protocol = "all", description = "All protocols intra-VCN", 
       source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
-    { direction = "INGRESS", protocol = "17", description = "UDP intra-VCN", 
-      source = local.vcn_cidr, source_type = "CIDR_BLOCK" },
-
     { direction = "INGRESS", protocol = "1", description = "ICMP intra-VCN", 
       source = local.vcn_cidr, source_type = "CIDR_BLOCK",
       icmp_options = { type = 3, code = 4 } },
@@ -702,6 +813,33 @@ locals {
 
     { direction = "INGRESS", protocol = "17", description = "VCN UDP 443",   source = local.vcn_cidr, source_type = "CIDR_BLOCK",
       udp_options = { destination_port_range = { min = 443, max = 443 } } },
+
+      # Kubernetes service network
+    { direction = "EGRESS", protocol = "all", description = "All protocols to Kubernetes services",
+      destination = "10.97.0.0/16", destination_type = "CIDR_BLOCK" },
+
+    # External DNS (critical)
+    {
+      direction   = "EGRESS"
+      protocol    = "17"
+      description = "External DNS UDP"
+      destination = "0.0.0.0/0"
+      destination_type = "CIDR_BLOCK"
+      udp_options = {
+        destination_port_range = { min = 53, max = 53 }
+      }
+    },
+
+    {
+      direction   = "EGRESS"
+      protocol    = "6"
+      description = "External DNS TCP"
+      destination = "0.0.0.0/0"
+      destination_type = "CIDR_BLOCK"
+      tcp_options = {
+        destination_port_range = { min = 53, max = 53 }
+      }
+    }
     
     # STUN for Tailscale
     { direction = "EGRESS", protocol = "17", description = "STUN 3478/UDP",
