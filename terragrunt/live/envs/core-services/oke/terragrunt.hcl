@@ -355,9 +355,10 @@ inputs = merge(
     generate_kubeconfig = true  
     user               = "opc"
 
-    doppler_token   = ""
-    doppler_project = ""
-    doppler_config  = ""
+    #doppler_token   = include.common.locals.doppler_service_token #get_env("DOPPLER_SERVICE_TOKEN", "")
+
+    #doppler_project = include.common.locals.doppler_project
+    #doppler_config  = include.common.locals.doppler_config #get_env("DOPPLER_CONFIG", "")
 
   }
   

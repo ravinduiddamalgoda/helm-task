@@ -150,8 +150,8 @@ resource "null_resource" "create_kubeconfig" {
     compartment_id = var.compartment_id
     region         = var.region
     user           = var.user 
-    doppler_project = var.doppler_project
-    doppler_config  = var.doppler_config
+    # doppler_project = var.doppler_project
+    # doppler_config  = var.doppler_config
   }
 
   connection {
@@ -242,53 +242,6 @@ oci ce cluster create-kubeconfig \
 # Set correct permissions (user already owns the file)
 chmod 600 "$HOME/.kube/config"
 echo "Kubeconfig created successfully at $HOME/.kube/config"
-
-
-# Get the cluster ID (for ACTIVE, UPDATING, or CREATING states)
-CLUSTER_ID=$(oci ce cluster list \
-  --compartment-id "${var.compartment_id}" \
-  --name "${var.cluster_name}" \
-  --query 'data[?("lifecycle-state" == `ACTIVE` || "lifecycle-state" == `UPDATING` || "lifecycle-state" == `CREATING`)].id | [0]' \
-  --raw-output)
-
-if [ -z "$CLUSTER_ID" ]; then
-  echo "Failed to fetch cluster ID"
-  exit 1
-fi
-
-# Check Doppler variables
-if [ -n "${var.doppler_token}"  ] && [ -n "${var.doppler_project}" ] && [ -n "${var.doppler_config}" ]; then
-  echo "Setting up Doppler..."
-
-  # Install Doppler CLI if not present
-  if ! command -v doppler >/dev/null 2>&1; then
-    echo "Installing Doppler CLI..."
-    curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh | sh || {
-      echo "Failed to install Doppler CLI"
-      exit 1
-    }
-    export PATH="$HOME/.doppler:$PATH"
-  fi
-
-  # Configure Doppler
-  echo "${var.doppler_token}"  | doppler configure set "${var.doppler_project}"."${var.doppler_config}"
-
-  # Validate configuration
-  if ! doppler configure --json | grep -q "${var.doppler_project}"; then
-    echo "Doppler configuration failed"
-    exit 1
-  fi
-
-  # Push secrets
-  echo "Pushing secrets to Doppler..."
-  doppler secrets set CLUSTER_ID="$CLUSTER_ID" --silent
-  doppler secrets set "${var.cluster_name}"="$CLUSTER_NAME" --silent
-
-
-  echo "✅ Successfully configured Doppler with cluster information"
-else
-  echo "⚠️ Doppler configuration skipped: Required env vars not set"
-fi
 
 EOF
 )"

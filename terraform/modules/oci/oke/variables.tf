@@ -388,21 +388,21 @@ variable "generate_kubeconfig" {
 variable "user" { type = string }
 
 
-variable "doppler_token" {
-  description = "Doppler service token for authentication"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
+# variable "doppler_token" {
+#   description = "Doppler service token for authentication"
+#   type        = string
+#   sensitive   = true
+#   default     = ""
+# }
 
-variable "doppler_project" {
-  description = "Doppler project name"
-  type        = string
-  default     = ""
-}
+# variable "doppler_project" {
+#   description = "Doppler project name"
+#   type        = string
+#   default     = ""
+# }
 
-variable "doppler_config" {
-  description = "Doppler config name (environment)"
-  type        = string
-  default     = ""
-}
+# variable "doppler_config" {
+#   description = "Doppler config name (environment)"
+#   type        = string
+#   default     = ""
+# }
