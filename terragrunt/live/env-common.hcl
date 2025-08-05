@@ -11,8 +11,7 @@ locals {
   root_config = read_terragrunt_config(find_in_parent_folders("root.hcl"))
   root_dir    = dirname(find_in_parent_folders("root.hcl"))
 
-  name_prefix  = "koci" 
-  prefix_env = "dev"    
+  name_prefix  = "koci"     
 
   cni_type = "oci_vcn_native" #"calico" or "flannel" or ""oci_vcn_native""          
 
@@ -24,7 +23,7 @@ locals {
   current_path_rel_to_root = path_relative_to_include("root")
   path_parts               = split("/", local.current_path_rel_to_root)
 
-  # Derive the environment name from the folder that follows `envs/`
+  # Derive the environment name from the folder that follows envs/
  
   env = try(local.path_parts[2], "core-services")
 
@@ -43,7 +42,7 @@ locals {
   # Fetch secrets - Conditionally skip during 'init'
   _doppler_json_output = local.is_init_phase || local.doppler_service_token == "placeholder-token" ? "{}" : try(run_cmd(
       "bash", "-c",
-      # (added STDERR redirection **and** fallback echo so the command exits 0)
+      # (added STDERR redirection *and* fallback echo so the command exits 0)
       #"DOPPLER_TOKEN='${local.doppler_service_token}' doppler secrets download --no-file --format json --project ${local.doppler_project} 2>/dev/null || echo '{}'"
       "DOPPLER_TOKEN='${local.doppler_service_token}' doppler secrets download --no-file --format json --project ${local.doppler_project} --config ${local.doppler_config} 2>/dev/null || echo '{}'"
   ), "{}")
@@ -68,8 +67,8 @@ locals {
   _raw_fingerprint = lookup(local._secret_map, "FINGERPRINT", null)
   _raw_tfstate_namespace = lookup(local._secret_map, "TFSTATE_NAMESPACE", null)
   _raw_tfstate_bucket = lookup(local._secret_map, "TFSTATE_BUCKET", null)
-  _raw_tfstate_access_key = lookup(local._secret_map, "AWS_ACCESS_KEY_ID", null)
-  _raw_tfstate_secret_key = lookup(local._secret_map, "AWS_SECRET_ACCESS_KEY", null)
+  _raw_tfstate_access_key = lookup(local._secret_map, "TF_STATE_ACCESS_KEY", null)
+  _raw_tfstate_secret_key = lookup(local._secret_map, "TF_STATE_SECRET_KEY", null)
   _raw_bastion_ssh_private_key = lookup(local._secret_map, "BASTION_SSH_PRIVATE_KEY", null)
   _raw_bastion_ssh_public_key = lookup(local._secret_map, "BASTION_SSH_PUBLIC_KEY", null)
   _raw_registry_username = lookup(local._secret_map, "REGISTRY_USERNAME", null)
@@ -91,38 +90,18 @@ locals {
   registry_username = coalesce(local._raw_registry_username, "placeholder-registry-username")
   registry_password = coalesce(local._raw_registry_password, "placeholder-registry-password")
   registry_email = coalesce(local._raw_registry_email, "placeholder-registry-email")
+  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "placeholder") 
   
-  # Fix the credential mapping - use the AWS credentials from Doppler for OCI S3 compatibility
-  access_key = coalesce(
-    lookup(local._secret_map, "AWS_ACCESS_KEY_ID", null),
-    local._raw_tfstate_access_key,
-    "placeholder"
-  )
-  secret_key = coalesce(
-    lookup(local._secret_map, "AWS_SECRET_ACCESS_KEY", null),
-    local._raw_tfstate_secret_key,
-    "placeholder"
-  )
-  
-  # Fix the tfstate_bucket to use the actual bucket name from Doppler
-  tfstate_bucket = coalesce(
-    lookup(local._secret_map, "TFSTATE_BUCKET", null),
-    local._raw_tfstate_bucket,
-    "${lower(local.name_prefix)}-${local.env}-${substr(local.region, 0, 2)}-init"
-  )
-  
-  # Fix the tfstate_namespace to use the actual namespace from Doppler
-  tfstate_namespace = coalesce(
-    lookup(local._secret_map, "TFSTATE_NAMESPACE", null),
-    local._raw_tfstate_namespace,
-    "placeholder"
-  )
+  access_key = coalesce(local._raw_tfstate_access_key, "placeholder")
+  secret_key = coalesce(local._raw_tfstate_secret_key, "placeholder")
+  tfstate_bucket = coalesce(local._raw_tfstate_bucket,
+                           "${lower(local.name_prefix)}-${local.env}-${substr(local.region, 0, 2)}-init")
 
-  # Fix the endpoint construction
+  # 3. Construct endpoint based explicitly on whether the raw namespace lookup succeeded (will use placeholder URL during init)
   tfstate_endpoint = (
-    lookup(local._secret_map, "TFSTATE_NAMESPACE", null) == null ?
+    local._raw_tfstate_namespace == null ?
     "https://placeholder.init.fail" :
-    "https://${lookup(local._secret_map, "TFSTATE_NAMESPACE", "placeholder")}.compat.objectstorage.${local.region}.oraclecloud.com"
+    "https://${local._raw_tfstate_namespace}.compat.objectstorage.${local.region}.oraclecloud.com"
   )
 
   # ──────────────────────────────────────────────────────────────────────
@@ -159,9 +138,9 @@ locals {
   #   )
   # ))
 
-  # NOTE: `tfstate_bucket`, `tfstate_namespace`, `tfstate_endpoint`, `access_key`, `secret_key`
+  # NOTE: tfstate_bucket, tfstate_namespace, tfstate_endpoint, access_key, secret_key
   # have already been defined earlier in this locals block using the bulk download method.
-  # The individual "_doppler_tfstate_*" look-ups above are no longer necessary for defining
+  # The individual "doppler_tfstate*" look-ups above are no longer necessary for defining
   # these values and have been commented out or removed to avoid "Attribute redefined" errors.
 
   # ---------------------------------------------------------------------
@@ -198,31 +177,32 @@ inputs = {
 # ---------------------------------------------------------------------
 
 remote_state {
-  backend = "s3"
-  config = {
-    # --- Bucket and Key ---
-    bucket = local.tfstate_bucket   
-    key = "${path_relative_to_include()}/terraform.tfstate"
+ backend = "s3"
+ config = {
+   # --- Bucket and Key ---
+   bucket = local.tfstate_bucket   
+   key = "${path_relative_to_include()}/terraform.tfstate"
 
-    # --- OCI S3 Compatibility Settings ---
-    region   = local.region       
-  
-    # Fix: Use 'endpoint' instead of 'endpoints'
-    endpoint = local.tfstate_endpoint
-    
-    # --- Credentials ---
-    access_key = local.access_key 
-    secret_key = local.secret_key 
+   # --- OCI S3 Compatibility Settings ---
+   region   = local.region       
+ 
+   endpoints = {
+      s3 = local.tfstate_endpoint
+   }
+     # --- Credentials ---
+   # These are automatically picked up from the locals defined earlier
+   access_key = local.access_key 
+   secret_key = local.secret_key 
 
-    # --- S3 Backend Settings for OCI ---
-    skip_region_validation      = true
-    skip_credentials_validation = true
-    skip_metadata_api_check     = true
-    force_path_style            = true
-    skip_requesting_account_id  = true
-  }
-  generate = {
-    path      = "backend.tf"
-    if_exists = "overwrite_terragrunt"
-  }
+   # --- S3 Backend Settings for OCI ---
+   skip_region_validation      = true # Necessary for OCI S3 compatibility
+   skip_credentials_validation = true # Recommended for robustness, esp. with placeholders
+   skip_metadata_api_check     = true # Avoids unnecessary checks for non-AWS S3
+   #force_path_style            = true # OCI Object Storage typically requires path-style access
+   use_path_style              = true
+ }
+ generate = {
+   path      = "backend.tf"
+   if_exists = "overwrite_terragrunt"
+ }
 }
