@@ -91,18 +91,38 @@ locals {
   registry_username = coalesce(local._raw_registry_username, "placeholder-registry-username")
   registry_password = coalesce(local._raw_registry_password, "placeholder-registry-password")
   registry_email = coalesce(local._raw_registry_email, "placeholder-registry-email")
-  tfstate_namespace = coalesce(local._raw_tfstate_namespace, "placeholder") 
   
-  access_key = coalesce(local._raw_tfstate_access_key, "placeholder")
-  secret_key = coalesce(local._raw_tfstate_secret_key, "placeholder")
-  tfstate_bucket = coalesce(local._raw_tfstate_bucket,
-                           "${lower(local.name_prefix)}-${local.env}-${substr(local.region, 0, 2)}-init")
+  # Fix the credential mapping - use the AWS credentials from Doppler for OCI S3 compatibility
+  access_key = coalesce(
+    lookup(local._secret_map, "AWS_ACCESS_KEY_ID", null),
+    local._raw_tfstate_access_key,
+    "placeholder"
+  )
+  secret_key = coalesce(
+    lookup(local._secret_map, "AWS_SECRET_ACCESS_KEY", null),
+    local._raw_tfstate_secret_key,
+    "placeholder"
+  )
+  
+  # Fix the tfstate_bucket to use the actual bucket name from Doppler
+  tfstate_bucket = coalesce(
+    lookup(local._secret_map, "TFSTATE_BUCKET", null),
+    local._raw_tfstate_bucket,
+    "${lower(local.name_prefix)}-${local.env}-${substr(local.region, 0, 2)}-init"
+  )
+  
+  # Fix the tfstate_namespace to use the actual namespace from Doppler
+  tfstate_namespace = coalesce(
+    lookup(local._secret_map, "TFSTATE_NAMESPACE", null),
+    local._raw_tfstate_namespace,
+    "placeholder"
+  )
 
-  # 3. Construct endpoint based explicitly on whether the *raw* namespace lookup succeeded (will use placeholder URL during init)
+  # Fix the endpoint construction
   tfstate_endpoint = (
-    local._raw_tfstate_namespace == null ?
+    lookup(local._secret_map, "TFSTATE_NAMESPACE", null) == null ?
     "https://placeholder.init.fail" :
-    "https://${local._raw_tfstate_namespace}.compat.objectstorage.${local.region}.oraclecloud.com"
+    "https://${lookup(local._secret_map, "TFSTATE_NAMESPACE", "placeholder")}.compat.objectstorage.${local.region}.oraclecloud.com"
   )
 
   # ──────────────────────────────────────────────────────────────────────
