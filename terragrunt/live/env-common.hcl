@@ -166,12 +166,12 @@ locals {
 
 # Inputs block remains the same - it defines defaults if modules need them,
 # but specific stacks override these with dependency outputs where necessary.
-# inputs = {
-#   compartment_id = local.compartment_ocid # Prefer dependency output in specific stacks
-#   region         = local.region
-#   common_tags    = local.common_tags
-#   env_name       = local.env
-# }
+inputs = {
+  compartment_id = local.compartment_ocid # Prefer dependency output in specific stacks
+  region         = local.region
+  common_tags    = local.common_tags
+  env_name       = local.env
+}
 
 # ---------------------------------------------------------------------
 # Remote State Configuration (OCI Object Storage - S3 Compatible)
