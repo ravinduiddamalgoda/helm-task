@@ -207,20 +207,19 @@ remote_state {
     # --- OCI S3 Compatibility Settings ---
     region   = local.region       
   
-    endpoints = {
-      s3 = local.tfstate_endpoint
-    }
+    # Fix: Use 'endpoint' instead of 'endpoints'
+    endpoint = local.tfstate_endpoint
+    
     # --- Credentials ---
-    # These are automatically picked up from the locals defined earlier
     access_key = local.access_key 
     secret_key = local.secret_key 
 
     # --- S3 Backend Settings for OCI ---
-    skip_region_validation      = true # Necessary for OCI S3 compatibility
-    skip_credentials_validation = true # Recommended for robustness, esp. with placeholders
-    skip_metadata_api_check     = true # Avoids unnecessary checks for non-AWS S3
-    #force_path_style            = true # OCI Object Storage typically requires path-style access
-    use_path_style              = true
+    skip_region_validation      = true
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    force_path_style            = true
+    skip_requesting_account_id  = true
   }
   generate = {
     path      = "backend.tf"
