@@ -1,7 +1,7 @@
 ###############################################################################
 # Common settings for all per-environment stacks
 ###############################################################################
-prefix_env = "dev"
+
 # -------------------------------------------------------------------
 # Inherit all settings (extra_arguments, generate blocks, …) from
 # the repo-root stack definition in root.kocil
