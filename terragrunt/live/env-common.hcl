@@ -112,22 +112,22 @@ locals {
   #       above handles fetching these secrets more efficiently and robustly.
   #       They are kept here commented out for historical/debugging reference.
   # ──────────────────────────────────────────────────────────────────────
-  _doppler_tfstate_bucket = trimspace(run_cmd(
-    "bash", "-c",
-    # Try fetching the secret, return placeholder on error (e.g., secret not found)
-    # Use a distinct placeholder name for clarity during initial runs.
-    format("doppler secrets get TFSTATE_BUCKET --project %s --config %s --plain 2>/dev/null || echo 'placeholder-bucket-init'",
-      local.root_config.locals.doppler_project,
-      local.env # Use the derived environment name (e.g., core-services)
-    )
-  ))
-  _doppler_tfstate_namespace = trimspace(run_cmd(
-    "bash", "-c",
-    format("doppler secrets get TFSTATE_NAMESPACE --project %s --config %s --plain 2>/dev/null || echo 'placeholder-namespace-init'",
-      local.root_config.locals.doppler_project,
-      local.env
-    )
-  ))
+  # _doppler_tfstate_bucket = trimspace(run_cmd(
+  #   "bash", "-c",
+  #   # Try fetching the secret, return placeholder on error (e.g., secret not found)
+  #   # Use a distinct placeholder name for clarity during initial runs.
+  #   format("doppler secrets get TFSTATE_BUCKET --project %s --config %s --plain 2>/dev/null || echo 'placeholder-bucket-init'",
+  #     local.root_config.locals.doppler_project,
+  #     local.env # Use the derived environment name (e.g., core-services)
+  #   )
+  # ))
+  # _doppler_tfstate_namespace = trimspace(run_cmd(
+  #   "bash", "-c",
+  #   format("doppler secrets get TFSTATE_NAMESPACE --project %s --config %s --plain 2>/dev/null || echo 'placeholder-namespace-init'",
+  #     local.root_config.locals.doppler_project,
+  #     local.env
+  #   )
+  # ))
   # Optional: Fetch compartment OCID here ONLY IF needed for something other than module inputs
   # Module inputs MUST use dependency outputs. This lookup is generally NOT needed here anymore.
   # _doppler_compartment_ocid = trimspace(run_cmd(
@@ -176,33 +176,36 @@ inputs = {
 # Remote State Configuration (OCI Object Storage - S3 Compatible)
 # ---------------------------------------------------------------------
 
-remote_state {
- backend = "s3"
- config = {
-   # --- Bucket and Key ---
-   bucket = local.tfstate_bucket   
-   key = "${path_relative_to_include()}/terraform.tfstate"
-
-   # --- OCI S3 Compatibility Settings ---
-   region   = local.region       
- 
-   endpoints = {
-      s3 = local.tfstate_endpoint
-   }
-     # --- Credentials ---
-   # These are automatically picked up from the locals defined earlier
-   access_key = local.access_key 
-   secret_key = local.secret_key 
-
-   # --- S3 Backend Settings for OCI ---
-   skip_region_validation      = true # Necessary for OCI S3 compatibility
-   skip_credentials_validation = true # Recommended for robustness, esp. with placeholders
-   skip_metadata_api_check     = true # Avoids unnecessary checks for non-AWS S3
-   #force_path_style            = true # OCI Object Storage typically requires path-style access
-   use_path_style              = true
- }
- generate = {
-   path      = "backend.tf"
-   if_exists = "overwrite_terragrunt"
- }
-}
+# ---------------------------------------------------------------------
+# Remote State Configuration (OCI Object Storage - S3 Compatible)
+# ---------------------------------------------------------------------
+# remote_state {
+#   backend = "s3"
+#   config = {
+#     # --- Bucket and Key ---
+#     bucket = local.tfstate_bucket   
+#     key = "${path_relative_to_include()}/terraform.tfstate"
+#
+#     # --- OCI S3 Compatibility Settings ---
+#     region   = local.region       
+#  
+#     endpoints = {
+#       s3 = local.tfstate_endpoint
+#     }
+#     # --- Credentials ---
+#     # These are automatically picked up from the locals defined earlier
+#     access_key = local.access_key 
+#     secret_key = local.secret_key 
+#
+#     # --- S3 Backend Settings for OCI ---
+#     skip_region_validation      = true # Necessary for OCI S3 compatibility
+#     skip_credentials_validation = true # Recommended for robustness, esp. with placeholders
+#     skip_metadata_api_check     = true # Avoids unnecessary checks for non-AWS S3
+#     #force_path_style            = true # OCI Object Storage typically requires path-style access
+#     use_path_style              = true
+#   }
+#   generate = {
+#     path      = "backend.tf"
+#     if_exists = "overwrite_terragrunt"
+#   }
+# }
