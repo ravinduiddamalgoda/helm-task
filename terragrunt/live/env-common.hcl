@@ -76,6 +76,10 @@ locals {
   _raw_registry_password = lookup(local._secret_map, "REGISTRY_PASSWORD", null)
   _raw_registry_email = lookup(local._secret_map, "REGISTRY_EMAIL", null)
 
+  #new root compartment ID
+  _raw_root_compartment_ocid = lookup(local._secret_map, "ROOT_COMPARTMENT_OCID", null)
+  root_compartment_ocid      = coalesce(local._raw_root_compartment_ocid, "ocid1.compartment.oc1..root-placeholder")
+
   # 2. Define final values with fallbacks using coalesce (will use placeholders during init)
   compartment_ocid = coalesce(
     local._raw_compartment_ocid,

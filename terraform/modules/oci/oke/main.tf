@@ -43,6 +43,10 @@ module "oke_cluster" {
   service_lb_freeform_tags           = var.service_lb_freeform_tags
 }
 
+data "local_file" "cloud_init" {
+  filename = "${path.module}/cloudinit.sh"
+}
+
 resource "oci_containerengine_node_pool" "node_pool" {
   depends_on = [module.oke_cluster]
   for_each       = var.node_pool_config
@@ -50,6 +54,7 @@ resource "oci_containerengine_node_pool" "node_pool" {
   cluster_id     = module.oke_cluster.id
   name           = try(each.value.name, "${var.env_name}-${each.key}-nodepool")
   kubernetes_version = var.kubernetes_version
+  node_metadata   = { user_data: base64encode(data.local_file.cloud_init.content) }
 
   node_shape = each.value.shape
   node_shape_config {
