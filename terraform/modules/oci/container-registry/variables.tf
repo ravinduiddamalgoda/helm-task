@@ -8,6 +8,10 @@ variable "root_compartment_id" {
   type        = string
 }
 
+variable "home_region" {
+  description = "Home region for the tenancy (used for identity resources)"
+  type        = string
+}
 
 variable "env_name" {
   description = "Environment name for resource naming"

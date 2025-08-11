@@ -12,6 +12,7 @@ inputs = {
   # Core configuration
   compartment_id = include.common.locals.compartment_ocid
   root_compartment_id  = include.common.locals.root_compartment_ocid
+  home_region          = include.common.locals.home_region
   env_name       = "${include.common.locals.name_prefix}-${include.common.locals.prefix_env}-${include.common.locals.env}"
   
   # Repository configuration
