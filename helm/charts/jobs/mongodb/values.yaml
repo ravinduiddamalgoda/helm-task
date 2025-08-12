@@ -51,7 +51,7 @@ serviceAccount:
 # In production, they are overridden by global values from umbrella chart
 global:
   # Deployment mode: "local" or "cluster"
-  deploymentMode: "local"
+  deploymentMode: "cluster" #<----------------------------------------------local------------------------------------------------
   environment: "dev"
   storageClass: "standard"
   
@@ -70,7 +70,7 @@ global:
   databases:
     mongodb:
       selfHosted:
-        enabled: true
+        enabled: true #<----------------------------------------------fales------------------------------------------------
         # MongoDB authentication secret keys
         auth:
           rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
