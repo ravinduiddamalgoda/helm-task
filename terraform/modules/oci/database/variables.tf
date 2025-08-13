@@ -84,7 +84,8 @@ variable "heatwave_cluster" {
     node_count = number
   })
   default = {
-    shape_name = "MySQL.HeatWave.VM.Standard.E3.1.32GB"
+    #shape_name = "MySQL.HeatWave.VM.Standard.E3.1.32GB"
+    shape_name = "MySQL.HeatWave.VM.Standard.E3"
     node_count = 1
   }
 }
