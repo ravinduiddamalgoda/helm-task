@@ -161,10 +161,42 @@ locals {
 
 ###############################################################################
 # 1. inputs – now also pass tenancy_ocid                                       #
-###############################################################################
+# ###############################################################################
+# inputs = {
+#   compartment_id = include.common.locals.compartment_ocid
+#   subnet_id      = dependency.network.outputs.subnet_ids["data"]
+#   tenancy_ocid   = include.common.locals.tenancy_ocid
+
+#   env_name       = "${include.common.locals.prefix_env}-${local.env_slug}"
+#   admin_username = local.mysql_admin_username
+
+#   # ---------------------------------------------------------------------------
+#   # Switch to the E-CPU family (ref: https://docs.oracle.com/en-us/iaas/mysql-
+#   # database/doc/supported-shapes.html).  `MySQL.4` is the closest equivalent
+#   # to the previously-used "Standard" shapes.
+#   # ---------------------------------------------------------------------------
+#   shape_name            = "MySQL.4"
+#   mysql_version         = "8.4.1"
+
+#   # HeatWave remains disabled++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#   region               = include.common.locals.region  # include.common.locals.region  "ca-montreal-1"
+#   availability_domain  = local.first_ad  # "wsmd:CA-MONTREAL-1-AD-1"
+#   # HeatWave remains disabled++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+#   enable_heatwave_cluster = true #<--------------------------------------------------------------
+#   heatwave_cluster        =  {
+#   shape_name = ""
+#   node_count = 1 
+#   }
+
+#   common_tags   = local.common_tags
+# }
+
+
 inputs = {
   compartment_id = include.common.locals.compartment_ocid
   subnet_id      = dependency.network.outputs.subnet_ids["data"]
+  #subnet_id      = "ocid1.subnet.oc1.ca-montreal-1.aaaaaaaanomwyiz62nlf6nnf734zzxoa7yua3f6fqcngyf3mhisrur7knluq"  # change subnet
   tenancy_ocid   = include.common.locals.tenancy_ocid
 
   env_name       = "${include.common.locals.prefix_env}-${local.env_slug}"
@@ -176,11 +208,12 @@ inputs = {
   # to the previously-used "Standard" shapes.
   # ---------------------------------------------------------------------------
   shape_name            = "MySQL.4"
+  #mysql_version         = "8.4.0"                 +++++++++++++++++++++++++++++++++++++++
   mysql_version         = "8.4.1"
 
   # HeatWave remains disabled++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  region               = include.common.locals.region  # include.common.locals.region  "ca-montreal-1"
-  availability_domain  = local.first_ad  # "wsmd:CA-MONTREAL-1-AD-1"
+  region               = include.common.locals.region  # include.common.locals.region
+  availability_domain  = local.first_ad  # local.first_ad
   # HeatWave remains disabled++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
   enable_heatwave_cluster = true #<--------------------------------------------------------------
@@ -191,7 +224,6 @@ inputs = {
 
   common_tags   = local.common_tags
 }
-
 ###############################################################################
 # 2. generate "databases" – add AD data source & use it in module calls
 ###############################################################################
