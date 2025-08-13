@@ -51,7 +51,7 @@ serviceAccount:
 # In production, they are overridden by global values from umbrella chart
 global:
   # Deployment mode: "local" or "cluster"
-  deploymentMode: "cluster" #<----------------------------------------------local------------------------------------------------
+  deploymentMode: "cluster"      #<----------------------------------
   environment: "dev"
   storageClass: "standard"
   
@@ -70,7 +70,7 @@ global:
   databases:
     mongodb:
       selfHosted:
-        enabled: true #<----------------------------------------------fales------------------------------------------------
+        enabled: true        #<----------------------------------
         # MongoDB authentication secret keys
         auth:
           rootUserSecretKey: MONGO_INITDB_ROOT_USERNAME
@@ -81,11 +81,11 @@ global:
           storageClass: ""
       # Backup configuration
       backup:
-        enabled: false
+        enabled: true    #<----------------------------------
         # Cron schedule for backups (daily at 2 AM)
         schedule: "0 2 * * *"
         # Storage class for backup volumes
-        storageClass: ""
+        storageClass: "oci-bv"    #<----------------------------------
         # Retention period in days
         retention: 7
         # Object storage configuration (for OCI/AWS/GCP)

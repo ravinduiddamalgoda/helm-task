@@ -176,11 +176,18 @@ inputs = {
   # to the previously-used "Standard" shapes.
   # ---------------------------------------------------------------------------
   shape_name            = "MySQL.4"
-  mysql_version         = "8.4.0"
+  mysql_version         = "8.4.1"
 
-  # HeatWave remains disabled
-  enable_heatwave_cluster = false
-  heatwave_cluster        = null
+  # HeatWave remains disabled++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  region               = include.common.locals.region  # include.common.locals.region  "ca-montreal-1"
+  availability_domain  = local.first_ad  # "wsmd:CA-MONTREAL-1-AD-1"
+  # HeatWave remains disabled++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+  enable_heatwave_cluster = true #<--------------------------------------------------------------
+  heatwave_cluster        =  {
+  shape_name = ""
+  node_count = 1 
+  }
 
   common_tags   = local.common_tags
 }
