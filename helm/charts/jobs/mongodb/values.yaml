@@ -81,11 +81,11 @@ global:
           storageClass: ""
       # Backup configuration
       backup:
-        enabled: false
+        enabled: true
         # Cron schedule for backups (daily at 2 AM)
         schedule: "0 2 * * *"
         # Storage class for backup volumes
-        storageClass: ""
+        storageClass: "oci-bv"
         # Retention period in days
         retention: 7
         # Object storage configuration (for OCI/AWS/GCP)
