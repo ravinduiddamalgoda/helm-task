@@ -43,6 +43,7 @@ global:
     tokenSecret: "${DOPPLER_SERVICE_TOKEN}"
     dopplerConfigName: "dev"
     operatorNamespace: "doppler-operator-system"
+    managedSecretNamespace: "koci"
   
   databases:
     mysql:
